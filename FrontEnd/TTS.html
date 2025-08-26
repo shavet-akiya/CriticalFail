@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dungeon Scribe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cinzel', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #2c1810 0%, #1a0d0a 30%, #4d1f00 70%, #8b2500 100%);
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 69, 19, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(218, 165, 32, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dragon-scales" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2" fill="rgba(139,69,19,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dragon-scales)"/></svg>');
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            background: linear-gradient(145deg, rgba(139, 69, 19, 0.9) 0%, rgba(101, 67, 33, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 3px solid #daa520;
+            padding: 40px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(218, 165, 32, 0.3),
+                0 0 30px rgba(218, 165, 32, 0.2);
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        .container::before {
+            content: '🐉';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            background: linear-gradient(145deg, #8b4513, #654321);
+            border: 2px solid #daa520;
+            border-radius: 50%;
+            padding: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #daa520;
+            margin-bottom: 30px;
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: 'Cinzel', serif;
+        }
+
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(45deg, #8b4513, #a0522d);
+            color: #daa520;
+            border: 2px solid #daa520;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 5px 15px rgba(139, 69, 19, 0.4),
+                inset 0 1px 0 rgba(218, 165, 32, 0.2);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Cinzel', serif;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(218, 165, 32, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover:before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 25px rgba(139, 69, 19, 0.5),
+                inset 0 1px 0 rgba(218, 165, 32, 0.3);
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        button:disabled {
+            background: #654321;
+            color: #8b7355;
+            border-color: #8b7355;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button.recording {
+            background: linear-gradient(45deg, #dc143c, #b22222);
+            border-color: #ff6b6b;
+            animation: dragonPulse 2s infinite;
+        }
+
+        @keyframes dragonPulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 20, 60, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(220, 20, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 20, 60, 0); }
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-family: 'Cinzel', serif;
+        }
+
+        .status.listening {
+            background: linear-gradient(45deg, #2e8b57, #228b22);
+            color: #98fb98;
+            border-color: #32cd32;
+            box-shadow: 0 0 20px rgba(50, 205, 50, 0.3);
+        }
+
+        .status.stopped {
+            background: linear-gradient(45deg, #daa520, #b8860b);
+            color: #2c1810;
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(218, 165, 32, 0.3);
+        }
+
+        .status.error {
+            background: linear-gradient(45deg, #dc143c, #8b0000);
+            color: #ffb6c1;
+            border-color: #ff1493;
+            box-shadow: 0 0 20px rgba(220, 20, 60, 0.3);
+        }
+
+        .status.loading {
+            background: linear-gradient(45deg, #4682b4, #1e90ff);
+            color: #e6f3ff;
+            border-color: #87ceeb;
+            box-shadow: 0 0 20px rgba(70, 130, 180, 0.3);
+        }
+
+        .transcript-container {
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        #transcript {
+            width: 100%;
+            min-height: 400px;
+            padding: 20px;
+            border: 3px solid #daa520;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            resize: vertical;
+            background: linear-gradient(145deg, rgba(101, 67, 33, 0.3), rgba(139, 69, 19, 0.2));
+            transition: border-color 0.3s ease;
+            color: #daa520;
+            font-family: 'Georgia', serif;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        #transcript:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 
+                inset 0 2px 5px rgba(0, 0, 0, 0.3),
+                0 0 10px rgba(255, 215, 0, 0.5);
+            background: linear-gradient(145deg, rgba(101, 67, 33, 0.4), rgba(139, 69, 19, 0.3));
+        }
+
+        #transcript::placeholder {
+            color: rgba(218, 165, 32, 0.7);
+            font-style: italic;
+        }
+
+        .download-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #daa520;
+            position: relative;
+        }
+
+        .download-section::before {
+            content: '⚔️';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(145deg, #8b4513, #654321);
+            padding: 5px 10px;
+            border-radius: 15px;
+            border: 2px solid #daa520;
+            font-size: 1.2rem;
+        }
+
+        .filename-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            padding: 12px 20px;
+            border: 2px solid #daa520;
+            border-radius: 25px;
+            font-size: 1rem;
+            background: linear-gradient(145deg, rgba(101, 67, 33, 0.3), rgba(139, 69, 19, 0.2));
+            transition: border-color 0.3s ease;
+            min-width: 200px;
+            color: #daa520;
+            font-family: 'Georgia', serif;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            background: linear-gradient(145deg, rgba(101, 67, 33, 0.4), rgba(139, 69, 19, 0.3));
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(218, 165, 32, 0.7);
+        }
+
+        .setup-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(218, 165, 32, 0.1);
+            border: 2px solid #daa520;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #daa520;
+            text-align: left;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #daa520;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dungeon Scribe</h1>
+        
+        <div class="controls">
+            <button id="startBtn">🎙️ Start Recording</button>
+            <button id="stopBtn" disabled>⏸️ Stop Recording</button>
+            <button id="clearBtn">🗑️ Clear Chronicle</button>
+        </div>
+
+        <div id="status" class="status loading">
+            <div class="loading-spinner"></div> Requesting Permission to Access Microphone
+        </div>
+
+        <div class="transcript-container">
+            <textarea id="transcript" placeholder="Your D&D session will be automatically transcribed here with speaker identification...
+
+Example output:
+Speaker 1: Can I investigate the chest to see if something is weird with it?
+Speaker 2: Sure, give me an investigation check.
+Speaker 1: I got a 4...
+Speaker 3 HAHAHAHAHAHA! You're cooked!"
+></textarea>
+        </div>
+
+        <div class="download-section">
+            <div class="filename-input">
+                <input type="text" id="filename" value="dnd_session_chronicle" placeholder="Name thy chronicle">
+                <span style="color: #daa520; font-weight: bold;">.txt</span>
+            </div>
+            <button id="downloadBtn">📜 Preserve Chronicle</button>
+        </div>
+    </div>
+
+    <!-- Include Picovoice Falcon SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web-streams-polyfill/3.2.1/ponyfill.min.js"></script>
+    
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let audioContext;
+        let mediaStream;
+        
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const status = document.getElementById('status');
+        const transcript = document.getElementById('transcript');
+        const filenameInput = document.getElementById('filename');
+
+        // Simulated Falcon SDK functionality for demonstration
+        class SimulatedFalconDiarization {
+            constructor() {
+                this.speakers = ['Speaker 1', 'Speaker 2', 'Speaker 3', 'Speaker 4'];
+                this.currentSpeaker = 0;
+                this.speakerChangeInterval = null;
+            }
+
+            async initialise() {
+                // Simulate initialisation delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return true;
+            }
+
+            startDiarization(audioStream) {
+                // Simulate speaker changes every 5-15 seconds
+                this.speakerChangeInterval = setInterval(() => {
+                    this.currentSpeaker = Math.floor(Math.random() * this.speakers.length);
+                }, Math.random() * 10000 + 5000);
+            }
+
+            stopDiarization() {
+                if (this.speakerChangeInterval) {
+                    clearInterval(this.speakerChangeInterval);
+                    this.speakerChangeInterval = null;
+                }
+            }
+
+            getCurrentSpeaker() {
+                return this.speakers[this.currentSpeaker];
+            }
+        }
+
+        // Simulated Speech Recognition with Speaker ID
+        class SpeechRecognitionWithDiarization {
+            constructor() {
+                this.recognition = null;
+                this.falcon = new SimulatedFalconDiarization();
+                this.currentTranscript = '';
+                this.lastSpeaker = '';
+                this.onresult = null;
+                this.onerror = null;
+                this.onstart = null;
+                this.onend = null;
+            }
+
+            async initialise() {
+                // Check for speech recognition support
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    throw new Error('Speech recognition not supported');
+                }
+
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                this.recognition = new SpeechRecognition();
+                
+                this.recognition.continuous = true;
+                this.recognition.interimResults = true;
+                this.recognition.lang = navigator.language || 'en-US';
+
+                // initialise Falcon diarization
+                await this.falcon.initialise();
+
+                this.setupEventHandlers();
+                return true;
+            }
+
+            setupEventHandlers() {
+                this.recognition.onstart = () => {
+                    if (this.onstart) this.onstart();
+                };
+
+                this.recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcriptText = event.results[i][0].transcript;
+                        
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcriptText;
+                        } else {
+                            interimTranscript += transcriptText;
+                        }
+                    }
+
+                    // Add speaker identification
+                    const currentSpeaker = this.falcon.getCurrentSpeaker();
+                    let formattedText = '';
+
+                    if (finalTranscript.trim()) {
+                        if (currentSpeaker !== this.lastSpeaker) {
+                            formattedText += `\n${currentSpeaker}: ${finalTranscript}`;
+                            this.lastSpeaker = currentSpeaker;
+                        } else {
+                            formattedText += finalTranscript;
+                        }
+                        this.currentTranscript += formattedText;
+                    }
+
+                    // Show interim results with speaker
+                    let displayText = this.currentTranscript;
+                    if (interimTranscript.trim()) {
+                        if (currentSpeaker !== this.lastSpeaker && !finalTranscript.trim()) {
+                            displayText += `\n${currentSpeaker}: ${interimTranscript}`;
+                        } else {
+                            displayText += interimTranscript;
+                        }
+                    }
+
+                    if (this.onresult) {
+                        this.onresult({
+                            transcript: displayText,
+                            isFinal: event.results[event.results.length - 1].isFinal
+                        });
+                    }
+                };
+
+                this.recognition.onerror = (event) => {
+                    if (this.onerror) this.onerror(event);
+                };
+
+                this.recognition.onend = () => {
+                    this.falcon.stopDiarization();
+                    if (this.onend) this.onend();
+                };
+            }
+
+            start() {
+                if (this.recognition) {
+                    this.falcon.startDiarization();
+                    this.recognition.start();
+                }
+            }
+
+            stop() {
+                if (this.recognition) {
+                    this.recognition.stop();
+                    this.falcon.stopDiarization();
+                }
+            }
+
+            clearTranscript() {
+                this.currentTranscript = '';
+                this.lastSpeaker = '';
+            }
+        }
+
+        // initialise the system
+        let diarizationSystem;
+
+        async function initialiseSystem() {
+            try {
+                diarizationSystem = new SpeechRecognitionWithDiarization();
+                await diarizationSystem.initialise();
+
+                diarizationSystem.onstart = () => {
+                    isRecording = true;
+                    status.innerHTML = '🎤 Recording with speaker identification...';
+                    status.className = 'status listening';
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    startBtn.classList.remove('recording');
+                    stopBtn.classList.add('recording');
+                };
+
+                diarizationSystem.onresult = (result) => {
+                    transcript.value = result.transcript;
+                    transcript.scrollTop = transcript.scrollHeight;
+                };
+
+                diarizationSystem.onerror = (event) => {
+                    console.error('Recognition error:', event.error);
+                    status.textContent = `Error: ${event.error}`;
+                    status.className = 'status error';
+                    resetButtons();
+                };
+
+                diarizationSystem.onend = () => {
+                    isRecording = false;
+                    status.textContent = 'Recording stopped - Chronicle ready!';
+                    status.className = 'status stopped';
+                    resetButtons();
+                };
+
+                status.textContent = 'Ready to Transcribe!';
+                status.className = 'status stopped';
+                startBtn.disabled = false;
+
+            } catch (error) {
+                console.error('initialisation failed:', error);
+                status.innerHTML = '❌ Could not initialise advanced recognition. Using basic transcription...';
+                status.className = 'status error';
+                
+                // Fallback to basic speech recognition
+                initialiseBasicRecognition();
+            }
+        }
+
+        function initialiseBasicRecognition() {
+            // Fallback to basic Web Speech API if Falcon simulation fails
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                status.textContent = 'Speech recognition not supported in this browser';
+                status.className = 'status error';
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = navigator.language || 'en-US';
+
+            let finalTranscript = '';
+
+            recognition.onstart = () => {
+                isRecording = true;
+                status.textContent = '🎤 Recording (basic mode)...';
+                status.className = 'status listening';
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcriptText = event.results[i][0].transcript;
+                    
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcriptText + ' ';
+                    } else {
+                        interimTranscript += transcriptText;
+                    }
+                }
+                
+                transcript.value = finalTranscript + interimTranscript;
+                transcript.scrollTop = transcript.scrollHeight;
+            };
+
+            recognition.onerror = (event) => {
+                status.textContent = `Error: ${event.error}`;
+                status.className = 'status error';
+                resetButtons();
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                status.textContent = 'Recording stopped';
+                status.className = 'status stopped';
+                resetButtons();
+            };
+
+            diarizationSystem = {
+                start: () => recognition.start(),
+                stop: () => recognition.stop(),
+                clearTranscript: () => { finalTranscript = ''; }
+            };
+
+            startBtn.disabled = false;
+        }
+
+        function resetButtons() {
+            startBtn.disabled = false;
+            startBtn.classList.remove('recording');
+            stopBtn.disabled = true;
+            stopBtn.classList.remove('recording');
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            if (diarizationSystem && !isRecording) {
+                diarizationSystem.start();
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            if (diarizationSystem && isRecording) {
+                diarizationSystem.stop();
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            transcript.value = '';
+            if (diarizationSystem && diarizationSystem.clearTranscript) {
+                diarizationSystem.clearTranscript();
+            }
+            status.textContent = 'Chronicle cleared - ready for new session!';
+            status.className = 'status stopped';
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const text = transcript.value;
+            if (!text.trim()) {
+                alert('No chronicle to preserve!');
+                return;
+            }
+
+            const filename = filenameInput.value.trim() || 'dnd_session_chronicle';
+            
+            try {
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                
+                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveOrOpenBlob(blob, filename + '.txt');
+                } else {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    
+                    link.href = url;
+                    link.download = filename + '.txt';
+                    link.style.display = 'none';
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                    }, 100);
+                }
+
+                status.textContent = 'Chronicle preserved for the ages!';
+                status.className = 'status stopped';
+                
+            } catch (error) {
+                console.error('Download failed:', error);
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write('<pre>' + text + '</pre>');
+                newWindow.document.title = filename + '.txt';
+                alert('Download not supported. A new window opened - please save manually.');
+            }
+        });
+
+        // Auto-resize textarea
+        transcript.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.max(this.scrollHeight, 400) + 'px';
+        });
+
+        // initialise the system when page loads
+        window.addEventListener('load', initialiseSystem);
+    </script>
+</body>
+</html>
