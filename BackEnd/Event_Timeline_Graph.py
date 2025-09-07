@@ -1,12 +1,5 @@
 from __future__ import annotations
-
-class Event:
-    def __init__(self, summary : str, characters: [str], places : [str], themes : [str], tags : [str]):
-        self.summary = summary
-        self.characters = characters
-        self.places = places
-        self.themes = themes
-        self.tags = tags
+from Event import Event
 
 class Orb:
     def __init__(self, event : Event, past : Orb = None, future : Orb = None):
