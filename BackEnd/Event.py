@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 class Event(BaseModel):
+    id: int
     summary: str
     characters: list[str]
     places: list[str]

@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from Event import Event
 
 # Before doing the database more thoroughly,
-# I will test FastAPI using a regular python list of events
+# I will test FastAPI using a python dict of events
 
-database: dict[Event] = {}
+database: dict[int:Event] = {}
+
+database[0] = Event(id= 0, summary="he dieded", characters=["Joe Biden"], places=["USA", "Whitehouse"], themes=["Loss", "A Deep sense of mourning"], tags=[])
 
 app = FastAPI()
 
@@ -26,15 +28,24 @@ app.add_middleware(
 
 @app.get("/")
 async def read_root() -> str:
-    return "Welcome to the thing!!"
+    return "Welcome to the thing!"
 
 
-@app.get("/database")
-async def get_database() -> dict[Event]:
+@app.get("/event")
+async def get_database() -> dict:
     return database
 
 
-@app.post("/todo", tags=["todos"])
-async def add_event(event: Event) -> str:
-    database.append(event)
-    return "event added."
+@app.put("/event")
+async def add_event(event: Event):
+    database[event.id] = event
+    return event
+
+
+@app.delete("/event")
+async def pop_event(id: int):
+    deleting = database[id]
+    database.pop(id)
+    return deleting
+
+
