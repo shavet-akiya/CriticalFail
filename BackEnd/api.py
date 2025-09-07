@@ -1,16 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from Event import Event
 
-todos = [
-    {
-        "id": "1",
-        "item": "Stuff here"
-    },
-    {
-        "id": "2",
-        "item": "Yet more stuff here!"
-    }
-]
+# Before doing the database more thoroughly,
+# I will test FastAPI using a regular python list of events
+
+database: dict[Event] = {}
 
 app = FastAPI()
 
@@ -29,19 +24,17 @@ app.add_middleware(
 )
 
 
-@app.get("/", tags=["root"])
-async def read_root() -> dict:
-    return {"message": "Welcome to your todo list."}
+@app.get("/")
+async def read_root() -> str:
+    return "Welcome to the thing!!"
 
 
-@app.get("/todo", tags=["todos"])
-async def get_todos() -> dict:
-    return { "data": todos }
+@app.get("/database")
+async def get_database() -> dict[Event]:
+    return database
 
 
 @app.post("/todo", tags=["todos"])
-async def add_todo(todo: dict) -> dict:
-    todos.append(todo)
-    return {
-        "data": { "Todo added." }
-    }
+async def add_event(event: Event) -> str:
+    database.append(event)
+    return "event added."
