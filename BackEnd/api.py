@@ -27,7 +27,7 @@ app.add_middleware(
 
 
 @app.get("/")
-async def read_root() -> str:
+async def read_root() -> dict:
     return "Welcome to the thing!"
 
 
