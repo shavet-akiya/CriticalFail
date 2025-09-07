@@ -13,7 +13,7 @@ except Exception:  # pragma: no cover - dev env without httpx
 
 app = FastAPI()
 
-# Allow CORS for local UI/dev servers
+# Allow CORS for local UI/dev servers 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
