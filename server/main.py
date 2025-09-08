@@ -1,10 +1,18 @@
 import sys
-from fastapi import FastAPI #may be cooked
-from pydantic import BaseModel
-import random
-from fastapi.middleware.cors import CORSMiddleware
 import os
-from typing import Optional
+import json
+from fastapi import FastAPI  # may be cooked
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import Optional, List
+import traceback
+
+
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+from llm import dnd_ai
+
 
 try:
     import httpx  # type: ignore
@@ -13,7 +21,7 @@ except Exception:  # pragma: no cover - dev env without httpx
 
 app = FastAPI()
 
-# Allow CORS for local UI/dev servers 
+# Allow CORS for local UI/dev servers
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -29,99 +37,54 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# call llm stuff here
+# Keep last N sessions in memory
+MAX_SESSIONS = 10
+recent_sessions: List[dict] = []
 
 
-
-# current_number: Optional[int] = None
-
-
-# class NumberUpdate(BaseModel):
-#     value: int
+class TranscriptInput(BaseModel):
+    transcript: str
 
 
-# @app.get("/number")
-# async def get_number():
-#     global current_number
-#     if current_number is None:
-#         try:
-#             current_number = await ask_ollama_for_number()
-#         except Exception:
-#             current_number = random.randint(1, 10)
-#     return {"value": current_number}
+@app.post("/sessions")
+async def process_session(input_data: TranscriptInput):
+    try:
+        structured_json = dnd_ai.extract_session_data(input_data.transcript)
+        # Save in memory (prepend so newest is first)
+        recent_sessions.insert(0, structured_json)
+        if len(recent_sessions) > MAX_SESSIONS:
+            recent_sessions.pop()
+        return structured_json
+    except Exception as e:
+        # Print full traceback for debugging inside Docker
+        traceback.print_exc()
+
+        # If the error is from Ollama connection or response
+        if hasattr(e, "request") or hasattr(e, "response"):
+            return JSONResponse(
+                status_code=502,
+                content={
+                    "error": "Ollama API error",
+                    "details": str(e),
+                },
+            )
+
+        # Otherwise return a generic error
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "Failed to process session",
+                "details": str(e),
+            },
+        )
 
 
-# @app.post("/number")
-# async def set_number(update: NumberUpdate):
-#     global current_number
-#     current_number = update.value
-#     return {"value": current_number}
+@app.get("/sessions")
+async def list_sessions():
+    print("Current sessions:", recent_sessions)
+    return recent_sessions
 
 
-# async def ensure_ollama_model(base_url: str, model: str) -> None:
-#     if httpx is None:
-#         return
-#     async with httpx.AsyncClient(timeout=None) as client:
-#         # Pull model (no stream to wait until done)
-#         try:
-#             resp = await client.post(
-#                 f"{base_url}/api/pull",
-#                 json={"model": model, "stream": False},
-#             )
-#             resp.raise_for_status()
-#         except Exception:
-#             # Ignore pull failures (may already exist)
-#             pass
-
-
-# async def ask_ollama_for_number() -> int:
-#     base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-#     model = os.getenv("OLLAMA_MODEL", "gemma3")
-#     prompt = (
-#         "Pick a single integer between 1 and 10 inclusive. "
-#         "Respond with only the number, no words."
-#     )
-#     if httpx is None:
-#         return random.randint(1, 10)
-
-#     # Ensure the model exists (pull if needed)
-#     await ensure_ollama_model(base_url, model)
-
-#     async with httpx.AsyncClient(timeout=30) as client:
-#         resp = await client.post(
-#             f"{base_url}/api/generate",
-#             json={"model": model, "prompt": prompt, "stream": False},
-#         )
-#         resp.raise_for_status()
-#         data = resp.json()
-#         text = str(data.get("response", "")).strip()
-#         try:
-#             n = int(text)
-#         except ValueError:
-#             # Fallback: extract any digits
-#             digits = "".join(ch for ch in text if ch.isdigit())
-#             n = int(digits) if digits else random.randint(1, 10)
-#         # Clamp to [1,10]
-#         return max(1, min(10, n))
-
-
-# @app.post("/number/generate")
-# async def generate_number():
-#     global current_number
-#     try:
-#         n = await ask_ollama_for_number()
-#         current_number = n
-#         return {"value": current_number, "source": "ollama"}
-#     except Exception as e:
-#         # Fall back to random if ollama fails
-#         current_number = random.randint(1, 10)
-#         return {"value": current_number, "source": "fallback", "error": str(e)}
-
-
-# @app.on_event("startup")
-# async def init_number_from_ollama():
-#     # Try to set initial number from ollama; ignore errors
-#     try:
-#         await generate_number()
-#     except Exception:
-#         pass
+@app.get("/")
+async def root():
+    return {"message": "FastAPI D&D server is running!"}
