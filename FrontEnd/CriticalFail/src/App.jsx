@@ -1,13 +1,14 @@
-import Events from "./Backend Integration/Events.tsx"
+import { ChakraProvider } from '@chakra-ui/react'
+import { defaultSystem } from "@chakra-ui/react"
+import Todos from "./Backend Integration/Events.tsx"
 
 function App() {
 
   return (
-    <>
-    <h1>Welcome!!</h1>
-    <Events />
-    </>
+    <ChakraProvider value={defaultSystem}>
+      <Todos />
+    </ChakraProvider>
   )
 }
 
-export default App
+export default App;
