@@ -1,5 +1,4 @@
-# syntax=docker/dockerfile:1
-
+# server/Dockerfile
 FROM python:3.13-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -7,12 +6,22 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install runtime dependencies (from pyproject: fastapi[standard])
+# Install FastAPI and httpx
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir "fastapi[standard]>=0.116.1" httpx
 
-# Copy application source
+COPY server/requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy server code
 COPY ./server /app/server
+
+# Copy LLM folder
+COPY ./llm /app/llm
+
+# Set PYTHONPATH so server can import llm
+ENV PYTHONPATH=/app
 
 EXPOSE 8000
 
