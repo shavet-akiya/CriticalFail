@@ -5,9 +5,28 @@ from Event import Event
 # Before doing the database more thoroughly,
 # I will test FastAPI using a python dict of events
 
-database: dict[int:Event] = {}
+database: list[Event] = []
 
-database[0] = Event(id= 0, summary="he dieded", characters=["Joe Biden"], places=["USA", "Whitehouse"], themes=["Loss", "A Deep sense of mourning"], tags=[])
+database.append(
+    Event(
+        id= 0, 
+        summary="he dieded", 
+        characters=["Joe Biden"], 
+        places=["USA", "Whitehouse"], 
+        themes=["Loss", "A Deep sense of mourning"], 
+        tags=[]
+    )
+)
+
+database.append(
+    Event(
+        id= 1, 
+        summary="he got revived by a wizard", 
+        characters=["Joe Biden", "an awesome wizard"],
+        places=["USA", "Whitehouse"], 
+        themes=["jubilee", "mirth", "rebirth"], 
+        tags=["idk"])
+)
 
 app = FastAPI()
 
@@ -28,24 +47,15 @@ app.add_middleware(
 
 @app.get("/")
 async def read_root() -> dict:
-    return "Welcome to the thing!"
+    return {"message": "Welcome to the thing!"}
 
 
 @app.get("/event")
 async def get_database() -> dict:
-    return database
+    return {"data": database}
 
 
 @app.put("/event")
 async def add_event(event: Event):
-    database[event.id] = event
+    database.append(event)
     return event
-
-
-@app.delete("/event")
-async def pop_event(id: int):
-    deleting = database[id]
-    database.pop(id)
-    return deleting
-
-

@@ -1,4 +1,21 @@
 import React, { useEffect, useState, createContext, useContext } from "react";
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  Input,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+  DialogTrigger,
+  Stack,
+  Text,
+  DialogActionTrigger,
+} from "@chakra-ui/react";
 
 // Should match BackEnd\Event.py
 interface Event {
@@ -10,29 +27,38 @@ interface Event {
     tags: [string];
 }
 
-interface Message {
-  message: string;
-}
-
-const TodosContext = createContext({
-  todos: [], fetchTodos: () => {}
+const EventsContext = createContext({
+  events: [], fetchEvents: () => {}
 })
 
-export default function Todos() {
-  const [todos, setTodos] = useState([])
-  const fetchTodos = async () => {
-    const response = await fetch("http://localhost:8000")
-    const todos = await response.json()
-    setTodos(todos.data)
+export default function Events() {
+  const [events, setEvents] = useState([])
+  const fetchEvents = async () => {
+    const response = await fetch("http://localhost:8000/event")
+    const events = await response.json()
+    setEvents(events.data)
   }
-  useEffect(() => {
-    fetchTodos()
-  }, [])
+  
+  useEffect(() => {fetchEvents()}, [])
 
   return (
-    <>
-    Hii
-    {todos}
-    </>
+    <EventsContext.Provider value={{events, fetchEvents}}>
+      <Container maxW="container.xl" pt="100px">
+        Here begins the events
+        <Stack gap={5}>
+          {events.map((event: Event) => (
+            <>
+            Look, its event {event.id}!!!
+              <dl>
+                <dt><b>Summary</b></dt><dd>- {event.summary}</dd>
+                <dt><b>Characters</b></dt><dd>- {event.characters.join(' and ')}</dd>
+                <dt><b>Places</b></dt><dd>- {event.places.join(', ')}</dd>
+                <dt><b>Themes</b></dt><dd>- {event.themes.join(', ')}</dd>
+              </dl>
+            </>
+          ))}
+        </Stack>
+      </Container>
+    </EventsContext.Provider>
   )
 }
