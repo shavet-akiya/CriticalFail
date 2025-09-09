@@ -5,25 +5,23 @@ from Event import Event
 # Before doing the database more thoroughly,
 # I will test FastAPI using a python dict of events
 
-database: list[Event] = []
+database: dict[int: Event] = {}
 
-database.append(
+database[0] = (
     Event(
-        id= 0, 
-        summary="he dieded", 
-        characters=["Joe Biden"], 
-        places=["USA", "Whitehouse"], 
+        summary="he died", 
+        characters=["Jim"], 
+        places=["USA", "Jim's house"], 
         themes=["Loss", "A Deep sense of mourning"], 
         tags=[]
     )
 )
 
-database.append(
+database[1] = (
     Event(
-        id= 1, 
         summary="he got revived by a wizard", 
-        characters=["Joe Biden", "an awesome wizard"],
-        places=["USA", "Whitehouse"], 
+        characters=["Jim", "an awesome wizard"],
+        places=["USA", "Jim's house"], 
         themes=["jubilee", "mirth", "rebirth"], 
         tags=["idk"])
 )
@@ -50,12 +48,56 @@ async def read_root() -> dict:
     return {"message": "Welcome to the thing!"}
 
 
+def validate(event: Event, characters, places, themes, tags):
+    if characters:
+        for character in characters:
+            if character not in event.characters:
+                return False
+    
+    if places:
+        for place in places:
+            if place not in event.places:
+                return False
+
+    if themes:  
+        for theme in themes:
+            if theme not in event.themes:
+                return False
+    
+    if tags:
+        for tag in tags:
+            if tag not in event.tags:
+                return False
+    
+    return True
+
 @app.get("/event")
-async def get_database() -> dict:
-    return {"data": database}
+async def search(
+    characters: list[str] | None=None, 
+    places: list[str] | None=None, 
+    themes: list[str] | None=None,
+    tags: list[str] | None=None
+    ) -> dict:
+    returning = []
+    for event in database.values():
+        if validate(event, characters, places, themes, tags):
+            returning.append(event)
+    return {"data": returning}
+
+
+@app.post("/event")
+async def add_event(event: Event, at_id: int, infront: bool):
+    database[at_id] = event
+    return {"data": "Event added."}
+
+
+@app.delete("/event")
+async def remove_event(event_id: int):
+    removing = database[event_id]
+    database.pop(event_id)
+    return {"data": removing}
 
 
 @app.put("/event")
-async def add_event(event: Event):
-    database.append(event)
-    return event
+async def edit_event(new_event: Event, event_id: int):
+    database[event_id]
