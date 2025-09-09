@@ -1,3 +1,7 @@
 export default function CampaignSummary() {
-  return <div>Campaign Summary</div>;
+  return (
+    <div>
+      <h1>Start session</h1>
+    </div>
+  );
 }

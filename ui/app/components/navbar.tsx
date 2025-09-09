@@ -17,20 +17,15 @@ function NavBar() {
             <Link href="/timeline">Timeline</Link>
           </li>
           <li>
-            <a>Characters</a>
+            <Link href="/characters">Characters</Link>
           </li>
           <li>
-            <details>
-              <summary>Start Session</summary>
-              <ul className="bg-base-100 rounded-t-none p-2">
-                <li>
-                  <a>Upload recording</a>
-                </li>
-                <li>
-                  <a className="text-red-400">Start recording</a>
-                </li>
-              </ul>
-            </details>
+            <Link href="/locations">Locations</Link>
+          </li>
+          <li>
+            <Link href="/new_session" className="border-1">
+              New Session
+            </Link>
           </li>
         </ul>
       </div>
@@ -38,4 +33,4 @@ function NavBar() {
   );
 }
 
-export default NavBar; // Default export
+export default NavBar;
