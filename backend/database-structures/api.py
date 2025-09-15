@@ -73,8 +73,9 @@ async def search(
     characters: list[str] | None=None, 
     places: list[str] | None=None, 
     themes: list[str] | None=None,
-    tags: list[str] | None=None
+    tags: list[str] | None=None,
     ) -> dict:
+
     returning = []
     for event in database.values():
         if validate(event, characters, places, themes, tags):
