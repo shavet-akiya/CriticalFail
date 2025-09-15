@@ -6,3 +6,4 @@ class Event(BaseModel):
     places: list[str]
     themes: list[str]
     tags: list[str]
+    id: int | None = None

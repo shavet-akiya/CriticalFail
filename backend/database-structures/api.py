@@ -1,27 +1,25 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from Event import Event
+from Event_Timeline_Graph import Timeline
 
-database: dict[int: Event] = {}
+# event = Event(
+#         summary="he died", 
+#         characters=["Jim"], 
+#         places=["USA", "Jim's house"], 
+#         themes=["Loss", "A Deep sense of mourning"], 
+#         tags=[]
+#     )
 
-database[0] = (
-    Event(
-        summary="he died", 
-        characters=["Jim"], 
-        places=["USA", "Jim's house"], 
-        themes=["Loss", "A Deep sense of mourning"], 
-        tags=[]
-    )
-)
+# event2 = Event(
+#         summary="he got revived by a wizard", 
+#         characters=["Jim", "an awesome wizard"],
+#         places=["USA", "Jim's house"], 
+#         themes=["jubilee", "mirth", "rebirth"], 
+#         tags=["idk"]
+# )
 
-database[1] = (
-    Event(
-        summary="he got revived by a wizard", 
-        characters=["Jim", "an awesome wizard"],
-        places=["USA", "Jim's house"], 
-        themes=["jubilee", "mirth", "rebirth"], 
-        tags=["idk"])
-)
+timeline = Timeline("database-structures/database/")
 
 app = FastAPI()
 
@@ -77,25 +75,24 @@ async def search(
     ) -> dict:
 
     returning = []
-    for event in database.values():
+    for event in timeline:
         if validate(event, characters, places, themes, tags):
             returning.append(event)
     return {"data": returning}
 
 
 @app.post("/event")
-async def add_event(event: Event, at_id: int, infront: bool):
-    database[at_id] = event
+async def add_event(event: Event, id: int, infront: bool):
+    timeline.write_future(event=event, id=id)
     return {"data": "Event added."}
 
 
 @app.delete("/event")
-async def remove_event(event_id: int):
-    removing = database[event_id]
-    database.pop(event_id)
-    return {"data": removing}
+async def remove_event(id: int):
+    timeline.burn_record(id)
+    return {"data": "Event removed"}
 
 
 @app.put("/event")
-async def edit_event(new_event: Event, event_id: int):
-    database[event_id] = new_event
+async def edit_event(new_event: Event, id: int):
+    timeline.change_history(event=event, id=id)
