@@ -1,4 +1,7 @@
+"use client"
 import CharacterCard from "@/components/characterCard";
+import { useFilter } from "@/components/handlers/FilterContext";
+
 
 const characters = [
   {
@@ -32,11 +35,22 @@ const characters = [
 ]
 
 export default function Characters() {
+  const { filter } = useFilter();
+
+  const filteredCharacters = characters.filter((character) => {
+    if (filter === "all") return true;
+    if (filter === "players") return !character.npc;
+    if (filter === "npc") return character.npc;
+    return true;
+  });
+
   return (
-    <div className="p-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16">
-      {characters.map((character, index) => (
-        <CharacterCard key={index} character={character} />
-      ))}
-    </div>
+    <>
+      <div className="p-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16">
+        {filteredCharacters.map((character, index) => (
+          <CharacterCard key={index} character={character} />
+        ))}
+      </div>
+    </>
   );
 }
