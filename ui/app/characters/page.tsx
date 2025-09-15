@@ -1,10 +1,11 @@
 "use client"
 import CharacterCard from "@/components/characterCard";
-import { useFilter } from "@/components/handlers/FilterContext";
+import { useFilter } from "@/handlers/FilterContext";
 
-
+// ids for when we inevitably need to click into characters
 const characters = [
   {
+    "id": 1,
     "name": "Thalindra Moonshadow",
     "class": "Rogue",
     "race": "Half-Elf",
@@ -12,6 +13,7 @@ const characters = [
     "npc": false
   },
   {
+    "id": 2,
     "name": "Brom Ironfist",
     "class": "Cleric",
     "race": "Dwarf",
@@ -19,6 +21,7 @@ const characters = [
     "npc": true
   },
   {
+    "id": 3,
     "name": "Seraphina Dawnsworn",
     "class": "Paladin",
     "race": "Human",
@@ -26,6 +29,7 @@ const characters = [
     "npc": true
   },
   {
+    "id": 4,
     "name": "Zyren the Ashborn",
     "class": "Warlock",
     "race": "Tiefling",

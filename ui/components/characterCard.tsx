@@ -21,7 +21,7 @@ export default function CharacterCard({ character }: { character: Character }) {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold">{character.name}</h2>
-            <p className="italic">{character.class} / {character.race} </p>
+            <p> {character.race} / {character.class} </p>
           </div>
           <div>
             <p>AC {character.armourClass}</p>

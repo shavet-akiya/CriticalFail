@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FilterProvider, useFilter } from "@/components/handlers/FilterContext";
+import { FilterProvider, useFilter } from "@/handlers/FilterContext";
 
 
 
