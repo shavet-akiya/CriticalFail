@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { FilterProvider, useFilter } from "@/handlers/FilterContext";
+import { FilterProvider, useFilter } from "@/contexts/FilterContext";
+import { CharacterProvider } from "@/contexts/CharacterContext";
 
 
 
@@ -13,14 +14,14 @@ export default function CharactersLayout({
     const [open, setOpen] = useState(false);
 
     return (
-        <FilterProvider>
-            <div className="relative min-h-screen">
-                {children}
-
-                {/* FAB */}
-                <FAB open={open} setOpen={setOpen} />
-            </div>
-        </FilterProvider>
+        <CharacterProvider>
+            <FilterProvider>
+                <div className="relative min-h-screen">
+                    {children}
+                    <FAB open={open} setOpen={setOpen} />
+                </div>
+            </FilterProvider>
+        </CharacterProvider>
     );
 }
 
