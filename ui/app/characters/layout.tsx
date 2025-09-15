@@ -16,7 +16,7 @@ export default function CharactersLayout({
     return (
         <CharacterProvider>
             <FilterProvider>
-                <div className="relative min-h-screen">
+                <div className="relative min-h-screen mt-8">
                     {children}
                     <FAB open={open} setOpen={setOpen} />
                 </div>
