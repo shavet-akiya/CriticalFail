@@ -1,21 +1,6 @@
 "use client";
 import { createContext, useContext, ReactNode, useState } from "react";
-
-type Character = {
-    id: number;
-    name: string;
-    class: string;
-    race: string;
-    armourClass: number;
-    npc: boolean;
-    hp: number;
-    str: number;
-    dex: number;
-    con: number;
-    int: number;
-    wis: number;
-    cha: number;
-};
+import { Character } from "@/types";
 
 interface CharacterContextType {
     currentCharacter: Character | null;
