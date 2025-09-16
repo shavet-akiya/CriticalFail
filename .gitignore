@@ -59,7 +59,8 @@ cover/
 
 /ui/.next
 
-/ui/node_modules
+/ui/node_modules/
+ui/node_modules/
 
 # Django stuff:
 *.log
