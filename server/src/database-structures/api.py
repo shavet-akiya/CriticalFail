@@ -95,4 +95,4 @@ async def remove_event(id: int):
 
 @app.put("/event")
 async def edit_event(new_event: Event, id: int):
-    timeline.change_history(event=event, id=id)
+    timeline.change_history(event=new_event, id=id)
