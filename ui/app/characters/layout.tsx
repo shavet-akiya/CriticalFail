@@ -50,7 +50,7 @@ function FAB({ open, setOpen }: { open: boolean; setOpen: (o: boolean) => void }
             <button
                 tabIndex={0}
                 role="button"
-                className="btn btn-lg rounded-md btn-success shadow-lg"
+                className="btn btn-lg rounded-md btn-success shadow-lg bg-white border border-gray-300"
                 onClick={() => setOpen(!open)}
             >
                 Filter
