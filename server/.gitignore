@@ -11,3 +11,6 @@ wheels/
 
 node_modules/
 .next/
+
+# ignore the data
+src/database-structures/database
