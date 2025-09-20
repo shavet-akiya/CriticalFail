@@ -1,9 +1,9 @@
 from __future__ import annotations
-from Event import Event
+from Structures import Event
 from pydantic import BaseModel
 import json
 import os
-
+from Table import Metadata
 
 class OrbModel(BaseModel):
     id: int
@@ -12,46 +12,15 @@ class OrbModel(BaseModel):
     future: int | None = None
 
 
-    # def write_future(self, event : Event):
-    #     new_orb = Orb(event, self, self.future)
-    #     if self.future:
-    #         self.future.past = new_orb
-    #     self.future = new_orb
-    #     return new_orb
-
-    # def write_past(self, event : Event):
-    #     new_orb = Orb(event, self.past, self)
-    #     if self.past:
-    #         self.past.future = new_orb
-    #     self.past = new_orb
-    #     return new_orb
-
-
 class TimelineMetadataModel(BaseModel):
     start: int | None = None
     end: int | None = None
     length: int = 0
     next_id: int = -1
 
-
-class TimelineMetadata:
+class TimelineMetadata(Metadata[TimelineMetadataModel]):
     def __init__(self, address):
-        self.address = address + "metadata"
-
-    def _get_metadata(self) -> TimelineMetadataModel:
-        try:
-            file = open(self.address, "r")
-            jsonfile = json.load(file)
-            return TimelineMetadataModel(**jsonfile)
-        except FileNotFoundError:
-            metadata = TimelineMetadataModel()
-            file = open(self.address, "w")
-            file.write(metadata.model_dump_json())
-            return metadata
-        
-    def _set_metadata(self, metadata: TimelineMetadataModel):
-        file = open(self.address, "w")
-        file.write(metadata.model_dump_json())
+        super().__init__(address, TimelineMetadataModel)
 
     def get_start(self):
         data = self._get_metadata()
@@ -80,17 +49,13 @@ class TimelineMetadata:
         data.length += i
         self._set_metadata(data)
 
-    def get_next_id(self) -> int:
-        data = self._get_metadata()
-        data.next_id += 1
-        self._set_metadata(data)
-        return data.next_id
-
 
 class Timeline:
     def __init__(self, address):
-        self.address = address + "timeline/"
+        self.address = address
         self._data = TimelineMetadata(self.address)
+        os.makedirs(self.address, exist_ok=True) 
+        os.makedirs(self.address + "events/", exist_ok=True) 
 
     def __iter__(self):
         self.pointer = self._data.get_end()
@@ -156,17 +121,26 @@ class Timeline:
         orb.event = event
         self._save_orb(orb)
 
+    ''' TODO this doesn't update the metata to get a new start if you delete the start
+    '''
     def burn_record(self, id: int):
         marked_orb = self.get_orb(id)
         if marked_orb.future is not None:
             future_orb = self.get_orb(marked_orb.future)
             future_orb.past = marked_orb.past
             self._save_orb(future_orb)
+        else:
+            # update end
+            pass
 
         if marked_orb.past is not None:
             past_orb = self.get_orb(marked_orb.past)
             past_orb.future = marked_orb.future
             self._save_orb(past_orb)
+        else:
+            # update future
+            pass
 
         os.remove(self._event_filename(id))
         self._data.add_length(-1)
+
