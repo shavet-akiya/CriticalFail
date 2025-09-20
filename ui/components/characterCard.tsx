@@ -11,7 +11,16 @@ export default function CharacterCard({ character }: { character: Character }) {
       href={`/characters/${character.id}`}
       onClick={() => setCurrentCharacter(character)}
       className="block">
-      <div className="card bg-base-100 w-full max-w-sm shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer">
+      <div className="card bg-base-100 w-full max-w-sm shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer group">
+          <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+            <button className="btn btn-primary rounded-full w-auto">
+              <img
+              src="/svg/edit.svg"
+              className="fill-red">
+              </img>
+              Edit
+            </button>
+        </div>
         <div>
           <img
             className="rounded-t-lg"
@@ -32,6 +41,7 @@ export default function CharacterCard({ character }: { character: Character }) {
         </div>
       </div>
     </Link>
+    
 
   );
 }
