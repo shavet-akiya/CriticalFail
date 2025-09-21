@@ -1,7 +1,7 @@
 "use client"
 import { useCharacter } from "@/contexts/CharacterContext";
 import Link from "next/link"
-import { Character } from "@/types";
+import { Character } from "@/types/types";
 
 export default function CharacterCard({ character }: { character: Character }) {
   const { setCurrentCharacter } = useCharacter();

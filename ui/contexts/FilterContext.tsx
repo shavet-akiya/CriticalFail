@@ -1,17 +1,16 @@
 "use client";
 import { createContext, useContext, useState, ReactNode } from "react";
-
-type Filter = "all" | "players" | "npc";
+import { CharacterFilter } from "@/types/types"
 
 interface FilterContextType {
-    filter: Filter;
-    setFilter: (filter: Filter) => void;
+    filter: CharacterFilter;
+    setFilter: (filter: CharacterFilter) => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
 export function FilterProvider({ children }: { children: ReactNode }) {
-    const [filter, setFilter] = useState<Filter>("all");
+    const [filter, setFilter] = useState<CharacterFilter>("all");
     return (
         <FilterContext.Provider value={{ filter, setFilter }}>
             {children}

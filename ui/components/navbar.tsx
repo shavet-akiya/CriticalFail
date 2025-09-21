@@ -9,12 +9,12 @@ function NavBar() {
         </Link>
       </div>
       <div className="flex-none">
-        <ul className="menu menu-horizontal px-1">
+        <ul className="menu menu-horizontal px-1 gap-4">
           <li>
             <Link href="/summary">Campaign Summary</Link>
           </li>
           <li>
-            <Link href="/timeline">Timeline</Link>
+            <Link href="/timeline">Event Timeline</Link>
           </li>
           <li>
             <Link href="/characters">Characters</Link>
