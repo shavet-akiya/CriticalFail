@@ -6,18 +6,18 @@ import chromadb
 
 class Database:
     def __init__(self, address):
-        self.address = address + "DND_database/"
-
-        chroma_client = chromadb.HttpClient(host='localhost', port=8011)
+        self.dnd_database = chromadb.HttpClient(host='localhost', port=8011)
 
         self.collections = {}
-        tables = ["events", "characters", "locations", "sessions", "tags"]
+        tables = ["timeline", "events", "characters", "locations", "sessions", "tags", "timeline_meta"]
 
         for table in tables:
-                self.collections[table] = self.chroma_client.get_or_create_collection(
+                self.collections[table] = self.dnd_database.get_or_create_collection(
                 name=table,
             )
-                
+
+        self.timeline = self.collections["timeline"]
+        self.timeline_meta = self.collections["timeline_meta"]
         self.events = self.collections["events"]
         self.characters = self.collections["characters"]
         self.locations = self.collections["locations"]
@@ -25,7 +25,7 @@ class Database:
         self.tags = self.collections["tags"]
 
         # i dont know what to do with this at all
-        self.timeline = None
+        
 
 
         # os.makedirs(self.address, exist_ok=True)
