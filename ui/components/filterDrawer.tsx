@@ -1,78 +1,77 @@
-// ui/components/filterDrawer.tsx
-import { CampaignTags } from "@/types/types";
+"use client";
 
-const allTags: CampaignTags[] = [
-    "combat", "exploring", "player-to-player interaction", "npc interaction",
-    "resting", "investigating", "world expansion", "character expansion",
-    "lore expansion", "misc"
-];
+import { useMemo } from "react";
+import { events } from "@/types/mockData";
 
-type FilterDrawerProps = {
-    characterFilter: "all" | "players" | "npc";
-    setCharacterFilter: (value: "all" | "players" | "npc") => void;
-    tagFilter: string[];
-    setTagFilter: (value: string[]) => void;
-};
+interface FilterDrawerProps {
+    filters: string[];
+    setFilters: (filters: string[]) => void;
+}
 
-export default function FilterDrawer({
-    characterFilter,
-    setCharacterFilter,
-    tagFilter,
-    setTagFilter,
-}: FilterDrawerProps) {
-    const toggleTag = (tag: string) => {
-        if (tagFilter.includes(tag)) {
-            setTagFilter(tagFilter.filter((t) => t !== tag));
-        } else {
-            setTagFilter([...tagFilter, tag]);
-        }
+export default function FilterDrawer({ filters, setFilters }: FilterDrawerProps) {
+    const allTags = useMemo(() => {
+        const tagSet = new Set<string>();
+        events.forEach((e) => e.tags.forEach((t) => tagSet.add(t)));
+        return Array.from(tagSet);
+    }, []);
+
+    const toggleFilter = (tag: string) => {
+        setFilters(
+            filters.includes(tag)
+                ? filters.filter((f) => f !== tag)
+                : [...filters, tag]
+        );
+    };
+
+    const openModal = () => {
+        const modal = document.getElementById("my_modal_1") as HTMLDialogElement;
+        if (modal) modal.showModal();
     };
 
     return (
-        <aside className="bg-base-200 p-4 border-r border-base-300">
-            <h2 className="text-lg font-bold mb-4">Filters</h2>
+        <div className="p-4">
 
-            {/* Character Filter */}
-            <div className="mb-6">
-                <h3 className="font-semibold mb-2">Characters</h3>
-                <div className="flex flex-col gap-2">
-                    {["all", "players", "npc"].map((option) => (
-                        <label key={option} className="cursor-pointer">
-                            <input
-                                type="radio"
-                                name="characterFilter"
-                                className="radio mr-2"
-                                checked={characterFilter === option}
-                                onChange={() => setCharacterFilter(option as "all" | "players" | "npc")}
-                            />
-                            {option}
-                        </label>
-                    ))}
-                </div>
-            </div>
-
-            {/* Tags Filter */}
-            <div className="mb-6">
-                <h3 className="font-semibold mb-2">Tags</h3>
-                <div className="flex flex-col gap-1">
-                    {allTags.map((tag) => (
-                        <label key={tag} className="cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="checkbox mr-2"
-                                checked={tagFilter.includes(tag)}
-                                onChange={() => toggleTag(tag)}
-                            />
-                            {tag}
-                        </label>
-                    ))}
-                </div>
-            </div>
-
+            {/* filtering tags + joins on the last */}
             <div>
-                <h3 className="font-semibold mb-2">Themes</h3>
-                <p className="text-sm opacity-70">Coming soon</p>
+                {filters.map((tag) => (
+                    <span
+                        key={tag}
+                        className="btn btn-outline rounded-lg"
+                        onClick={() => toggleFilter(tag)}> {tag}  ✕ </span>
+                ))
+                }
+
+                <button className="btn btn-outline rounded-lg" onClick={openModal}>
+                    + filter tag
+                </button>
             </div>
-        </aside>
+
+            <dialog id="my_modal_1" className="modal">
+                <div className="modal-box">
+                    <h3 className="font-bold text-lg mb-2">Select Tags</h3>
+
+                    <div className="flex flex-wrap gap-2">
+                        {allTags.map((tag) => (
+                            <span
+                                key={tag}
+                                className={`badge cursor-pointer ${filters.includes(tag)
+                                    ? "badge-secondary"
+                                    : "badge-outline"
+                                    }`}
+                                onClick={() => toggleFilter(tag)}
+                            >
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+
+                    <div className="modal-action">
+                        <form method="dialog">
+                            <button className="btn">Close</button>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+        </div>
     );
 }

@@ -1,4 +1,3 @@
-// ui/timeline/page.tsx
 "use client";
 import { useState } from "react";
 import { events } from "@/types/mockData";
@@ -12,7 +11,8 @@ export default function Timeline() {
 
   // filtering 
   const filteredEvents = events.filter((event) => {
-    if (tagFilter.length > 0 && !event.tags.some((tag) => tagFilter.includes(tag))) {
+    // and logic
+    if (tagFilter.length > 0 && !tagFilter.every((tag) => event.tags.includes(tag))) {
       return false;
     }
     return true;
@@ -21,12 +21,7 @@ export default function Timeline() {
   return (
     <div className="w-full">
       <div className="grid grid-cols-[250px_1fr] min-h-screen">
-        <FilterDrawer
-          characterFilter={characterFilter}
-          setCharacterFilter={setCharacterFilter}
-          tagFilter={tagFilter}
-          setTagFilter={setTagFilter}
-        />
+        <FilterDrawer filters={tagFilter} setFilters={setTagFilter} />
 
         <main className="p-6">
           <h1 className="text-2xl font-bold mb-6">Timeline</h1>
@@ -35,7 +30,6 @@ export default function Timeline() {
           ))}
         </main>
       </div>
-
     </div>
   );
 }
