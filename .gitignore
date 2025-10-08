@@ -151,6 +151,14 @@ ENV/
 env.bak/
 venv.bak/
 
+**/venv
+
+**/env
+
+**/myenv/
+
+**/myenv
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -216,3 +224,8 @@ __marimo__/
 
 node_modules/
 .next/
+
+server/DND_Database
+
+server/src/database-structures/main_alt.py
+server/src/chroma

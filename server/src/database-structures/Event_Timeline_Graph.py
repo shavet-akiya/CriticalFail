@@ -2,7 +2,6 @@ from __future__ import annotations
 from Structures import Event
 from pydantic import BaseModel
 import json
-import os
 from Table import Metadata
 import chromadb
 
@@ -59,10 +58,6 @@ class Timeline:
         self.timeline_meta = self.dnd_database.get_or_create_collection(name="timeline_meta")
 
         self.initialise_timeline()
-        # self.address = address
-        # self._data = TimelineMetadata(self.address)
-        # os.makedirs(self.address, exist_ok=True) 
-        # os.makedirs(self.address + "events/", exist_ok=True) 
 
 
     def initialise_timeline(self):
@@ -108,10 +103,6 @@ class Timeline:
             event = orb.event
             event.id = orb.id
             return event
-
-    def _event_filename(self, id: int):
-        return self.address + "events/" + str(id)
-
 
     def _save_orb(self, orb: OrbModel):
         id = [str(orb.id)]
@@ -189,28 +180,32 @@ class Timeline:
         orb.event = event
         self._save_orb(orb)
 
-    ''' TODO this doesn't update the metata to get a new start if you delete the start
-    '''
     def burn_record(self, id: int):
+        state = self.get_timeline_state()
+
+        if state.length <= 1:
+            self.reset_timeline()
+            return
+
         marked_orb = self.get_orb(id)
         if marked_orb.future is not None:
             future_orb = self.get_orb(marked_orb.future)
             future_orb.past = marked_orb.past
             self._save_orb(future_orb)
         else:
-            # update end
-            pass
+            state.end = marked_orb.past
 
         if marked_orb.past is not None:
             past_orb = self.get_orb(marked_orb.past)
             past_orb.future = marked_orb.future
             self._save_orb(past_orb)
         else:
-            # update future
-            pass
+            state.start = marked_orb.future
 
-        os.remove(self._event_filename(id))
-        self._data.add_length(-1)
+        self.timeline.delete(ids=[str(id)])
+        state.length -= 1
+
+        self._save_timeline_state(state)
 
     def reset_timeline(self):
         self.dnd_database.delete_collection(name="timeline")
@@ -220,15 +215,3 @@ class Timeline:
         self.timeline = self.dnd_database.get_or_create_collection(name="timeline")
         self.timeline_meta = self.dnd_database.get_or_create_collection(name="timeline_meta")
         self.initialise_timeline()
-
-
- #hell
-
-    # def _save_orb(self, orb: OrbModel):
-
-    #     file = open(self._event_filename(orb.id), "w")
-    #     file.write(orb.model_dump_json())
-
-    # def get_orb(self, id: int) -> OrbModel:
-    #     with open(self._event_filename(id), "r") as f:
-    #         return OrbModel(**(json.load(f)))

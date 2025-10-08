@@ -13,4 +13,4 @@ node_modules/
 .next/
 
 # ignore the data
-src/database-structures/database
+#src/database-structures/database
