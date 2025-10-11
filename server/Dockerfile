@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install FastAPI and httpx
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir "fastapi[standard]>=0.116.1" httpx
+    && pip install --no-cache-dir "fastapi[standard]>=0.111.0" httpx
 
 COPY server/requirements.txt .
 
@@ -23,10 +23,6 @@ COPY ./llm /app/llm
 # Set PYTHONPATH so server can import llm
 ENV PYTHONPATH=/app
 
-EXPOSE 8000
+EXPOSE 9000
 
-CMD ["uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-EXPOSE 8011
-
-CMD ["chroma", "run", "--host", "localhost", "--port", "8011", "--path", "/app/server/DND_DATABASE"]
+CMD ["uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "9000"]
