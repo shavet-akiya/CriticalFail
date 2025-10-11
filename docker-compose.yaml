@@ -1,0 +1,70 @@
+services:
+  server:
+    container_name: server
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=gemma3
+      - HF_HUB_OFFLINE=1
+      - HF_HUB_DISABLE_SYMLINKS_WARNING=1
+    depends_on:
+      - ollama
+      - speech
+    volumes:
+      - ./models:/app/models
+      - ./transcripts:/app/transcripts
+      - ./audio_recordings:/app/audio_recordings
+      - ./src/recordings:/app/src/recordings
+      - ./src/transcripts:/app/src/transcripts
+
+  speech:
+    container_name: speech
+    build:
+      context: ./speech
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HF_HUB_OFFLINE=1
+      - HF_HUB_DISABLE_SYMLINKS_WARNING=1
+    volumes:
+      - ./src/recordings:/app/recordings
+      - ./src/transcripts:/app/transcripts
+      - ./models:/app/models
+
+  ui:
+    container_name: ui
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - server
+
+  ollama:
+    container_name: ollama
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_BASE_URL=http://ollama:11434
+    healthcheck:
+      test: ["CMD", "ollama", "ps"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ollama:
