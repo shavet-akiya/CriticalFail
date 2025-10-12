@@ -8,7 +8,7 @@ import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 
 from chromadb import HttpClient
@@ -196,3 +196,78 @@ async def update_campaign_id(req: UpdateCampaignRequest):
             content={"error": "Failed to update campaign ID", "details": str(e)},
         )
 
+
+class CharacterUpdate(BaseModel):
+    id: Optional[str] = None
+    name: str
+    race: Optional[str] = None
+    char_class: Optional[str] = None
+    armour_class: Optional[int] = 0
+    hp: Optional[int] = 0
+    # avoid using names that shadow builtins: use int_ and alias it to "int"
+    str: Optional[int] = 0
+    dex: Optional[int] = 0
+    con: Optional[int] = 0
+    int_: Optional[int] = Field(0, alias="int")
+    wis: Optional[int] = 0
+    cha: Optional[int] = 0
+    npc: Optional[bool] = False
+
+    class Config:
+        allow_population_by_field_name = True
+        extra = "ignore"
+
+
+@app.get("/characters")
+async def list_characters():
+    results = session_collection.get()
+    characters = []
+    for md in results["metadatas"]:
+        if "characters" in md:
+            try:
+                chars = json.loads(md["characters"])
+                for c in chars:
+                    characters.append(c)
+            except Exception:
+                pass
+    return {"characters": characters}
+
+
+@app.put("/characters")
+async def update_character(update: CharacterUpdate):
+    try:
+        # upsert by name: remove any existing records with this name
+        try:
+            session_collection.delete(where={"name": update.name})
+        except Exception:
+            pass
+
+        record = {
+            "id": update.id or str(uuid.uuid4()),
+            "name": update.name,
+            "race": update.race or "",
+            "class": update.char_class or "",
+            "armourClass": int(update.armour_class or 0),
+            "hp": int(update.hp or 0),
+            "str": int(update.str or 0),
+            "dex": int(update.dex or 0),
+            "con": int(update.con or 0),
+            # read the aliased field via int_
+            "int": int(getattr(update, "int_", 0)),
+            "wis": int(update.wis or 0),
+            "cha": int(update.cha or 0),
+            "npc": bool(update.npc or False),
+        }
+
+        session_collection.add(
+            documents=[record["name"]], ids=[str(uuid.uuid4())], metadatas=[record]
+        )
+        return {"status": "updated", "character": record}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.delete("/characters/{name}")
+async def delete_character(name: str):
+    session_collection.delete(where={"name": name})
+    return {"status": "deleted", "name": name}

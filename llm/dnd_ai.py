@@ -53,7 +53,7 @@ Instructions:
    - Include only story events - this may include important conversations between characters, battles, or quests.  
    - Ignore any non-game or non-D&D story related discussion.",
   "characters": [
-      {{"name": "character's name or alias", "race": "...", "status": "alive/dead/etc"}} 
+      {{"name": "character's name or alias", "race": "...", "player_character": "yes if player, no if NPC"}} 
   ],
   "locations": ["..."],
   "events": [
