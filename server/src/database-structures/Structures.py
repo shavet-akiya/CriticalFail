@@ -1,9 +1,24 @@
 from pydantic import BaseModel, Field
+from typing import TypeVar, Generic
 
-class TableEntry(BaseModel):
-    id: int | None = None
+MetadataModelT = TypeVar("MetadataModelT", bound=BaseModel)
 
-class Event(TableEntry):
+class Metadata(Generic[MetadataModelT]):
+    def __init__(self, model: type[MetadataModelT]):
+        self.model = model
+
+    def _get_metadata(self) -> MetadataModelT:
+        pass
+        
+    def _set_metadata(self, metadata: MetadataModelT):
+        pass
+
+    def get_next_id(self) -> int:
+        pass
+
+
+class Event(BaseModel):
+    id: int
     title: str
     summary: str
     characters: list[str]
@@ -12,8 +27,10 @@ class Event(TableEntry):
     tags: list[str]
     session: int
 
-class Character(TableEntry):
+class TableEntry(BaseModel):
     name: str
+
+class Character(TableEntry):
     class_: str | None = Field(alias='class', default=None)
     race: str | None = None
     armour_class: int | None = None
@@ -29,15 +46,16 @@ class Character(TableEntry):
     int_: int | None = Field(alias='int', default=None)
 
 class Location(TableEntry):
-    name: str
     description: str
 
 class Session(TableEntry):
-    summary: int
+    summary: str
 
 class Tag(TableEntry):
-    tag: str
+    pass
 
+
+# Idk if this function is useful, probably don't worry about it for now
 def validate(event: Event, characters, locations, themes, tags):
     if characters:
         for character in characters:

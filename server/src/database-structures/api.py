@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from Structures import Event, validate
 from Database import Database
-from Table import TableEntry
 
 database = Database()
 
@@ -28,35 +27,25 @@ async def read_root() -> dict:
     return {"message": "Welcome to the thing!"}
 
 ''' TABLE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-'''
 @app.get("/table/get_keys/{table_name}")
 async def get_ids(table_name):
-    table = database.get_table(table_name)
-    return {"data": table.get_ids()}
+    return {"data": database.get_keys(table_name)}
 
 @app.get("/table/{table_name}")
-async def get_element(table_name, id):
-    table = database.get_table(table_name)
-    return {"data": table.get(id)}
+async def get_element(table_name, name):
+    return {"data": database.get_element(table_name, name)}
 
 @app.post("/table/{table_name}")
 async def add_element(table_name, item: TableEntry):
-    table = database.get_table(table_name)
-    table.add(item)
-    return {"data": "Done!"}
+    return {"data": database.add_element(table_name, item)}
 
 @app.put("/table/{table_name}")
 async def edit_element(table_name, item: TableEntry):
-    table = database.get_table(table_name)
-    table.edit(item)
-    return {"data": "Done!"}
+    return {"data": database.edit_element(table_name, item)}
 
 @app.delete("/table/{table_name}")
-async def remove_element(table_name, id):
-    table = database.get_table(table_name)
-    table.remove(id)
-    return {"data": "Done!"}
-'''
+async def remove_element(table_name, name):
+    return {"data": database.remove_element(table_name, name)}
 ''' EVENT METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 
 @app.get("/event")

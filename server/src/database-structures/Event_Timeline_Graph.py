@@ -1,8 +1,7 @@
 from __future__ import annotations
-from Structures import Event
+from Structures import Event, Metadata
 from pydantic import BaseModel
 import json
-from Table import Metadata
 from chromadb import Collection
 
 
