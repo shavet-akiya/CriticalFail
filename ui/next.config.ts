@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://server:8000/:path*", // goes to FastAPI container
+        destination: "http://server:9000/:path*", // goes to FastAPI container
       },
     ];
   },

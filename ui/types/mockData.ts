@@ -4,7 +4,7 @@ import { Session, Location, Character, CampaignTags, Event, Campaign, Landmark }
 export const characters: Character[] = [
   {
     id: 1,
-    name: "Thalindra Moonshadow",
+    name: "Thalindra Bob",
     class: "Rogue",
     race: "Half-Elf",
     armourClass: 16,

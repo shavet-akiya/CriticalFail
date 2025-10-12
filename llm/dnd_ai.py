@@ -48,12 +48,12 @@ Instructions:
 
 1. Extract structured information as JSON with the following format:
 {{
-  "summary": "Summarize the key story events, quests, and lore that occurred in this session into readable text.  
+  "session_summary": "Summarize the key story events, quests, and lore that occurred in this session into readable text.  
    - Exclude gameplay mechanics such as dice rolls, skill checks, or combat mechanics.  
    - Include only story events - this may include important conversations between characters, battles, or quests.  
    - Ignore any non-game or non-D&D story related discussion.",
   "characters": [
-      {{"name": "character's name or alias", "role": "...", "status": "alive/dead/etc"}} 
+      {{"name": "character's name or alias", "race": "...", "player_character": "yes if player, no if NPC"}} 
   ],
   "locations": ["..."],
   "events": [
@@ -63,6 +63,7 @@ Instructions:
           "participants": ["Any character involved in the event."],
           "location": "Location event took place.",
           "timeline_order": 1
+          "event_tags": Choose one or more from the following relevant to the event: "combat", "exploration", "player-to-player interaction", "npc interaction", "resting", "investigation", and "miscellaneous" miscellaneous should only be used if event is not relevant to any other tags.
       }}
   ],
 }}
@@ -71,43 +72,40 @@ Instructions:
 - The "summary" field must contain the readable session summary text.  
 - Only output valid JSON, with no explanatory text outside the JSON. 
 - There are no limits to how many events may occur in a session, ensure to capture as many relevant story events as possible.
+- Do not make up information that is not available in the transcript.
 """
-    response = run_ollama(prompt)  # send transcript as prompt
-    structured_data = clean_ollama_response(response)
+    # Call your LLM
+    response = run_ollama(prompt)
 
-    # Return raw text in a simple structure
-    return {
+    # Clean up response: strip code fences
+    response = re.sub(r"```(?:json)?", "", response).strip()
+
+    structured = {}
+    try:
+        # extract the JSON portion (first { ... } block)
+        match = re.search(r"\{.*\}", response, re.DOTALL)
+        if match:
+            json_str = match.group(0)
+            structured = json.loads(json_str)
+    except Exception:
+        structured = {}
+
+    # Wrap into the schema expected by save_session_to_chroma
+    session_data = {
         "session_code": datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
-        "summary": structured_data,
+        "campaign_id": 0,  # update if you have campaign context
+        "summary": {
+            "session_summary": structured.get("session_summary", ""),
+            "characters": structured.get("characters", []),
+            "locations": structured.get("locations", []),
+            "events": structured.get("events", []),
+        },
         "processed_at": datetime.datetime.now(datetime.timezone.utc)
         .isoformat(timespec="seconds")
         .replace("+00:00", "Z"),
     }
 
-    # # remove code fences if they exist
-    # response = re.sub(r"```(?:json)?", "", response).strip()
-
-    # structured = {}
-    # try:
-    #     # extract the JSON portion (first { ... } block)
-    #     match = re.search(r"\{.*\}", response, re.DOTALL)
-    #     if match:
-    #         json_str = match.group(0)
-    #         structured = json.loads(json_str)
-    # except Exception:
-    #     pass
-
-    # # ensure required fields exist
-    # if "processed_at" not in structured:
-    #     structured["processed_at"] = (
-    #         datetime.datetime.now(datetime.timezone.utc)
-    #         .isoformat(timespec="seconds")
-    #         .replace("+00:00", "Z")
-    #     )
-
-    # if "session_code" not in structured:
-    #     structured["session_code"] = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    # return structured
+    return session_data
 
 
 def delete_from_json(data: dict, key: str, match: Optional[str] = None):
