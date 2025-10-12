@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { events } from "@/types/mockData";
 import EventCard from "@/components/eventCard";
 import FilterDrawer from "@/components/filterDrawer";
 

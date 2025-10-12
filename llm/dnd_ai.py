@@ -4,9 +4,9 @@ import json
 import datetime
 import re
 from typing import Optional
+import uuid
 
-
-OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://ollama:11434")
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3")
 
 
@@ -51,17 +51,17 @@ Instructions:
   "session_summary": "Summarize the key story events, quests, and lore that occurred in this session into readable text.  
    - Exclude gameplay mechanics such as dice rolls, skill checks, or combat mechanics.  
    - Include only story events - this may include important conversations between characters, battles, or quests.  
-   - Ignore any non-game or non-D&D story related discussion.",
+   - Ignore any non-game or non-D&D story related discussion.
   "characters": [
-      {{"name": "character's name or alias", "race": "...", "player_character": "yes if player, no if NPC"}} 
+      {{"name": "Name or alias of the character", "race": "if known", "class":"if known", "npc": true or false}}
   ],
-  "locations": ["..."],
+  "locations": [{{"location_name": "any location referenced in the session, such as a named place or a notable location (e.g., tavern)"}}],
   "events": [
       {{
           "event": "A title for the event.",
           "event_summary": "A text summary of what occurred during the event.",
-          "participants": ["Any character involved in the event."],
-          "location": "Location event took place.",
+          "participants": ["List of character names involved."],
+          "location": "Location where event took place.",
           "timeline_order": 1
           "event_tags": Choose one or more from the following relevant to the event: "combat", "exploration", "player-to-player interaction", "npc interaction", "resting", "investigation", and "miscellaneous" miscellaneous should only be used if event is not relevant to any other tags.
       }}
@@ -76,6 +76,7 @@ Instructions:
 """
     # Call your LLM
     response = run_ollama(prompt)
+    # 🔹 DEBUG: print the raw response
 
     # Clean up response: strip code fences
     response = re.sub(r"```(?:json)?", "", response).strip()
@@ -92,7 +93,7 @@ Instructions:
 
     # Wrap into the schema expected by save_session_to_chroma
     session_data = {
-        "session_code": datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
+        "session_id": datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
         "campaign_id": 0,  # update if you have campaign context
         "summary": {
             "session_summary": structured.get("session_summary", ""),
@@ -104,6 +105,52 @@ Instructions:
         .isoformat(timespec="seconds")
         .replace("+00:00", "Z"),
     }
+    # 🔥 Initialise stats for each character
+    default_stats = {
+        "AC": 0,
+        "HP": 0,
+        "STR": 0,
+        "DEX": 0,
+        "CON": 0,
+        "INT": 0,
+        "WIS": 0,
+        "CHA": 0,
+    }
+
+    for char in session_data["summary"]["characters"]:
+        # ensure a unique character_id
+        char.setdefault("character_id", str(uuid.uuid4()))
+        # merge defaults without overwriting existing keys
+        for stat, val in default_stats.items():
+            char.setdefault(stat, val)
+
+    # assign UUIDs to locations
+    for i, loc in enumerate(session_data["summary"]["locations"]):
+        if isinstance(loc, dict):
+            loc.setdefault("location_id", str(uuid.uuid4()))
+        else:
+            # if locations are just strings, wrap them
+            session_data["summary"]["locations"][i] = {
+                "location_id": str(uuid.uuid4()),
+                "name": loc,
+            }
+
+    # --- Events: assign UUIDs, timeline_order, and default fields ---
+    events = session_data["summary"]["events"]
+    for i, ev in enumerate(events):
+        if not isinstance(ev, dict):
+            ev = {"event": str(ev)}
+            events[i] = ev
+
+        ev.setdefault("event_id", str(uuid.uuid4()))
+        ev.setdefault("event_summary", "")
+        ev.setdefault("participants", [])
+        ev.setdefault("location", "")
+        ev.setdefault("timeline_order", i + 1)
+        ev.setdefault("event_tags", ["miscellaneous"])
+    session_data["summary"]["events"] = events
+
+    return session_data
 
     return session_data
 
@@ -154,6 +201,5 @@ def test_extract_session_data():
     print(json.dumps(result, indent=2))
 
 
-# # Run the test
-# if __name__ == "__main__":
-#     test_extract_session_data()
+if __name__ == "__main__":
+    test_extract_session_data()

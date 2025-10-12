@@ -8,7 +8,8 @@ import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from fastapi import Path
+from pydantic import BaseModel
 from typing import Optional, List
 
 from chromadb import HttpClient
@@ -26,22 +27,68 @@ def save_session_to_chroma(session_data: dict) -> str:
     chroma_id = str(uuid.uuid4())
     summary_text = session_data["summary"].get("session_summary", "")
 
+    # Save the session itself
     session_collection.add(
         documents=[summary_text],
         ids=[chroma_id],
         metadatas=[
             {
-                "session_code": session_data["session_code"],
+                "session_id": session_data["session_id"],
                 "campaign_id": session_data.get("campaign_id", 0),
-                # JSON-encode lists/dicts so Chroma accepts them
-                "characters": json.dumps(session_data["summary"].get("characters", [])),
-                "locations": json.dumps(session_data["summary"].get("locations", [])),
-                "events": json.dumps(session_data["summary"].get("events", [])),
-                "tags": json.dumps(session_data["summary"].get("tags", [])),
                 "processed_at": session_data["processed_at"],
+                "type": "session",
             }
         ],
     )
+
+    # Save each character
+    for character in session_data["summary"].get("characters", []):
+        character_id = character["character_id"]
+        session_collection.add(
+            documents=[character.get("name", "")],
+            ids=[character_id],
+            metadatas=[
+                {
+                    "character_id": character_id,
+                    "session_id": session_data["session_id"],
+                    "type": "character",
+                    **character,
+                }
+            ],
+        )
+
+    # Save each location
+    for loc in session_data["summary"].get("locations", []):
+        loc_id = loc.get("location_id", str(uuid.uuid4()))
+        session_collection.add(
+            documents=[loc.get("location_name", loc.get("name", ""))],
+            ids=[loc_id],
+            metadatas=[
+                {
+                    "location_id": loc_id,
+                    "session_id": session_data["session_id"],
+                    "type": "location",
+                    **loc,
+                }
+            ],
+        )
+
+    # Save each event
+    for ev in session_data["summary"].get("events", []):
+        ev_id = ev.get("event_id", str(uuid.uuid4()))
+        session_collection.add(
+            documents=[ev.get("event", "")],
+            ids=[ev_id],
+            metadatas=[
+                {
+                    "event_id": ev_id,
+                    "session_id": session_data["session_id"],
+                    "type": "event",
+                    **ev,
+                }
+            ],
+        )
+
     return chroma_id
 
 
@@ -72,7 +119,7 @@ class TranscriptInput(BaseModel):
 
 
 class DeleteRequest(BaseModel):
-    session_code: str
+    session_id: str
 
 
 # --- Routes ---
@@ -108,28 +155,72 @@ async def process_session(input_data: TranscriptInput):
 
 @app.get("/sessions/recent")
 async def list_recent_sessions():
-    return recent_sessions
+    hydrated = []
+    for s in recent_sessions:
+        session_id = s["session_id"]
+
+        # Fetch characters
+        chars = session_collection.get(
+            where={"$and": [{"type": "character"}, {"session_id": session_id}]}
+        )
+
+        # Fetch locations
+        locs = session_collection.get(
+            where={"$and": [{"type": "location"}, {"session_id": session_id}]}
+        )
+
+        # Fetch events
+        evs = session_collection.get(
+            where={"$and": [{"type": "event"}, {"session_id": session_id}]}
+        )
+
+        s_copy = s.copy()
+        s_copy["summary"]["characters"] = chars["metadatas"]
+        s_copy["summary"]["locations"] = locs["metadatas"]
+        s_copy["summary"]["events"] = evs["metadatas"]
+
+        hydrated.append(s_copy)
+
+    return hydrated
 
 
 @app.get("/sessions")
 async def list_chroma_sessions():
     try:
-        results = session_collection.get()
+        sessions = session_collection.get(where={"type": "session"})
         decoded = {
-            "ids": results["ids"],
-            "documents": results["documents"],
+            "ids": sessions["ids"],
+            "documents": sessions["documents"],
             "metadatas": [],
         }
-        for md in results["metadatas"]:
-            decoded_md = md.copy()
-            # Safely decode JSON fields
-            for field in ["characters", "locations", "events"]:
-                try:
-                    decoded_md[field] = json.loads(md.get(field, "[]"))
-                except Exception:
-                    decoded_md[field] = []
-            decoded["metadatas"].append(decoded_md)
+
+        for md in sessions["metadatas"]:
+            session_id = md["session_id"]
+
+            # Fetch characters
+            chars = session_collection.get(
+                where={"$and": [{"type": "character"}, {"session_id": session_id}]}
+            )
+
+            # Fetch locations
+            locs = session_collection.get(
+                where={"$and": [{"type": "location"}, {"session_id": session_id}]}
+            )
+
+            # Fetch events
+            evs = session_collection.get(
+                where={"$and": [{"type": "event"}, {"session_id": session_id}]}
+            )
+
+            md_with_data = md.copy()
+            md_with_data["characters"] = chars["metadatas"]
+            md_with_data["locations"] = locs["metadatas"]
+            md_with_data["events"] = evs["metadatas"]
+
+            decoded["metadatas"].append(md_with_data)
+
         return decoded
+
     except Exception as e:
         return JSONResponse(
             status_code=500,
@@ -140,8 +231,8 @@ async def list_chroma_sessions():
 @app.delete("/sessions")
 async def delete_session(req: DeleteRequest):
     try:
-        session_collection.delete(where={"session_code": req.session_code})
-        return {"status": "deleted", "session_code": req.session_code}
+        session_collection.delete(where={"session_id": req.session_id})
+        return {"status": "deleted", "session_id": req.session_id}
     except Exception as e:
         return {"status": "error", "details": str(e)}
 
@@ -152,7 +243,7 @@ async def root():
 
 
 class UpdateCampaignRequest(BaseModel):
-    session_code: str
+    session_id: str
     campaign_id: Optional[str]
 
 
@@ -160,13 +251,13 @@ class UpdateCampaignRequest(BaseModel):
 async def update_campaign_id(req: UpdateCampaignRequest):
     try:
         # Fetch existing session metadata
-        results = session_collection.get(where={"session_code": req.session_code})
+        results = session_collection.get(where={"session_id": req.session_id})
         if not results["ids"]:
             return JSONResponse(
                 status_code=404,
                 content={
                     "error": "Session not found",
-                    "session_code": req.session_code,
+                    "session_id": req.session_id,
                 },
             )
 
@@ -186,7 +277,7 @@ async def update_campaign_id(req: UpdateCampaignRequest):
 
         return {
             "status": "updated",
-            "session_code": req.session_code,
+            "session_id": req.session_id,
             "campaign_id": req.campaign_id,
         }
 
@@ -198,76 +289,154 @@ async def update_campaign_id(req: UpdateCampaignRequest):
 
 
 class CharacterUpdate(BaseModel):
-    id: Optional[str] = None
+    id: str
     name: str
-    race: Optional[str] = None
-    char_class: Optional[str] = None
-    armour_class: Optional[int] = 0
-    hp: Optional[int] = 0
-    # avoid using names that shadow builtins: use int_ and alias it to "int"
-    str: Optional[int] = 0
-    dex: Optional[int] = 0
-    con: Optional[int] = 0
-    int_: Optional[int] = Field(0, alias="int")
-    wis: Optional[int] = 0
-    cha: Optional[int] = 0
+    race: Optional[str]
+    class_: Optional[str]
     npc: Optional[bool] = False
 
-    class Config:
-        allow_population_by_field_name = True
-        extra = "ignore"
+    AC: Optional[int]
+    HP: Optional[int]
+    STR: Optional[int]
+    DEX: Optional[int]
+    CON: Optional[int]
+    INT: Optional[int]
+    WIS: Optional[int]
+    CHA: Optional[int]
 
 
 @app.get("/characters")
 async def list_characters():
-    results = session_collection.get()
-    characters = []
-    for md in results["metadatas"]:
-        if "characters" in md:
-            try:
-                chars = json.loads(md["characters"])
-                for c in chars:
-                    characters.append(c)
-            except Exception:
-                pass
-    return {"characters": characters}
+    results = session_collection.get(where={"type": "character"})
+    # results["metadatas"] is a list of dicts, each containing character_id, name, stats, etc.
+    return {"characters": results["metadatas"]}
 
 
-@app.put("/characters")
-async def update_character(update: CharacterUpdate):
+@app.get("/characters/{character_id}")
+async def get_character(character_id: str):
+    # Direct lookup by Chroma ID (since we stored each character with character_id as its id)
+    results = session_collection.get(ids=[character_id])
+    if not results["ids"]:
+        return JSONResponse(status_code=404, content={"error": "Character not found"})
+    return {"character": results["metadatas"][0]}
+
+
+@app.put("/characters/{character_id}")
+async def update_character(character_id: str, update: CharacterUpdate):
+    results = session_collection.get(ids=[character_id])
+    if not results["ids"]:
+        return JSONResponse(status_code=404, content={"error": "Character not found"})
+
+    old_metadata = results["metadatas"][0]
+    old_document = results["documents"][0]
+
+    # Merge updates into the existing metadata
+    new_data = update.dict(exclude_unset=True, by_alias=True)
+    merged = {**old_metadata, **new_data}
+
+    # Replace the old record with the updated one
+    session_collection.delete(ids=[character_id])
+    session_collection.add(
+        documents=[merged.get("name", old_document)],
+        ids=[character_id],
+        metadatas=[merged],
+    )
+
+    return {"status": "updated", "character": merged}
+
+
+@app.delete("/reset")
+async def reset_database():
     try:
-        # upsert by name: remove any existing records with this name
-        try:
-            session_collection.delete(where={"name": update.name})
-        except Exception:
-            pass
-
-        record = {
-            "id": update.id or str(uuid.uuid4()),
-            "name": update.name,
-            "race": update.race or "",
-            "class": update.char_class or "",
-            "armourClass": int(update.armour_class or 0),
-            "hp": int(update.hp or 0),
-            "str": int(update.str or 0),
-            "dex": int(update.dex or 0),
-            "con": int(update.con or 0),
-            # read the aliased field via int_
-            "int": int(getattr(update, "int_", 0)),
-            "wis": int(update.wis or 0),
-            "cha": int(update.cha or 0),
-            "npc": bool(update.npc or False),
-        }
-
-        session_collection.add(
-            documents=[record["name"]], ids=[str(uuid.uuid4())], metadatas=[record]
-        )
-        return {"status": "updated", "character": record}
+        all_ids = session_collection.get()["ids"]
+        if all_ids:
+            session_collection.delete(ids=all_ids)
+        return {"status": "all data deleted"}
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return {"status": "error", "details": str(e)}
 
 
-@app.delete("/characters/{name}")
-async def delete_character(name: str):
-    session_collection.delete(where={"name": name})
-    return {"status": "deleted", "name": name}
+@app.get("/locations")
+async def list_locations():
+    try:
+        results = session_collection.get(where={"type": "location"})
+        # results["metadatas"] contains all the location data
+        return {"locations": results["metadatas"]}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to fetch locations", "details": str(e)},
+        )
+
+
+@app.get("/locations/{location_id}")
+async def get_location(location_id: str):
+    results = session_collection.get(ids=[location_id])
+    if not results["ids"]:
+        return JSONResponse(status_code=404, content={"error": "Location not found"})
+    # return the first metadata, which is the location
+    return {"location": results["metadatas"][0]}
+
+
+# --- Event Endpoints ---
+
+
+class EventUpdate(BaseModel):
+    event: Optional[str]
+    event_summary: Optional[str]
+    participants: Optional[List[str]]
+    location: Optional[str]
+    timeline_order: Optional[int]
+    event_tags: Optional[List[str]]
+
+
+@app.get("/events")
+async def list_events():
+    try:
+        results = session_collection.get(where={"type": "event"})
+        return {"events": results["metadatas"]}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to fetch events", "details": str(e)},
+        )
+
+
+@app.get("/events/{event_id}")
+async def get_event(event_id: str):
+    results = session_collection.get(ids=[event_id])
+    if not results["ids"]:
+        return JSONResponse(status_code=404, content={"error": "Event not found"})
+    return {"event": results["metadatas"][0]}
+
+
+@app.put("/events/{event_id}")
+async def update_event(event_id: str, update: EventUpdate):
+    results = session_collection.get(ids=[event_id])
+    if not results["ids"]:
+        return JSONResponse(status_code=404, content={"error": "Event not found"})
+
+    old_metadata = results["metadatas"][0]
+    old_document = results["documents"][0]
+
+    new_data = update.dict(exclude_unset=True)
+    merged = {**old_metadata, **new_data}
+
+    # Replace old record
+    session_collection.delete(ids=[event_id])
+    session_collection.add(
+        documents=[merged.get("event", old_document)],
+        ids=[event_id],
+        metadatas=[merged],
+    )
+
+    return {"status": "updated", "event": merged}
+
+
+@app.delete("/events/{event_id}")
+async def delete_event(event_id: str):
+    try:
+        session_collection.delete(ids=[event_id])
+        return {"status": "deleted", "event_id": event_id}
+    except Exception as e:
+        return {"status": "error", "details": str(e)}

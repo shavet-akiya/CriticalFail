@@ -1,67 +1,91 @@
 "use client";
-import { useState } from "react";
-import { useCharacter } from "@/contexts/CharacterContext";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import type { Character } from "@/types/types";
 
-export default function CharacterPage() {
-    const { currentCharacter: initial, setCurrentCharacter } = useCharacter();
-    if (!initial) return <p>No character selected</p>;
-
-    const [form, setForm] = useState<Character>({ ...initial } as Character);
+export default function CharacterDetail() {
+    const { characterId } = useParams<{ characterId: string }>();
+    const baseUrl = "/api";
+    const [form, setForm] = useState<Character | null>(null);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Fetch character
+    useEffect(() => {
+        if (!characterId) return;
+        console.log("Fetching character", characterId);
+
+        fetch(`/api/characters/${encodeURIComponent(characterId)}`)
+            .then((res) => {
+                console.log("Response status", res.status);
+                return res.json();
+            })
+            .then((data) => {
+                console.log("API data", data);
+                if (!data.character) throw new Error("Character not found");
+                setForm({
+                    characterId: data.character.character_id,
+                    name: data.character.name,
+                    race: data.character.race,
+                    class: data.character.class,
+                    npc: data.character.npc ?? false,
+                    AC: data.character.AC ?? 0,
+                    HP: data.character.HP ?? 0,
+                    STR: data.character.STR ?? 0,
+                    DEX: data.character.DEX ?? 0,
+                    CON: data.character.CON ?? 0,
+                    INT: data.character.INT ?? 0,
+                    WIS: data.character.WIS ?? 0,
+                    CHA: data.character.CHA ?? 0,
+                });
+            })
+            .catch((e) => {
+                console.error(e);
+                setError(e instanceof Error ? e.message : String(e));
+            });
+    }, [characterId]);
+
+    // Handle changes
     function onChange<K extends keyof Character>(k: K, v: any) {
-        setForm((s) => ({ ...s, [k]: v }));
+        if (!form) return;
+        setForm((s) => ({ ...s!, [k]: v }));
     }
 
+    // Save updates
     async function save() {
+        if (!form) return;
         setSaving(true);
         setError(null);
-        try {
-            // map client keys to server expected fields (char_class, armour_class)
-            const payload = {
-                id: form.id,
-                name: form.name,
-                race: form.race,
-                char_class: form.class,
-                armour_class: Number(form.armourClass || 0),
-                hp: Number(form.hp || 0),
-                str: Number(form.str || 0),
-                dex: Number(form.dex || 0),
-                con: Number(form.con || 0),
-                int: Number(form.int || 0),
-                wis: Number(form.wis || 0),
-                cha: Number(form.cha || 0),
-                npc: Boolean(form.npc),
-            };
-            const res = await fetch("/api/characters", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-            if (!res.ok) throw new Error(`save failed: ${res.status}`);
-            const data = await res.json();
-            const updated = data.character ?? payload;
-            // normalize back to client shape (camelCase field names)
-            const clientChar: Character = {
-                id: updated.id,
-                name: updated.name,
-                race: updated.race,
-                class: updated.class || updated.char_class || "",
-                armourClass: updated.armourClass ?? updated.armour_class ?? 0,
-                hp: updated.hp ?? 0,
-                str: updated.str ?? 0,
-                dex: updated.dex ?? 0,
-                con: updated.con ?? 0,
-                int: updated.int ?? 0,
-                wis: updated.wis ?? 0,
-                cha: updated.cha ?? 0,
-                npc: !!updated.npc,
-            } as Character;
 
-            setCurrentCharacter(clientChar);
-            setForm(clientChar);
+        try {
+            const res = await fetch(
+                `${baseUrl}/characters/${encodeURIComponent(form.characterId)}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(form),
+                }
+            );
+
+            if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+            const data = await res.json();
+            const c = data.character;
+
+            setForm({
+                characterId: c.character_id,
+                name: c.name,
+                race: c.race,
+                class: c.class,
+                npc: c.npc ?? false,
+                AC: c.AC ?? 0,
+                HP: c.HP ?? 0,
+                STR: c.STR ?? 0,
+                DEX: c.DEX ?? 0,
+                CON: c.CON ?? 0,
+                INT: c.INT ?? 0,
+                WIS: c.WIS ?? 0,
+                CHA: c.CHA ?? 0,
+            });
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {
@@ -69,56 +93,61 @@ export default function CharacterPage() {
         }
     }
 
+    if (error) return <div className="text-error">{error}</div>;
+    if (!form) return <div>Loading…</div>;
+
     return (
-        <div className="max-w-2xl">
-            {error && <div className="text-red-600 mb-2">{error}</div>}
-            <div className="mb-4">
+        <div className="max-w-2xl space-y-4">
+            <h1 className="text-2xl font-bold">{form.name}</h1>
+
+            {/* Name */}
+            <div>
                 <label className="block">Name</label>
                 <input
+                    className="input input-bordered w-full"
                     value={form.name}
                     onChange={(e) => onChange("name", e.target.value)}
-                    className="input input-bordered w-full"
                 />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            {/* Race/Class */}
+            <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block">Race</label>
                     <input
+                        className="input input-bordered w-full"
                         value={form.race || ""}
                         onChange={(e) => onChange("race", e.target.value)}
-                        className="input input-bordered w-full"
                     />
                 </div>
                 <div>
                     <label className="block">Class</label>
                     <input
+                        className="input input-bordered w-full"
                         value={form.class || ""}
                         onChange={(e) => onChange("class", e.target.value)}
-                        className="input input-bordered w-full"
                     />
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            {/* AC / HP / NPC */}
+            <div className="grid grid-cols-3 gap-4">
                 <div>
-                    <label className="block">AC</label>
+                    <label>AC</label>
                     <input
                         type="number"
-                        value={form.armourClass ?? 0}
-                        onChange={(e) =>
-                            onChange("armourClass", Number(e.target.value))
-                        }
                         className="input input-bordered w-full"
+                        value={form.AC}
+                        onChange={(e) => onChange("AC", Number(e.target.value))}
                     />
                 </div>
                 <div>
-                    <label className="block">HP</label>
+                    <label>HP</label>
                     <input
                         type="number"
-                        value={form.hp ?? 0}
-                        onChange={(e) => onChange("hp", Number(e.target.value))}
                         className="input input-bordered w-full"
+                        value={form.HP}
+                        onChange={(e) => onChange("HP", Number(e.target.value))}
                     />
                 </div>
                 <div className="flex items-end">
@@ -133,84 +162,33 @@ export default function CharacterPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label>STR</label>
-                    <input
-                        type="number"
-                        value={form.str ?? 0}
-                        onChange={(e) =>
-                            onChange("str", Number(e.target.value))
-                        }
-                        className="input input-bordered w-full"
-                    />
-                </div>
-                <div>
-                    <label>DEX</label>
-                    <input
-                        type="number"
-                        value={form.dex ?? 0}
-                        onChange={(e) =>
-                            onChange("dex", Number(e.target.value))
-                        }
-                        className="input input-bordered w-full"
-                    />
-                </div>
-                <div>
-                    <label>CON</label>
-                    <input
-                        type="number"
-                        value={form.con ?? 0}
-                        onChange={(e) =>
-                            onChange("con", Number(e.target.value))
-                        }
-                        className="input input-bordered w-full"
-                    />
-                </div>
-                <div>
-                    <label>INT</label>
-                    <input
-                        type="number"
-                        value={form.int ?? 0}
-                        onChange={(e) =>
-                            onChange("int", Number(e.target.value))
-                        }
-                        className="input input-bordered w-full"
-                    />
-                </div>
-                <div>
-                    <label>WIS</label>
-                    <input
-                        type="number"
-                        value={form.wis ?? 0}
-                        onChange={(e) =>
-                            onChange("wis", Number(e.target.value))
-                        }
-                        className="input input-bordered w-full"
-                    />
-                </div>
-                <div>
-                    <label>CHA</label>
-                    <input
-                        type="number"
-                        value={form.cha ?? 0}
-                        onChange={(e) =>
-                            onChange("cha", Number(e.target.value))
-                        }
-                        className="input input-bordered w-full"
-                    />
-                </div>
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4">
+                {["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((stat) => (
+                    <div key={stat}>
+                        <label>{stat}</label>
+                        <input
+                            type="number"
+                            className="input input-bordered w-full"
+                            value={(form as any)[stat] ?? 0}
+                            onChange={(e) =>
+                                onChange(
+                                    stat as keyof Character,
+                                    Number(e.target.value)
+                                )
+                            }
+                        />
+                    </div>
+                ))}
             </div>
 
-            <div className="flex gap-2">
-                <button
-                    onClick={save}
-                    className="btn btn-primary"
-                    disabled={saving}
-                >
-                    {saving ? "Saving..." : "Save"}
-                </button>
-            </div>
+            <button
+                onClick={save}
+                className="btn btn-primary"
+                disabled={saving}
+            >
+                {saving ? "Saving..." : "Save"}
+            </button>
         </div>
     );
 }

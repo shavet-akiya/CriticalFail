@@ -1,34 +1,30 @@
 // need to be able to edit this.
 export type Character = {
-  id: number;
+  characterId: string // uuid
   name: string;
-  class: string;
-  race: string;
-  armourClass: number;
-  npc: boolean;
-  enemy: boolean; // monster/enemy --> set true
-  hp: number;
-  str: number;
-  dex: number;
-  con: number;
-  int: number;
-  wis: number;
-  cha: number;
-  img?: Base64URLString; // this may just be done via pathing if the user uploads it anyways 
-  currentLocationID?: number; // may not need right now
-  lastAppearanceID?: number; // session ID
+  race?: string;
+  class?: string;
+  npc?: boolean;
+
+  // new stats
+  AC: number;
+  HP: number;
+  STR: number;
+  DEX: number;
+  CON: number;
+  INT: number;
+  WIS: number;
+  CHA: number;
 };
 
-// No monster table for now. Define monsters/enemies under Character.npc = true.
-
 export type Event = {
-  id: number;
+  eventId: string; //UUID
   sessionId: number; // session ID will be linked to Campaign via Session
-  summary: string;
-  characterIDs: number[];
-  locationIDs: number[];
-  tags: CampaignTags[];
-  themes: string[];
+  eventSummary: string;
+  characterIds: string[];
+  locationIds: number[];
+  timelineOrder: number;
+  eventTags: string[]
   // order in session timeline comes from ID or array position
 };
 
