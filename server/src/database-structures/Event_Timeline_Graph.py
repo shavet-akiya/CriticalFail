@@ -3,8 +3,10 @@ from Structures import Event
 from pydantic import BaseModel
 import json
 from Table import Metadata
-import chromadb
+from chromadb import Collection
 
+
+# Is this being used at all? Can we delete it?
 class OrbModel(BaseModel):
     id: int
     event: Event
@@ -18,6 +20,8 @@ class TimelineMetadataModel(BaseModel):
     length: int = 0
     next_id: int = -1
 
+
+# Is this being used at all? Can we delete it?
 class TimelineMetadata(Metadata[TimelineMetadataModel]):
     def __init__(self, address):
         super().__init__(address, TimelineMetadataModel)
@@ -51,14 +55,14 @@ class TimelineMetadata(Metadata[TimelineMetadataModel]):
 
 
 class Timeline:
-    def __init__(self):
-        self.dnd_database = chromadb.HttpClient(host='localhost', port=8011)
-
-        self.timeline = self.dnd_database.get_or_create_collection(name="timeline")
-        self.timeline_meta = self.dnd_database.get_or_create_collection(name="timeline_meta")
+    def __init__(self, timeline_data: Collection, metadata: Collection):
+        self.timeline: Collection = timeline_data
+        self.timeline_meta: Collection = metadata
 
         self.initialise_timeline()
 
+    def make_next_id(self):
+        pass
 
     def initialise_timeline(self):
         result = self.timeline_meta.get(ids=["META"], include=["metadatas"])
@@ -68,7 +72,7 @@ class Timeline:
                 "start": 0,
                 "end": 0,
                 "length": 0,
-                "next_id": 0
+                "next_id": 1
             }
 
             self.timeline_meta.add(ids=["META"], documents=["Timeline Metadata"], metadatas=[initial_metadata])
@@ -91,11 +95,12 @@ class Timeline:
         )
 
     def __iter__(self):
-        self.pointer = self._data.get_end()
+        state = self.get_timeline_state()
+        self.pointer = state.end
         return self
     
     def __next__(self):
-        if self.pointer is None:
+        if self.pointer is None or not self.pointer:
             raise StopIteration
         else:
             orb = self.get_orb(self.pointer)
@@ -140,23 +145,23 @@ class Timeline:
     If id is None or end, then it appends it to the end. If end is none but id is not none then error
     Otherwise it inserts it inbetween the current and next node.
     '''
-    def write_future(self, event: Event, id: int = None):
+    def write_future(self, event: Event, after_id: int | None = None):
 
         state = self.get_timeline_state()
 
         end = state.end
 
-        if id is None:
-            id = end
+        if after_id is None:
+            after_id = end
 
-        new_orb = OrbModel(id=state.next_id, event=event, past=id)
+        new_orb = OrbModel(id=state.next_id, event=event, past=after_id)
     
-        if not state.next_id and not state.end and not state.start:
+        if not state.end and not state.start:
             state.start = new_orb.id
             state.end = new_orb.id
 
         else:
-            old_orb = self.get_orb(id)
+            old_orb = self.get_orb(after_id)
             new_orb.future = old_orb.future
         
             if old_orb.future is None:
@@ -183,19 +188,21 @@ class Timeline:
     def burn_record(self, id: int):
         state = self.get_timeline_state()
 
+        # Im not sure about what to do with this
         if state.length <= 1:
-            self.reset_timeline()
-            return
+            # self.reset_timeline()
+            # return
+            pass
 
         marked_orb = self.get_orb(id)
-        if marked_orb.future is not None:
+        if marked_orb.future:
             future_orb = self.get_orb(marked_orb.future)
             future_orb.past = marked_orb.past
             self._save_orb(future_orb)
         else:
             state.end = marked_orb.past
 
-        if marked_orb.past is not None:
+        if marked_orb.past:
             past_orb = self.get_orb(marked_orb.past)
             past_orb.future = marked_orb.future
             self._save_orb(past_orb)
@@ -206,12 +213,3 @@ class Timeline:
         state.length -= 1
 
         self._save_timeline_state(state)
-
-    def reset_timeline(self):
-        self.dnd_database.delete_collection(name="timeline")
-        self.dnd_database.delete_collection(name="timeline_meta")
-
-
-        self.timeline = self.dnd_database.get_or_create_collection(name="timeline")
-        self.timeline_meta = self.dnd_database.get_or_create_collection(name="timeline_meta")
-        self.initialise_timeline()

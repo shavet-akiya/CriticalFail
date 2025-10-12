@@ -4,7 +4,7 @@ from Structures import Event, validate
 from Database import Database
 from Table import TableEntry
 
-database = Database("server/src/database-structures/")
+database = Database()
 
 app = FastAPI()
 
@@ -28,7 +28,7 @@ async def read_root() -> dict:
     return {"message": "Welcome to the thing!"}
 
 ''' TABLE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
-
+'''
 @app.get("/table/get_keys/{table_name}")
 async def get_ids(table_name):
     table = database.get_table(table_name)
@@ -56,7 +56,7 @@ async def remove_element(table_name, id):
     table = database.get_table(table_name)
     table.remove(id)
     return {"data": "Done!"}
-
+'''
 ''' EVENT METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '''
 
 @app.get("/event")

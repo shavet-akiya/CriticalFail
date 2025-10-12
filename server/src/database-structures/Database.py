@@ -5,9 +5,23 @@ import io
 import chromadb
 
 class Database:
-    def __init__(self, address):
+    def __init__(self):
         self.dnd_database = chromadb.HttpClient(host='localhost', port=8011)
+        self.timeline = Timeline(
+            self.dnd_database.get_or_create_collection(name="timeline"),
+            self.dnd_database.get_or_create_collection(name="timeline_meta")
+        )
 
+    
+    def reset_timeline(self):
+        self.dnd_database.delete_collection(name="timeline")
+        self.dnd_database.delete_collection(name="timeline_meta")
+
+        self.timeline = Timeline(
+            self.dnd_database.get_or_create_collection(name="timeline"),
+            self.dnd_database.get_or_create_collection(name="timeline_meta")
+        )
+        '''
         self.collections = {}
         tables = ["timeline", "events", "characters", "locations", "sessions", "tags", "timeline_meta"]
 
@@ -23,6 +37,7 @@ class Database:
         self.locations = self.collections["locations"]
         self.sessions = self.collections["sessions"]
         self.tags = self.collections["tags"]
+        '''
 
         # i dont know what to do with this at all
         
