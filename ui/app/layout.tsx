@@ -1,13 +1,32 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Pirata_One, Noto_Serif, Faculty_Glyphic, Metal_Mania } from "next/font/google";
+
 import "./globals.css";
 import NavBar from "@/components/navbar";
 import { RecordingProvider } from "@/contexts/RecordingContext";
 import RecordingPopup from "@/components/RecordingPopup"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const pirataOne = Pirata_One({
+  variable: "--font-pirata-one",
+  subsets: ['latin'],
+  weight: '400',
+})
+
+const metalMania = Metal_Mania({
+  variable: "--font-metal-mania",
+  subsets: ['latin'],
+  weight: "400"
+})
+
+const notoSerif = Noto_Serif({
+  variable: "--font-noto-serif",
   subsets: ["latin"],
+});
+
+const facultyGlyphic = Faculty_Glyphic({
+  variable: "--font-faculty-glyphic",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 const geistMono = Geist_Mono({
@@ -28,7 +47,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${notoSerif.variable} ${pirataOne.variable} ${facultyGlyphic.variable} ${metalMania.variable} antialiased flex flex-col min-h-screen`}
+        style={{ fontFamily: "var(--font-faculty-glyphic), serif" }}
       >
         <RecordingProvider>
           <NavBar />
