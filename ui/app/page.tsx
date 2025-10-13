@@ -1,114 +1,50 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 export default function Home() {
-  const [transcript, setTranscript] = useState("");
-  const [session, setSession] = useState<any | null>(null);
-  const [sessions, setSessions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Same-origin proxy: Next.js rewrites /api/* → backend
-  const baseUrl = "/api";
-
-  async function submitTranscript() {
-    if (!transcript.trim()) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${baseUrl}/sessions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript }),
-      });
-      if (!res.ok) throw new Error(`POST failed: ${res.status}`);
-      const data = await res.json();
-      setSession(data);
-      setTranscript("");
-      await fetchSessions();
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchSessions() {
-    try {
-      const res = await fetch(`${baseUrl}/sessions`, {
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(`GET failed: ${res.status}`);
-      const data = await res.json();
-      setSessions(data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
-  }
-
-  useEffect(() => {
-    fetchSessions();
-  }, []);
-
   return (
-    <>
-      <div className="flex flex-col p-6 space-y-6 bg-white min-h-screen">
-        {/* Main Page Title */}
-        <h1 className="text-4xl font-bold text-center text-black mb-6">
-          Dungeons & Dragons AI Processor
+    <div className="flex flex-col items-center justify-center gap-8 p-8">
+      <div className="text-center">
+        <h1 className="text-5xl font-bold mb-4 text-gray-800">
+          Welcome to Dungeon Scribe
         </h1>
-        <h2 className="text-xl text-center text-gray-700 mb-6">
-          For testing transcripts and AI processing.
-        </h2>
+        <p className="text-xl text-gray-600 mb-8">
+          Your AI-powered D&D session tracker and transcription tool
+        </p>
+      </div>
 
-        <div className="card w-full bg-gray-900 shadow-xl p-6">
-          <h2 className="card-title mb-4 text-white">Submit Transcript</h2>
-          <textarea
-            className="textarea textarea-bordered w-full h-40 bg-gray-800 text-white"
-            placeholder="Paste your D&D transcript here..."
-            value={transcript}
-            onChange={(e) => setTranscript(e.target.value)}
-            disabled={loading}
-          />
-          <div className="card-actions justify-end mt-4">
-            <button
-              className="btn btn-primary rounded-xl"
-              onClick={submitTranscript}
-              disabled={loading || !transcript.trim()}
-            >
-              {loading ? "Processing…" : "Submit"}
-            </button>
-          </div>
-          {error && <p className="text-sm text-error mt-2">{error}</p>}
+      <svg
+        width="400px"
+        height="250px"
+        viewBox="0 0 512 512"
+        xmlns="http://www.w3.org/2000/svg"
+        className="text-gray-700">
+        <path fill="currentColor" d="M248 20.3L72.33 132.6 248 128.8zm16 0v108.5l175.7 3.8zm51.4 58.9c6.1 3.5 8.2 7.2 15.1 4.2 10.7.8 22.3 5.8 27.6 15.7 4.7 4.5 1.5 12.6-5.2 12.6-9.7.1-19.7-6.1-14.6-8.3 4.7-2 14.7.9 10-5.5-3.6-4.5-11-7.8-16.3-5.9-1.6 6.8-9.4 4-12-.7-2.3-5.8-9.1-8.2-15-7.9-6.1 2.7 1.6 8.8 5.3 9.9 7.9 2.2.2 7.5-4.1 5.1-4.2-2.4-15-9.6-13.5-18.3 5.8-7.39 15.8-4.62 22.7-.9zm-108.5-3.5c5.5.5 12.3 3 10.2 9.9-4.3 7-9.8 13.1-18.1 14.8-6.5 3.4-14.9 4.4-21.6 1.9-3.7-2.3-13.5-9.3-14.9-3.4-2.1 14.8.7 13.1-11.1 17.8V92.3c9.9-3.9 21.1-4.5 30.3 1.3 8 4.2 19.4 1.5 24.2-5.7 1.4-6.5-8.1-4.6-12.2-3.4-2.7-8.2 7.9-7.5 13.2-8.8z" />
+      </svg>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl">
+        <div className="card bg-base-100 shadow-lg p-6 text-center">
+          <h3 className="text-xl font-bold mb-2">Record Sessions</h3>
+          <p className="text-gray-600">
+            Record your D&D sessions with automatic speaker identification
+          </p>
         </div>
-
-        {session && (
-          <div className="card bg-gray-900 shadow-xl p-6">
-            <h2 className="card-title text-white">Latest Session</h2>
-            <pre className="mt-2 p-2 rounded text-xs text-white bg-gray-800 whitespace-pre-wrap break-words">
-              {JSON.stringify(session, null, 2)}
-            </pre>
-          </div>
-        )}
-
-        <div className="card bg-gray-900 shadow-xl p-6">
-          <h2 className="card-title text-white">Past Sessions</h2>
-          <ul className="list-none mt-2 space-y-4">
-            {sessions.map((s) => (
-              <li
-                key={s.session_code}
-                className="p-4 bg-gray-800 rounded shadow-sm text-white"
-              >
-                <strong>Session Code:</strong> {s.session_code}
-                <pre className="mt-2 p-2 rounded text-xs text-white bg-gray-700 whitespace-pre-wrap break-words">
-                  {JSON.stringify(s, null, 2)}
-                </pre>
-              </li>
-            ))}
-          </ul>
+        <div className="card bg-base-100 shadow-lg p-6 text-center">
+          <h3 className="text-xl font-bold mb-2">AI Processing</h3>
+          <p className="text-gray-600">
+            Automatically extract characters, locations, and events
+          </p>
+        </div>
+        <div className="card bg-base-100 shadow-lg p-6 text-center">
+          <h3 className="text-xl font-bold mb-2">Track Everything</h3>
+          <p className="text-gray-600">
+            View timelines, character sheets, and campaign summaries
+          </p>
         </div>
       </div>
-    </>
+
+      <div className="text-center mt-8">
+        <p className="text-gray-500 text-sm">
+          Use the navigation above to get started
+        </p>
+      </div>
+    </div>
   );
 }

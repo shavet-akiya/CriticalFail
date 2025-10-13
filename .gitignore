@@ -213,6 +213,8 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# CriticalFail - Models folder
+models/
 
 node_modules/
 .next/

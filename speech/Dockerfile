@@ -1,18 +1,25 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     git \
     gcc \
     g++ \
-    python3-dev \
     wget \
     && rm -rf /var/lib/apt/lists/*
+
+# Install PyTorch 2.3.1 WITHOUT torchvision (not needed for audio)
+RUN pip install --no-cache-dir \
+    torch==2.3.1 \
+    torchaudio==2.3.1 \
+    --index-url https://download.pytorch.org/whl/cpu
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
@@ -21,15 +28,8 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 RUN mkdir -p models/whisperx models/whisperx_align models/speechbrain transcripts recordings
 
-# Skip model download during build - will download on first run
-# This avoids the ctranslate2 executable stack issue
-
 COPY . .
-
-# Add security flags to allow ctranslate2 to work
-ENV LD_PRELOAD=""
-ENV MALLOC_CONF="dirty_decay_ms:0"
 
 EXPOSE 8001
 
-CMD ["uvicorn", "speech_server:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["python", "-m", "uvicorn", "speech_server:app", "--host", "0.0.0.0", "--port", "8001"]

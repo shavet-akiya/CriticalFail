@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: server/Dockerfile
     ports:
-      - "8000:8000"
+      - "9000:9000"
     environment:
       - PYTHONUNBUFFERED=1
       - OLLAMA_BASE_URL=http://ollama:11434
@@ -14,28 +14,36 @@ services:
       - HF_HUB_DISABLE_SYMLINKS_WARNING=1
     depends_on:
       - ollama
+      - chroma
       - speech
     volumes:
       - ./models:/app/models
-      - ./transcripts:/app/transcripts
-      - ./audio_recordings:/app/audio_recordings
-      - ./src/recordings:/app/src/recordings
-      - ./src/transcripts:/app/src/transcripts
+      - ./server/src/recordings:/app/server/src/recordings
+      - ./server/src/transcripts:/app/server/src/transcripts
 
   speech:
     container_name: speech
     build:
       context: ./speech
       dockerfile: Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     ports:
       - "8001:8001"
     environment:
       - PYTHONUNBUFFERED=1
-      - HF_HUB_OFFLINE=1
+      - HF_HUB_CACHE=/app/models
       - HF_HUB_DISABLE_SYMLINKS_WARNING=1
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     volumes:
-      - ./src/recordings:/app/recordings
-      - ./src/transcripts:/app/transcripts
+      - ./server/src/recordings:/app/recordings
+      - ./server/src/transcripts:/app/transcripts
       - ./models:/app/models
 
   ui:
@@ -46,9 +54,17 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://server:9000
     depends_on:
       - server
+
+  chroma:
+    container_name: chroma
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma/chroma_data:/chroma/chroma_data
 
   ollama:
     container_name: ollama

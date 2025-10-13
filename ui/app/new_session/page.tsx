@@ -1,96 +1,186 @@
 "use client"
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { Upload, Mic, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 export default function NewSession() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStatus, setProcessingStatus] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string>("");
+  const [uploadError, setUploadError] = useState<string>("");
 
   const handleUploadClick = () => {
-    fileInputRef.current?.click();
+    if (!isUploading) {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      console.log("Selected file:", file.name);
-      setIsProcessing(true);
-      setProcessingStatus("Uploading and processing audio...");
+    if (!file) return;
+
+    console.log("Selected file:", file.name);
+    setIsUploading(true);
+    setUploadStatus("Uploading audio file...");
+    setUploadError("");
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('min_speakers', '2');
+      formData.append('max_speakers', '8');
       
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('min_speakers', '2');
-        formData.append('max_speakers', '8');
-        
-        const response = await fetch('http://localhost:8000/api/speech/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          throw new Error('Upload failed');
-        }
-        
-        const result = await response.json();
-        console.log('Processing result:', result);
-        
-        if (result.success && result.transcript) {
-          setProcessingStatus(`Success! Found ${result.speaker_count || 0} speakers. Transcript saved.`);
-          
-          // Download transcript as text file
-          const blob = new Blob([result.transcript], { type: 'text/plain' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `transcript_${file.name.replace(/\.[^/.]+$/, '')}.txt`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        } else {
-          setProcessingStatus(`Error: ${result.error || 'Processing failed'}`);
-        }
-      } catch (error) {
-        console.error('Error uploading file:', error);
-        setProcessingStatus('Failed to process audio file');
-      } finally {
-        setIsProcessing(false);
-        // Clear status after 5 seconds
-        setTimeout(() => setProcessingStatus(""), 5000);
+      // Submit job
+      const response = await fetch('/api/speech/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
       }
+      
+      const result = await response.json();
+      console.log('Job submitted:', result.job_id);
+      
+      if (!result.job_id) {
+        throw new Error('No job ID returned');
+      }
+      
+      // Poll for completion
+      setUploadStatus(`Processing audio (Job: ${result.job_id.substring(0, 8)}...)`);
+      
+      let attempts = 0;
+      const maxAttempts = 400; // 20 minutes
+      
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+        attempts++;
+        
+        const statusResponse = await fetch(`/api/speech/status/${result.job_id}`);
+        if (!statusResponse.ok) {
+          console.error('Status check failed');
+          continue;
+        }
+        
+        const statusData = await statusResponse.json();
+        console.log('Job status:', statusData.status);
+        
+        if (statusData.status === 'processing') {
+          setUploadStatus(`Processing audio... (${Math.floor(attempts * 3 / 60)}m ${(attempts * 3) % 60}s)`);
+        }
+        
+        if (statusData.status === 'completed' && statusData.result) {
+          // Don't auto-download - just show success message
+          setUploadStatus(`✅ Success! Transcript saved with ${statusData.result.speaker_count || 0} speakers identified.`);
+          
+          setTimeout(() => setUploadStatus(""), 10000); // Clear after 10 seconds
+          break;
+        }
+        
+        if (statusData.status === 'failed') {
+          throw new Error(statusData.error || 'Processing failed');
+        }
+      }
+      
+      if (attempts >= maxAttempts) {
+        throw new Error('Processing timeout');
+      }
+      
+    } catch (error: any) {
+      console.error('Error:', error);
+      setUploadError(error.message || 'Failed to process audio file');
+      setUploadStatus("");
+    } finally {
+      setIsUploading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-16">
-      <svg
-        width="800px"
-        height="500px"
-        viewBox="0 0 512 512"
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-1/2 text-black">
-        <path fill="currentColor" d="M248 20.3L72.33 132.6 248 128.8zm16 0v108.5l175.7 3.8zm51.4 58.9c6.1 3.5 8.2 7.2 15.1 4.2 10.7.8 22.3 5.8 27.6 15.7 4.7 4.5 1.5 12.6-5.2 12.6-9.7.1-19.7-6.1-14.6-8.3 4.7-2 14.7.9 10-5.5-3.6-4.5-11-7.8-16.3-5.9-1.6 6.8-9.4 4-12-.7-2.3-5.8-9.1-8.2-15-7.9-6.1 2.7 1.6 8.8 5.3 9.9 7.9 2.2.2 7.5-4.1 5.1-4.2-2.4-15-9.6-13.5-18.3 5.8-7.39 15.8-4.62 22.7-.9zm-108.5-3.5c5.5.5 12.3 3 10.2 9.9-4.3 7-9.8 13.1-18.1 14.8-6.5 3.4-14.9 4.4-21.6 1.9-3.7-2.3-13.5-9.3-14.9-3.4-2.1 14.8.7 13.1-11.1 17.8V92.3c9.9-3.9 21.1-4.5 30.3 1.3 8 4.2 19.4 1.5 24.2-5.7 1.4-6.5-8.1-4.6-12.2-3.4-2.7-8.2 7.9-7.5 13.2-8.8zm35 69.2L55.39 149l71.21 192.9zm28.2 0l115.3 197L456.6 149zm-14.1 7.5L138.9 352.6h234.2zm133.3 21.1c13.9 8.3 21.5 26.2 22.1 43-1.3 13.6-.7 19.8-15.2 21.4-14.5 1.6-23.9-19.2-29.7-32.6-3.4-9.9-5.8-24 1.7-31.3 6.1-4.8 15-4.1 21.1-.5zm-223.7 16.1c2.1 4-.5 11.4-4.8 12.1-4.9.7-3.8-9.3-9.4-11.6-6.9-2.3-13.6 5.6-15 11.6 10.4-4 20.3 7.1 20.3 17-.4 11.7-7.9 24.8-19.7 28.1h-5.6c-12.7-.7-18.3-15.8-14.2-26.6 4.4-15.8 10.8-33.9 27.2-40.6 8.5-3.9 19 3.2 21.2 10zm213.9-8.4c-7.1-.1-4.4 10-3.3 14.5 3.5 11.5 7.3 26.6 18.9 30 6.8-1.2 4.4-12.8 3.7-16.5-4.7-10.9-7.1-23.3-19.3-28zM52 186v173.2l61.9-5.7zm408 0l-61.9 167.5 61.9 5.7zm-117.9.7l28.5 63.5-10 4.4-20-43.3c-6.1 3-13 8.9-14.6-1.4-1.3-3.9 8.5-5.1 8.1-11.9-.3-6.9 2.2-12.2 8-11.3zm-212 27.4c-2.4 5.1-4.1 10.3-2.7 15.9 1.7 8.8 13.5 6.4 15.6-.8 2.7-5 3.9-11.7-.5-15.7-4.1-3.4-8.9-2.8-12.4.6zm328.4 41.6c-.1 18.6 1.1 39.2-9.7 55.3-.9 1.2-2.2 1.9-3.7 2.5-5.8-4.1-3-11.3 1.2-15.5 1 7.3 5.5-2.9 6.6-5.6 1.3-3.2 3.6-17.7-1-10.2.7 4-6.8 13.1-9.3 8.1-5-14.4 0-30.5 7-43.5 5.7-6.2 9.9 4.4 8.9 8.9zM59.93 245.5c.59.1 1.34 1 2.48 3.6v61.1c-7.3-7-4.47-18-4.45-26.4 0-8.4 1.65-16.3-1.28-23.2-4.62-1.7-5.79-17-3.17-12.7 4.41 4.8 4.66-2.7 6.42-2.4zm178.77 7.6c8.1 4.5 13.8 14.4 10.8 23.6-2.1 15.2-27 21.1-30.4 29.7-1.2 3 25.4 1.6 30.2 1.6.5 4 1.5 10.7-3.8 11.7-14.5-1.2-29.9-.6-45.1-.6.4-11.2 7.4-21.3 17-26.8 6.9-4.9 15.4-9.3 18.1-17.9 1.8-4.5-.6-9.3-4.6-11.5-4.2-2.9-11-2.3-13.2 2.7-2 3.8-4.4 9.1-8.7 9.6-2.9.4-9 .5-7.2-4.9 1.4-5.6 3.4-11.5 8.2-15.2 8.8-6.3 19.9-6.7 28.7-2zm53.3-1.4c6.8 2.2 12 7.9 14.3 14.6 6.1 14.7 5.5 33.1-4.4 45.9-4.5 4.8-10.2 9.1-17 9.1-12.5-.1-22.4-11.1-24.8-22.8-3.1-13.4-1.8-28.7 6.9-39.8 6.8-7.6 16-10.3 25-7zm156.1 8.1c-1.6 5.9-3.3 13.4-.7 19.3 5.1-2 5.4-9.6 6.6-14.5.9-6.1-3.5-12.6-5.9-4.8zm-176.2 21.1c.6 10.5 1.7 22.8 9.7 28.2 4.9 1.8 9.7-2.2 11.1-6.7 1.9-6.3 2.3-12.9 2.4-19.4-.2-7.1-1.5-15-6.7-20.1-12.2-4.4-15.3 10.9-16.5 18zM434 266.8V328l-4.4 6.7v-42.3c-4.6 7.5-9.1 9.1-6.1-.9 6.1-7.1 4.8-17.4 10.5-24.7zM83.85 279c.8 3.6 5.12 17.8 2.04 14.8-1.97-1.3-3.62-4.9-3.41-6.1-1.55-3-2.96-6.1-4.21-9.2-2.95 4-3.96 8.3-3.14 13.4.2-1.6 1.18-2.3 3.39-.7 7.84 12.6 12.17 29.1 7.29 43.5l-2.22 1.1c-10.36-5.8-11.4-19.4-13.43-30-1.55-12.3-.79-24.7 2.3-36.7 5.2-3.8 9.16 5.4 11.39 9.9zm-7.05 20.2c-4.06 4.7-2.26 12.8-.38 18.4 1.11 5.5 6.92 10.2 6.06 1.6.69-11.1-2.33-12.7-5.68-20zm66.4 69.4L256 491.7l112.8-123.1zm-21.4.3l-53.84 4.9 64.24 41.1c-2.6-2.7-4.9-5.7-7.1-8.8-5.2-6.9-10.5-13.6-18.9-16.6-8.75-6.5-4.2-5.3 2.9-2.6-1-1.8-.7-2.6.1-2.6 2.2-.2 8.4 4.2 9.8 6.3l24.7 31.6 65.1 41.7zm268.4 0l-42.4 46.3c6.4-3.1 11.3-8.5 17-12.4 2.4-1.4 3.7-1.9 4.3-1.9 2.1 0-5.4 7.1-7.7 10.3-9.4 9.8-16 23-28.6 29.1l18.9-24.5c-2.3 1.3-6 3.2-8.2 4.1l-40.3 44 74.5-47.6c5.4-6.7 1.9-5.6-5.7-.9l-11.4 6c11.4-13.7 30.8-28.3 40-35.6 9.2-7.3 15.9-9.8 8.2-1.5l-12.6 16c10-7.6.9 3.9-4.5 5.5-.7 1-1.4 2-2.2 2.9l54.5-34.9zM236 385.8v43.4h-13.4v-30c-5-1.4-10.4 1.7-15.3-.3-3.8-2.9 1-6.8 4.5-5.9 3.3-.1 7.6.2 9.3-3.2 4.4-4.5 9.6-4.4 14.9-4zm29 .5c12.1 1.2 24.2.6 36.6.6 1.5 3 .8 7.8-3.3 7.9-7.7.3-21-1.6-25.9.6-8.2 10.5 5.7 3.8 11.4 5.2 7 1.1 15 2.9 19.1 9.2 2.1 3.1 2.7 7.3.7 10.7-5.8 6.8-17 11.5-25.3 10.9-7.3-.6-15.6-1.1-20.6-7.1-6.4-10.6 10.5-6.7 12.2-3.2 6 5.3 20.3 1.9 20.7-4.7.6-4.2-2.1-6.3-6.9-7.8-4.8-1.5-12.6 1-17.3 1.8-4.7.8-9.6.5-9-4.4.8-4.2 2.7-8.1 2.7-12.5.1-3 1.7-7 4.9-7.2zm133.5 5c-.2-.2-7 5.8-9.9 8.1l-15.8 13.1c10.6-6.5 19.3-12 25.7-21.2zm-247 14.2c2.4 0 7.5 4.6 9.4 7l26.1 31.1c-7.7-2.1-13.3-7.1-17.6-13.7-6.5-7.3-11.3-16.6-21.2-19.6-9-5-5.2-6.4 2.1-2.2-.3-1.9.2-2.6 1.2-2.6z" />
-      </svg>
+    <div className="flex flex-col items-center justify-center min-h-[80vh] gap-12 p-8">
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-5xl font-bold text-gray-800 mb-4">Create New Session</h1>
+        <p className="text-lg text-gray-600">Upload audio or start recording your D&D session</p>
+      </div>
 
-      <div className="flex gap-4">
+      {/* Action Buttons */}
+      <div className="flex gap-6">
         <button
-          className="btn btn-outline rounded-md"
+          className="flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleUploadClick}
-          disabled={isProcessing}>
-          {isProcessing ? 'Processing...' : 'Upload Session'}
+          disabled={isUploading}>
+          {isUploading ? (
+            <>
+              <Loader2 className="animate-spin" size={24} />
+              Processing...
+            </>
+          ) : (
+            <>
+              <Upload size={24} />
+              Upload Audio File
+            </>
+          )}
         </button>
+        
         <Link href="/new_session/recording">
-          <button className="btn btn-outline rounded-md">Start Recording</button>
+          <button 
+            className="flex items-center gap-3 px-8 py-4 bg-red-500 text-white text-lg font-semibold rounded-lg hover:bg-red-600 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isUploading}
+          >
+            <Mic size={24} />
+            Start Recording
+          </button>
         </Link>
       </div>
 
-      {processingStatus && (
-        <div className={`text-center p-4 rounded ${processingStatus.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
-          {processingStatus}
+      {/* Status Messages */}
+      {uploadStatus && (
+        <div className={`flex items-center gap-3 p-4 rounded-lg shadow ${
+          uploadStatus.includes('✅') 
+            ? 'bg-green-50 border-l-4 border-green-500' 
+            : 'bg-blue-50 border-l-4 border-blue-500'
+        }`}>
+          {uploadStatus.includes('✅') ? (
+            <CheckCircle className="text-green-600" size={20} />
+          ) : (
+            <Loader2 className={isUploading ? "animate-spin text-blue-600" : "text-blue-600"} size={20} />
+          )}
+          <p className={uploadStatus.includes('✅') ? "text-green-800 font-medium" : "text-blue-800 font-medium"}>
+            {uploadStatus}
+          </p>
         </div>
       )}
+
+      {uploadError && (
+        <div className="flex items-center gap-3 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg shadow">
+          <XCircle className="text-red-600" size={20} />
+          <p className="text-red-800 font-medium">{uploadError}</p>
+        </div>
+      )}
+
+      {/* Info Card */}
+      <div className="max-w-2xl mt-8 p-6 bg-gray-50 rounded-lg shadow">
+        <h3 className="text-xl font-semibold text-gray-800 mb-3">How it works:</h3>
+        <ul className="space-y-2 text-gray-700">
+          <li className="flex items-start gap-2">
+            <span className="text-indigo-600 font-bold">1.</span>
+            <span>Upload an audio file or record your session live</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-indigo-600 font-bold">2.</span>
+            <span>AI transcribes the audio and identifies different speakers</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-indigo-600 font-bold">3.</span>
+            <span>Transcript is automatically saved in the transcripts folder</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-indigo-600 font-bold">4.</span>
+            <span>Large files (1+ hour) may take 15-20 minutes to process</span>
+          </li>
+        </ul>
+      </div>
 
       <input
         type="file"
