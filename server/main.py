@@ -8,7 +8,7 @@ import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi import Path
+from fastapi import Path, Body
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -321,8 +321,8 @@ async def get_character(character_id: str):
     return {"character": results["metadatas"][0]}
 
 
-@app.put("/characters/{character_id}")
-async def update_character(character_id: str, update: CharacterUpdate):
+@app.patch("/characters/{character_id}")
+async def patch_character(character_id: str, update: dict = Body(...)):
     results = session_collection.get(ids=[character_id])
     if not results["ids"]:
         return JSONResponse(status_code=404, content={"error": "Character not found"})
@@ -330,14 +330,19 @@ async def update_character(character_id: str, update: CharacterUpdate):
     old_metadata = results["metadatas"][0]
     old_document = results["documents"][0]
 
-    # Merge updates into the existing metadata
-    new_data = update.dict(exclude_unset=True, by_alias=True)
-    merged = {**old_metadata, **new_data}
+    # Only merge keys that are explicitly provided
+    merged = old_metadata.copy()
+    for key, value in update.items():
+        if value is not None:
+            merged[key] = value
 
-    # Replace the old record with the updated one
+    # Use updated name for the document if provided
+    new_document = merged.get("name", old_document)
+
+    # Delete old record and re-add updated one
     session_collection.delete(ids=[character_id])
     session_collection.add(
-        documents=[merged.get("name", old_document)],
+        documents=[new_document],
         ids=[character_id],
         metadatas=[merged],
     )

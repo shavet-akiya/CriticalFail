@@ -30,7 +30,7 @@ services:
     container_name: chroma
     image: chromadb/chroma:latest
     ports:
-      - "8000:8000"   # Chroma listens on 8000 internally
+      - "8000:8000"  
     volumes:
       - ./chroma/chroma_data:/chroma/chroma_data
 
