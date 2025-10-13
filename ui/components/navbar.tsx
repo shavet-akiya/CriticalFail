@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useRecording } from "@/contexts/RecordingContext";
 
 function NavBar() {
+  const { isRecording, isPaused } = useRecording();
+
   return (
     <div className="fixed navbar bg-base-100 shadow-sm">
       <div className="flex-1">
@@ -23,7 +28,10 @@ function NavBar() {
             <Link href="/locations">Locations</Link>
           </li>
           <li>
-            <Link href="/new_session" className="border-1">
+            <Link
+              href={isRecording || isPaused ? "/new_session/recording" : "/new_session"}
+              className="border-1"
+            >
               New Session
             </Link>
           </li>

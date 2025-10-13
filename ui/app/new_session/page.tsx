@@ -1,11 +1,18 @@
 "use client"
 import { useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRecording } from "@/contexts/RecordingContext";
 
 
 export default function NewSession() {
-  // const { isRecording, stopRecording } = useRecording();
+  const router = useRouter();
+  const { startRecording } = useRecording();
+
+  const handleStartRecording = () => {
+    startRecording();                // 1️⃣ Start recording
+    router.push("/new_session/recording");  // 2️⃣ Navigate
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,10 +44,12 @@ export default function NewSession() {
           onClick={handleUploadClick}>
           Upload Session
         </button>
-        <Link
-          href={`/new_session/recording`}>
-          <button className="btn btn-outline rounded-md">Start Recording</button>
-        </Link>
+        <button
+          className="btn btn-outline rounded-md"
+          onClick={handleStartRecording}
+        >
+          Start Recording
+        </button>
 
       </div>
 
