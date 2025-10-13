@@ -8,8 +8,8 @@ function NavBar() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 navbar bg-base-100">
-      <div className="flex-1">
-        <Link href="/" className="btn btn-ghost text-xl">
+      <div className="flex-1 font-metal-mania">
+        <Link href="/" className="btn btn-ghost text-3xl">
           Dungeon Scribe
         </Link>
       </div>

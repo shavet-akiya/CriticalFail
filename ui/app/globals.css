@@ -1,2 +1,14 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+.font-pirata {
+  font-family: var(--font-pirata-one);
+}
+
+.font-noto-serif {
+  font-family: var(--font-noto-serif);
+}
+
+.font-metal-mania {
+  font-family: var(--font-metal-mania);
+}
