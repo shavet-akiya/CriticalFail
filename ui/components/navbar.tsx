@@ -16,6 +16,9 @@ function NavBar() {
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1 gap-4">
           <li>
+            <Link href="/session_list">Session List</Link>
+          </li>
+          <li>
             <Link href="/summary">Campaign Summary</Link>
           </li>
           <li>
