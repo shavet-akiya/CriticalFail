@@ -47,35 +47,6 @@ export type CampaignTags=
 export type Location = {
   id: number;
   name: string;
-  description: string;
-
-  // Broad category for quick filtering/searching
-  type: 
-    | "city"
-    | "town"
-    | "village"
-    | "dungeon"
-    | "wilderness"
-    | "stronghold"
-    | "ruins"
-    | "other";
-
-  npcs: number[]; //character ID for monsters/NPC
-  enemyIDs: number[]; // monsters as Characters with enemy=true
-
-
-  landmarkIDs: number[];
-
-  tags: CampaignTags[];
-  subLocations?: Location[];
-};
-
-export type Landmark = {
-  id: number;
-  locationID: number;
-  name: string;
-  description: string;
-  type: "natural" | "building" | "infrastructure" | "cultural";
 };
 
 
