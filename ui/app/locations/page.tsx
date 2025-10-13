@@ -1,21 +1,39 @@
 "use client";
 import { useEffect, useState } from "react";
 
-type Location = {
-    location_id: string;
+export type Location = {
+    id: string;
     name: string;
-    description?: string;
 };
 
 export default function Locations() {
     const [locations, setLocations] = useState<Location[]>([]);
     const [loading, setLoading] = useState(true);
+    const baseUrl = "/api";
 
     useEffect(() => {
-        fetch("/api/locations")
-            .then((res) => res.json())
-            .then((data) => setLocations(data.locations || []))
-            .finally(() => setLoading(false));
+        const fetchLocations = async () => {
+            try {
+                const res = await fetch(`${baseUrl}/locations`);
+                const data = await res.json();
+
+                // Map DB results to Location type
+                const mappedLocations = (data.locations || []).map(
+                    (loc: any) => ({
+                        id: loc.location_id,
+                        name: loc.location_name,
+                    })
+                );
+
+                setLocations(mappedLocations);
+            } catch (err) {
+                console.error("Failed to fetch locations:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLocations();
     }, []);
 
     if (loading) return <div>Loading…</div>;
@@ -26,11 +44,10 @@ export default function Locations() {
             <ul className="space-y-2">
                 {locations.map((loc) => (
                     <li
-                        key={loc.location_id}
+                        key={loc.id}
                         className="p-4 border rounded hover:bg-gray-100"
                     >
-                        <h2 className="font-semibold">{loc.name}</h2>
-                        {loc.description && <p>{loc.description}</p>}
+                        {loc.name}
                     </li>
                 ))}
             </ul>

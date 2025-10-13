@@ -13,6 +13,21 @@ services:
     depends_on:
       - ollama
       - chroma
+  # speech:
+  #   container_name: speech
+  #   build:
+  #     context: ./speech
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8001:8001"
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - HF_HUB_OFFLINE=1
+  #     - HF_HUB_DISABLE_SYMLINKS_WARNING=1
+  #   volumes:
+  #     - ./src/recordings:/app/recordings
+  #     - ./src/transcripts:/app/transcripts
+  #     - ./models:/app/models
 
   ui:
     container_name: ui
@@ -30,7 +45,7 @@ services:
     container_name: chroma
     image: chromadb/chroma:latest
     ports:
-      - "8000:8000"   # Chroma listens on 8000 internally
+      - "8000:8000"  
     volumes:
       - ./chroma/chroma_data:/chroma/chroma_data
 
