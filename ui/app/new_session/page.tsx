@@ -1,8 +1,12 @@
 "use client"
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRecording } from "@/contexts/RecordingContext";
+
 
 export default function NewSession() {
+  // const { isRecording, stopRecording } = useRecording();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUploadClick = () => {
@@ -17,7 +21,6 @@ export default function NewSession() {
   };
 
   return (
-    // 
     <div className="flex flex-col items-center justify-center gap-16">
       <svg
         width="800px"
@@ -32,7 +35,8 @@ export default function NewSession() {
         <button
           className="btn btn-outline rounded-md"
           onClick={handleUploadClick}>
-          Upload Session</button>
+          Upload Session
+        </button>
         <Link
           href={`/new_session/recording`}>
           <button className="btn btn-outline rounded-md">Start Recording</button>

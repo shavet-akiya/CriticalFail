@@ -1,6 +1,16 @@
+"use client"
+
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRecording } from "@/contexts/RecordingContext";
 
 export default function RecordingPage() {
+    const { isRecording, startRecording, stopRecording } = useRecording();
+
+    useEffect(() => {
+        startRecording();
+    }, []);
+
     return (
         <div className="flex flex-col items-center justify-center gap-16">
             <svg
