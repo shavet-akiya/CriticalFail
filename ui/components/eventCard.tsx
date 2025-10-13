@@ -10,7 +10,9 @@ type EventCardProps = {
 export default function EventCard({ event }: EventCardProps) {
     return (
         <div className="card bg-base-100 border shadow-sm mb-4 p-4">
-            <h2 className="text-lg font-extrabold">{event.timeline_order}. {event.event}</h2>
+            <h2 className="text-lg font-extrabold">
+                {event.timeline_order}. {event.event}
+            </h2>
             <p className="mt-2">{event.event_summary}</p>
             <p className="mt-2">
                 <strong>Participants:</strong> {event.participants.join(", ")}
@@ -27,6 +29,4 @@ export default function EventCard({ event }: EventCardProps) {
             </div>
         </div>
     );
-
-
 }

@@ -29,15 +29,16 @@ export type Character = {
 // };
 
 export interface Event { 
-  event_id: string; // UUID 
-  // sessionId: number; // session ID will be linked to Campaign via Session
-  event: string; 
-  event_summary: string; 
-  participants: string[]; 
-  location: string; 
-  timeline_order: number; 
-  event_tags: CampaignTags[]; } 
-  
+    event_id: string;
+    session_id: string;
+    timeline_order: number;
+    event: string;
+    event_summary: string;
+    participants: string[];
+    location: string;
+    event_tags: string[];
+    type: string;
+}
 export interface CampaignEvents { events: Event[]; }
 
 export type CharacterFilter = "all" | "players" | "npc" ;

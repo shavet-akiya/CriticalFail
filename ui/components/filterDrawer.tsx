@@ -28,7 +28,7 @@ export default function FilterDrawer({
 
     const allTags = useMemo(() => {
         const tagSet = new Set<string>();
-        events.forEach((e) => e.eventTags.forEach((t) => tagSet.add(t)));
+        events.forEach((e) => e.event_tags.forEach((t) => tagSet.add(t)));
         return Array.from(tagSet);
     }, [events]);
 
