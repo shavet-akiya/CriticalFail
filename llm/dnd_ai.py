@@ -37,7 +37,7 @@ def run_ollama(prompt: str, model: str = None) -> str:
     return output.strip()
 
 
-def extract_session_data(transcript):
+async def extract_session_data(transcript):
     prompt = f"""
 You are a D&D session scribe. Analyze the transcript below carefully.
 
@@ -132,26 +132,31 @@ Instructions:
             # if locations are just strings, wrap them
             session_data["summary"]["locations"][i] = {
                 "location_id": str(uuid.uuid4()),
-                "name": loc,
+                "location_name": loc,
             }
 
-    # --- Events: assign UUIDs, timeline_order, and default fields ---
-    events = session_data["summary"]["events"]
-    for i, ev in enumerate(events):
-        if not isinstance(ev, dict):
-            ev = {"event": str(ev)}
-            events[i] = ev
+    # assign UUIDs and default fields to events
+    for i, ev in enumerate(session_data["summary"]["events"]):
+        if isinstance(ev, dict):
+            ev.setdefault("event_id", str(uuid.uuid4()))
+            ev.setdefault("event_summary", "")
+            ev.setdefault("participants", [])
+            ev.setdefault("location", "")
+            ev.setdefault("timeline_order", i + 1)
+            ev.setdefault("event_tags", ["miscellaneous"])
+        else:
+            # if events are just strings, wrap them
+            session_data["summary"]["events"][i] = {
+                "event_id": str(uuid.uuid4()),
+                "event": ev,
+                "event_summary": "",
+                "participants": [],
+                "location": "",
+                "timeline_order": i + 1,
+                "event_tags": ["miscellaneous"],
+            }
 
-        ev.setdefault("event_id", str(uuid.uuid4()))
-        ev.setdefault("event_summary", "")
-        ev.setdefault("participants", [])
-        ev.setdefault("location", "")
-        ev.setdefault("timeline_order", i + 1)
-        ev.setdefault("event_tags", ["miscellaneous"])
-    session_data["summary"]["events"] = events
-
-    return session_data
-
+    print(session_data)
     return session_data
 
 
@@ -187,17 +192,38 @@ def clean_ollama_response(response: str) -> dict:
 
 def test_extract_session_data():
     sample_transcript = """
-    DM: The party enters the ancient ruins.
-    Alice (Wizard): I cast a light spell to see inside.
-    Bob (Fighter): I draw my sword and lead the way.
-    DM: Suddenly, a giant spider descends from the ceiling!
-    Alice: I try to use my magic to distract it.
-    Bob: I attack with my sword!
+DM: Welcome everyone! Today’s adventure begins in the village of Green Hollow, a small settlement surrounded by dense forests.
+
+Alice (Wizard, NPC): I check the shelves in the apothecary for potions that might help us.
+Bob (Fighter, NPC): I stand by the entrance, keeping an eye out for any trouble.
+Spooky George (Unknown, NPC): Makes a low growl, staring at the forest edge.
+
+DM: Suddenly, a band of goblins emerges from the trees, brandishing crude weapons!
+
+Alice: I cast Magic Missile at the nearest goblin.
+Bob: I draw my sword and charge toward the goblins.
+Spooky George: I attempt to intimidate the goblins with a fearsome roar.
+
+DM: The goblins are taken aback by your coordinated attack. Alice's spell hits one goblin, Bob slashes another, and Spooky George's roar causes one to flee.
+
+DM: After the battle, you notice a hidden path leading deeper into the forest. Along the path, there’s an old, abandoned shrine covered in moss.
+
+Alice: I carefully examine the shrine for traps or magical wards.
+Bob: I check the surrounding area for any signs of more enemies.
+Spooky George: I investigate the shrine’s inscriptions, trying to understand its history.
+
+DM: You discover that the shrine was dedicated to an ancient forest deity. A faint magical aura remains, but it seems dormant. You also find a small chest containing gold and a mysterious scroll.
+
     """
 
+    # Extract structured data
     result = extract_session_data(sample_transcript)
 
-    # Print for inspection
+    # 🔹 Filter out only the events (if present)
+    events = result.get("summary", {}).get("events", [])
+
+    # Print just the events for inspection
+    print("=== Extracted Events ===")
     print(json.dumps(result, indent=2))
 
 

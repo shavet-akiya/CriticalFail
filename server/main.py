@@ -61,7 +61,7 @@ def save_session_to_chroma(session_data: dict) -> str:
     for loc in session_data["summary"].get("locations", []):
         loc_id = loc.get("location_id", str(uuid.uuid4()))
         session_collection.add(
-            documents=[loc.get("location_name", loc.get("name", ""))],
+            documents=[loc.get("location_name", "")],
             ids=[loc_id],
             metadatas=[
                 {
@@ -73,20 +73,23 @@ def save_session_to_chroma(session_data: dict) -> str:
             ],
         )
 
-    # Save each event
+        # --- Save events ---
     for ev in session_data["summary"].get("events", []):
         ev_id = ev.get("event_id", str(uuid.uuid4()))
+        metadata = {
+            **ev,
+            "event_id": ev_id,
+            "session_id": session_data["session_id"],
+            "type": "event",
+            "participants": ", ".join(ev.get("participants", [])),
+            "event_tags": ", ".join(ev.get("event_tags", [])),
+        }
+
+        print("\n🧩 Saving event:", json.dumps(metadata, indent=2))  # diagnostic
         session_collection.add(
             documents=[ev.get("event", "")],
             ids=[ev_id],
-            metadatas=[
-                {
-                    "event_id": ev_id,
-                    "session_id": session_data["session_id"],
-                    "type": "event",
-                    **ev,
-                }
-            ],
+            metadatas=[metadata],
         )
 
     return chroma_id
@@ -126,7 +129,7 @@ class DeleteRequest(BaseModel):
 @app.post("/sessions")
 async def process_session(input_data: TranscriptInput):
     try:
-        structured_json = dnd_ai.extract_session_data(input_data.transcript)
+        structured_json = await dnd_ai.extract_session_data(input_data.transcript)
 
         recent_sessions.insert(0, structured_json)
         if len(recent_sessions) > MAX_SESSIONS:
@@ -395,10 +398,12 @@ class EventUpdate(BaseModel):
     event_tags: Optional[List[str]]
 
 
+# --- Event Endpoints ---
 @app.get("/events")
 async def list_events():
     try:
         results = session_collection.get(where={"type": "event"})
+        # results["metadatas"] contains all the event data
         return {"events": results["metadatas"]}
     except Exception as e:
         return JSONResponse(
@@ -412,6 +417,7 @@ async def get_event(event_id: str):
     results = session_collection.get(ids=[event_id])
     if not results["ids"]:
         return JSONResponse(status_code=404, content={"error": "Event not found"})
+    # return the first metadata, which is the event
     return {"event": results["metadatas"][0]}
 
 

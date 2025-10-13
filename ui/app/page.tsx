@@ -13,21 +13,38 @@ export default function Home() {
     const baseUrl = "/api";
 
     async function submitTranscript() {
-        if (!transcript.trim()) return;
+        if (!transcript.trim() || posting) return;
         setPosting(true);
         setError(null);
+
         try {
+            // Optional: show temporary "processing" session
+            setSession({ status: "processing", transcript });
+
             const res = await fetch(`${baseUrl}/sessions`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ transcript }),
             });
+
             if (!res.ok) throw new Error(`POST failed: ${res.status}`);
-            const data = await res.json();
-            setSession(data);
+
+            const newSession = await res.json();
+
+            // Replace placeholder with final session
+            setSession(newSession);
+
+            // Append to past sessions
+            setSessions((prev) => [
+                {
+                    id: newSession.id || crypto.randomUUID(),
+                    document: newSession.document,
+                    metadata: newSession.metadata,
+                },
+                ...prev,
+            ]);
+
             setTranscript("");
-            // only fetch after posting is done
-            await fetchSessions();
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {
@@ -150,8 +167,11 @@ export default function Home() {
                                 <br />
                                 <strong>Events:</strong>{" "}
                                 {s.metadata.events
-                                    ?.map((e: any) => e.event)
-                                    .join(", ") || "None"}
+                                    ?.map(
+                                        (e: any) =>
+                                            `${e.event} — ${e.event_summary}`
+                                    )
+                                    .join("; ") || "None"}
                                 <br />
                                 <strong>Summary:</strong>
                                 <p className="mt-2 text-sm text-gray-300">
