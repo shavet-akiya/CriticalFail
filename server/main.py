@@ -85,7 +85,6 @@ def save_session_to_chroma(session_data: dict) -> str:
             "event_tags": ", ".join(ev.get("event_tags", [])),
         }
 
-        print("\n🧩 Saving event:", json.dumps(metadata, indent=2))  # diagnostic
         session_collection.add(
             documents=[ev.get("event", "")],
             ids=[ev_id],
