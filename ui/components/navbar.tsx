@@ -7,7 +7,7 @@ function NavBar() {
   const { isRecording, isPaused } = useRecording();
 
   return (
-    <div className="fixed navbar bg-base-100 shadow-sm">
+    <div className="fixed top-0 left-0 right-0 z-50 navbar bg-base-100">
       <div className="flex-1">
         <Link href="/" className="btn btn-ghost text-xl">
           Dungeon Scribe

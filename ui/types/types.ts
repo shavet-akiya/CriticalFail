@@ -17,17 +17,28 @@ export type Character = {
   CHA: number;
 };
 
-export type Event = {
-  eventId: string; //UUID
-  sessionId: number; // session ID will be linked to Campaign via Session
-  eventSummary: string;
-  characterIds: string[];
-  locationIds: number[];
-  timelineOrder: number;
-  eventTags: string[]
-  // order in session timeline comes from ID or array position
-};
+// export type Event = {
+//   eventId: string; //UUID
+//   sessionId: number; // session ID will be linked to Campaign via Session
+//   eventSummary: string;
+//   characterIds: string[];
+//   locationIds: number[];
+//   timelineOrder: number;
+//   eventTags: string[]
+//   // order in session timeline comes from ID or array position
+// };
 
+export interface Event { 
+  event_id: string; // UUID 
+  // sessionId: number; // session ID will be linked to Campaign via Session
+  event: string; 
+  event_summary: string; 
+  participants: string[]; 
+  location: string; 
+  timeline_order: number; 
+  event_tags: CampaignTags[]; } 
+  
+export interface CampaignEvents { events: Event[]; }
 
 export type CharacterFilter = "all" | "players" | "npc" ;
 
