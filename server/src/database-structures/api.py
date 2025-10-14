@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from Structures import Event, validate
+from Structures import Event, validate, TableEntry
 from Database import Database
 
 database = Database()
@@ -36,12 +36,8 @@ async def get_element(table_name, name):
     return {"data": database.get_element(table_name, name)}
 
 @app.post("/table/{table_name}")
-async def add_element(table_name, item: TableEntry):
-    return {"data": database.add_element(table_name, item)}
-
-@app.put("/table/{table_name}")
-async def edit_element(table_name, item: TableEntry):
-    return {"data": database.edit_element(table_name, item)}
+async def add_or_edit_element(table_name, item: TableEntry):
+    return {"data": database.add_or_edit_element(table_name, item)}
 
 @app.delete("/table/{table_name}")
 async def remove_element(table_name, name):

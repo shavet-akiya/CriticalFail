@@ -19,33 +19,29 @@ class Database:
             self.collections["timeline_meta"]
         )
 
+
+
+    def get_elements(self, table_name: str) -> list:
+        return self.collections[table_name].get()['documents']
+    
     ''' Should return a list of all of the keys in the table '''
     def get_keys(self, table_name: str) -> list:
-        pass
+        return self.collections[table_name].get()['ids']
 
     ''' Return the tabe entry for an element at a given id'''
     def get_element(self, table_name: str, name: str) -> TableEntry:
-        pass
+        return self.collections[table_name].get(name)
 
     ''' Add the element to the table given its json'''
-    def add_element(self, table_name: str, entry: TableEntry):
-        id = [str(entry.name)]
-        document = [entry.model_dump_json()]
-        metadata = []
-
+    def add_or_edit_element(self, table_name: str, entry: TableEntry):
         self.collections[table_name].upsert(    
-            ids=id,
-            documents=document,
-            metadatas=metadata
+            ids=str(entry.name),
+            documents=entry.model_dump_json()
         )
-
-    ''' Edit the element at the id: entry.name to be entry '''
-    def edit_element(self, table_name: str, entry: str):
-        pass
 
     ''' Remove the element at the id: name '''
     def remove_element(self, table_name: str, name: str):
-        pass
+        self.collections[table_name].delete(name)
 
 
     def get_table(self, table_name: str) -> Collection | None:
