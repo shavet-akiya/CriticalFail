@@ -4,9 +4,9 @@ import json
 import datetime
 import re
 from typing import Optional
+import uuid
 
-
-OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://ollama:11434")
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3")
 
 
@@ -37,7 +37,7 @@ def run_ollama(prompt: str, model: str = None) -> str:
     return output.strip()
 
 
-def extract_session_data(transcript):
+async def extract_session_data(transcript):
     prompt = f"""
 You are a D&D session scribe. Analyze the transcript below carefully.
 
@@ -51,17 +51,17 @@ Instructions:
   "session_summary": "Summarize the key story events, quests, and lore that occurred in this session into readable text.  
    - Exclude gameplay mechanics such as dice rolls, skill checks, or combat mechanics.  
    - Include only story events - this may include important conversations between characters, battles, or quests.  
-   - Ignore any non-game or non-D&D story related discussion.",
+   - Ignore any non-game or non-D&D story related discussion.
   "characters": [
-      {{"name": "character's name or alias", "race": "...", "player_character": "yes if player, no if NPC"}} 
+      {{"name": "Name or alias of the character", "race": "if known", "class":"if known", "npc": true or false}}
   ],
-  "locations": ["..."],
+  "locations": [{{"location_name": "any location referenced in the session, such as a named place or a notable location (e.g., tavern)"}}],
   "events": [
       {{
           "event": "A title for the event.",
           "event_summary": "A text summary of what occurred during the event.",
-          "participants": ["Any character involved in the event."],
-          "location": "Location event took place.",
+          "participants": ["List of character names involved."],
+          "location": "Location where event took place.",
           "timeline_order": 1
           "event_tags": Choose one or more from the following relevant to the event: "combat", "exploration", "player-to-player interaction", "npc interaction", "resting", "investigation", and "miscellaneous" miscellaneous should only be used if event is not relevant to any other tags.
       }}
@@ -76,6 +76,7 @@ Instructions:
 """
     # Call your LLM
     response = run_ollama(prompt)
+    # 🔹 DEBUG: print the raw response
 
     # Clean up response: strip code fences
     response = re.sub(r"```(?:json)?", "", response).strip()
@@ -92,7 +93,7 @@ Instructions:
 
     # Wrap into the schema expected by save_session_to_chroma
     session_data = {
-        "session_code": datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
+        "session_id": datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
         "campaign_id": 0,  # update if you have campaign context
         "summary": {
             "session_summary": structured.get("session_summary", ""),
@@ -104,7 +105,58 @@ Instructions:
         .isoformat(timespec="seconds")
         .replace("+00:00", "Z"),
     }
+    # 🔥 Initialise stats for each character
+    default_stats = {
+        "AC": 0,
+        "HP": 0,
+        "STR": 0,
+        "DEX": 0,
+        "CON": 0,
+        "INT": 0,
+        "WIS": 0,
+        "CHA": 0,
+    }
 
+    for char in session_data["summary"]["characters"]:
+        # ensure a unique character_id
+        char.setdefault("character_id", str(uuid.uuid4()))
+        # merge defaults without overwriting existing keys
+        for stat, val in default_stats.items():
+            char.setdefault(stat, val)
+
+    # assign UUIDs to locations
+    for i, loc in enumerate(session_data["summary"]["locations"]):
+        if isinstance(loc, dict):
+            loc.setdefault("location_id", str(uuid.uuid4()))
+        else:
+            # if locations are just strings, wrap them
+            session_data["summary"]["locations"][i] = {
+                "location_id": str(uuid.uuid4()),
+                "location_name": loc,
+            }
+
+    # assign UUIDs and default fields to events
+    for i, ev in enumerate(session_data["summary"]["events"]):
+        if isinstance(ev, dict):
+            ev.setdefault("event_id", str(uuid.uuid4()))
+            ev.setdefault("event_summary", "")
+            ev.setdefault("participants", [])
+            ev.setdefault("location", "")
+            ev.setdefault("timeline_order", i + 1)
+            ev.setdefault("event_tags", ["miscellaneous"])
+        else:
+            # if events are just strings, wrap them
+            session_data["summary"]["events"][i] = {
+                "event_id": str(uuid.uuid4()),
+                "event": ev,
+                "event_summary": "",
+                "participants": [],
+                "location": "",
+                "timeline_order": i + 1,
+                "event_tags": ["miscellaneous"],
+            }
+
+    print(session_data)
     return session_data
 
 
@@ -140,20 +192,40 @@ def clean_ollama_response(response: str) -> dict:
 
 def test_extract_session_data():
     sample_transcript = """
-    DM: The party enters the ancient ruins.
-    Alice (Wizard): I cast a light spell to see inside.
-    Bob (Fighter): I draw my sword and lead the way.
-    DM: Suddenly, a giant spider descends from the ceiling!
-    Alice: I try to use my magic to distract it.
-    Bob: I attack with my sword!
+DM: Welcome everyone! Today’s adventure begins in the village of Green Hollow, a small settlement surrounded by dense forests.
+
+Alice (Wizard, NPC): I check the shelves in the apothecary for potions that might help us.
+Bob (Fighter, NPC): I stand by the entrance, keeping an eye out for any trouble.
+Spooky George (Unknown, NPC): Makes a low growl, staring at the forest edge.
+
+DM: Suddenly, a band of goblins emerges from the trees, brandishing crude weapons!
+
+Alice: I cast Magic Missile at the nearest goblin.
+Bob: I draw my sword and charge toward the goblins.
+Spooky George: I attempt to intimidate the goblins with a fearsome roar.
+
+DM: The goblins are taken aback by your coordinated attack. Alice's spell hits one goblin, Bob slashes another, and Spooky George's roar causes one to flee.
+
+DM: After the battle, you notice a hidden path leading deeper into the forest. Along the path, there’s an old, abandoned shrine covered in moss.
+
+Alice: I carefully examine the shrine for traps or magical wards.
+Bob: I check the surrounding area for any signs of more enemies.
+Spooky George: I investigate the shrine’s inscriptions, trying to understand its history.
+
+DM: You discover that the shrine was dedicated to an ancient forest deity. A faint magical aura remains, but it seems dormant. You also find a small chest containing gold and a mysterious scroll.
+
     """
 
+    # Extract structured data
     result = extract_session_data(sample_transcript)
 
-    # Print for inspection
+    # 🔹 Filter out only the events (if present)
+    events = result.get("summary", {}).get("events", [])
+
+    # Print just the events for inspection
+    print("=== Extracted Events ===")
     print(json.dumps(result, indent=2))
 
 
-# # Run the test
-# if __name__ == "__main__":
-#     test_extract_session_data()
+if __name__ == "__main__":
+    test_extract_session_data()

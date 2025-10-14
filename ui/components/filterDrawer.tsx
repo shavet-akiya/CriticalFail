@@ -1,19 +1,36 @@
 "use client";
 
-import { useMemo } from "react";
-import { events } from "@/types/mockData";
+import { useEffect, useMemo, useState } from "react";
+import type { Event } from "@/types/types";
 
 interface FilterDrawerProps {
     filters: string[];
     setFilters: (filters: string[]) => void;
 }
 
-export default function FilterDrawer({ filters, setFilters }: FilterDrawerProps) {
+export default function FilterDrawer({
+    filters,
+    setFilters,
+}: FilterDrawerProps) {
+    const [events, setEvents] = useState<Event[]>([]);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetch("/api/events", { cache: "no-store" })
+            .then((res) => {
+                if (!res.ok)
+                    throw new Error(`Failed to fetch events: ${res.status}`);
+                return res.json();
+            })
+            .then((data) => setEvents(data.events ?? []))
+            .catch((e) => setError(e instanceof Error ? e.message : String(e)));
+    }, []);
+
     const allTags = useMemo(() => {
         const tagSet = new Set<string>();
-        events.forEach((e) => e.tags.forEach((t) => tagSet.add(t)));
+        events.forEach((e) => e.event_tags.forEach((t) => tagSet.add(t)));
         return Array.from(tagSet);
-    }, []);
+    }, [events]);
 
     const toggleFilter = (tag: string) => {
         setFilters(
@@ -24,24 +41,31 @@ export default function FilterDrawer({ filters, setFilters }: FilterDrawerProps)
     };
 
     const openModal = () => {
-        const modal = document.getElementById("my_modal_1") as HTMLDialogElement;
+        const modal = document.getElementById(
+            "my_modal_1"
+        ) as HTMLDialogElement;
         if (modal) modal.showModal();
     };
 
     return (
         <div className="p-4">
+            {error && <div className="text-error mb-2">{error}</div>}
 
-            {/* filtering tags + joins on the last */}
             <div>
                 {filters.map((tag) => (
                     <span
                         key={tag}
                         className="btn btn-outline rounded-lg"
-                        onClick={() => toggleFilter(tag)}> {tag}  ✕ </span>
-                ))
-                }
+                        onClick={() => toggleFilter(tag)}
+                    >
+                        {tag} ✕
+                    </span>
+                ))}
 
-                <button className="btn btn-outline rounded-lg" onClick={openModal}>
+                <button
+                    className="btn btn-outline rounded-lg"
+                    onClick={openModal}
+                >
                     + filter tag
                 </button>
             </div>
@@ -54,10 +78,11 @@ export default function FilterDrawer({ filters, setFilters }: FilterDrawerProps)
                         {allTags.map((tag) => (
                             <span
                                 key={tag}
-                                className={`badge cursor-pointer ${filters.includes(tag)
-                                    ? "badge-secondary"
-                                    : "badge-outline"
-                                    }`}
+                                className={`badge cursor-pointer ${
+                                    filters.includes(tag)
+                                        ? "badge-secondary"
+                                        : "badge-outline"
+                                }`}
                                 onClick={() => toggleFilter(tag)}
                             >
                                 {tag}

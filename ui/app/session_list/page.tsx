@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function Home() {
+export default function SessionList() {
     const [transcript, setTranscript] = useState("");
     const [session, setSession] = useState<any | null>(null);
     const [sessions, setSessions] = useState<any[]>([]);
@@ -13,38 +13,21 @@ export default function Home() {
     const baseUrl = "/api";
 
     async function submitTranscript() {
-        if (!transcript.trim() || posting) return;
+        if (!transcript.trim()) return;
         setPosting(true);
         setError(null);
-
         try {
-            // Optional: show temporary "processing" session
-            setSession({ status: "processing", transcript });
-
             const res = await fetch(`${baseUrl}/sessions`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ transcript }),
             });
-
             if (!res.ok) throw new Error(`POST failed: ${res.status}`);
-
-            const newSession = await res.json();
-
-            // Replace placeholder with final session
-            setSession(newSession);
-
-            // Append to past sessions
-            setSessions((prev) => [
-                {
-                    id: newSession.id || crypto.randomUUID(),
-                    document: newSession.document,
-                    metadata: newSession.metadata,
-                },
-                ...prev,
-            ]);
-
+            const data = await res.json();
+            setSession(data);
             setTranscript("");
+            // only fetch after posting is done
+            await fetchSessions();
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {
@@ -89,9 +72,9 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="flex flex-col p-6 space-y-6 min-h-screen">
-            <h1 className="text-4xl font-bold text-center text-white mb-6">
-                Landing Page
+        <div className="flex flex-col p-6 space-y-6 bg-white min-h-screen">
+            <h1 className="text-4xl font-bold text-center text-black mb-6">
+                Dungeons & Dragons AI Processor
             </h1>
 
             {/* Submit Transcript */}
@@ -167,11 +150,8 @@ export default function Home() {
                                 <br />
                                 <strong>Events:</strong>{" "}
                                 {s.metadata.events
-                                    ?.map(
-                                        (e: any) =>
-                                            `${e.event} — ${e.event_summary}`
-                                    )
-                                    .join("; ") || "None"}
+                                    ?.map((e: any) => e.event)
+                                    .join(", ") || "None"}
                                 <br />
                                 <strong>Summary:</strong>
                                 <p className="mt-2 text-sm text-gray-300">

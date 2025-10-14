@@ -1,37 +1,45 @@
 // need to be able to edit this.
 export type Character = {
-  id: number;
+  characterId: string // uuid
   name: string;
-  class: string;
-  race: string;
-  armourClass: number;
-  npc: boolean;
-  enemy: boolean; // monster/enemy --> set true
-  hp: number;
-  str: number;
-  dex: number;
-  con: number;
-  int: number;
-  wis: number;
-  cha: number;
-  img?: Base64URLString; // this may just be done via pathing if the user uploads it anyways 
-  currentLocationID?: number; // may not need right now
-  lastAppearanceID?: number; // session ID
+  race?: string;
+  class?: string;
+  npc?: boolean;
+
+  // new stats
+  AC: number;
+  HP: number;
+  STR: number;
+  DEX: number;
+  CON: number;
+  INT: number;
+  WIS: number;
+  CHA: number;
 };
 
-// No monster table for now. Define monsters/enemies under Character.npc = true.
+// export type Event = {
+//   eventId: string; //UUID
+//   sessionId: number; // session ID will be linked to Campaign via Session
+//   eventSummary: string;
+//   characterIds: string[];
+//   locationIds: number[];
+//   timelineOrder: number;
+//   eventTags: string[]
+//   // order in session timeline comes from ID or array position
+// };
 
-export type Event = {
-  id: number;
-  sessionId: number; // session ID will be linked to Campaign via Session
-  summary: string;
-  characterIDs: number[];
-  locationIDs: number[];
-  tags: CampaignTags[];
-  themes: string[];
-  // order in session timeline comes from ID or array position
-};
-
+export interface Event { 
+    event_id: string;
+    session_id: string;
+    timeline_order: number;
+    event: string;
+    event_summary: string;
+    participants: string[];
+    location: string;
+    event_tags: string[];
+    type: string;
+}
+export interface CampaignEvents { events: Event[]; }
 
 export type CharacterFilter = "all" | "players" | "npc" ;
 
@@ -51,35 +59,6 @@ export type CampaignTags=
 export type Location = {
   id: number;
   name: string;
-  description: string;
-
-  // Broad category for quick filtering/searching
-  type: 
-    | "city"
-    | "town"
-    | "village"
-    | "dungeon"
-    | "wilderness"
-    | "stronghold"
-    | "ruins"
-    | "other";
-
-  npcs: number[]; //character ID for monsters/NPC
-  enemyIDs: number[]; // monsters as Characters with enemy=true
-
-
-  landmarkIDs: number[];
-
-  tags: CampaignTags[];
-  subLocations?: Location[];
-};
-
-export type Landmark = {
-  id: number;
-  locationID: number;
-  name: string;
-  description: string;
-  type: "natural" | "building" | "infrastructure" | "cultural";
 };
 
 
