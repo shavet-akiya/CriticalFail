@@ -1,16 +1,171 @@
 "use client"
-import { useRef, useState } from "react";
-import Link from "next/link";
-import { Upload, Mic, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { useRef, useState, useEffect } from "react";
+import { Upload, Mic, MicOff, Pause, Play, CheckCircle, XCircle, Loader2, Database } from 'lucide-react';
 
 export default function NewSession() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Upload states
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string>("");
   const [uploadError, setUploadError] = useState<string>("");
+  
+  // Recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  
+  // Processing states
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  const [completedTranscript, setCompletedTranscript] = useState<string | null>(null);
+  const [speakerCount, setSpeakerCount] = useState<number>(0);
+  
+  // Refs for recording
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  // Recording timer
+  useEffect(() => {
+    if (isRecording && !isPaused) {
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isRecording, isPaused]);
+
+  const formatTime = (seconds: number): string => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const startRecording = async () => {
+    try {
+      setUploadError("");
+      setCompletedTranscript(null);
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 16000,
+        } 
+      });
+      
+      streamRef.current = stream;
+
+      let mimeType = 'audio/webm';
+      const types = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+        'audio/mp4',
+      ];
+      
+      for (const type of types) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          mimeType = type;
+          break;
+        }
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        setAudioBlob(blob);
+        // Auto-upload after recording stops
+        uploadRecording(blob);
+      };
+
+      mediaRecorder.start(1000);
+      setIsRecording(true);
+      setRecordingTime(0);
+      
+    } catch (err) {
+      console.error('Error starting recording:', err);
+      setUploadError('Failed to start recording. Please ensure microphone permissions are granted.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setIsPaused(false);
+      
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    }
+  };
+
+  const pauseRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      if (isPaused) {
+        mediaRecorderRef.current.resume();
+        setIsPaused(false);
+      } else {
+        mediaRecorderRef.current.pause();
+        setIsPaused(true);
+      }
+    }
+  };
+
+  const uploadRecording = async (blob: Blob) => {
+    setIsUploading(true);
+    setUploadStatus("Uploading recorded audio...");
+    
+    try {
+      const formData = new FormData();
+      const fileName = `recording_${new Date().toISOString().replace(/[:.]/g, '-')}.webm`;
+      formData.append('file', blob, fileName);
+      formData.append('min_speakers', '2');
+      formData.append('max_speakers', '8');
+      
+      await processAudioJob(formData);
+      
+    } catch (error: any) {
+      console.error('Error:', error);
+      setUploadError(error.message || 'Failed to process recording');
+      setUploadStatus("");
+      setIsUploading(false);
+    }
+  };
 
   const handleUploadClick = () => {
-    if (!isUploading) {
+    if (!isUploading && !isRecording) {
       fileInputRef.current?.click();
     }
   };
@@ -23,6 +178,7 @@ export default function NewSession() {
     setIsUploading(true);
     setUploadStatus("Uploading audio file...");
     setUploadError("");
+    setCompletedTranscript(null);
     
     try {
       const formData = new FormData();
@@ -30,112 +186,174 @@ export default function NewSession() {
       formData.append('min_speakers', '2');
       formData.append('max_speakers', '8');
       
-      // Submit job
-      const response = await fetch('/api/speech/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-      
-      const result = await response.json();
-      console.log('Job submitted:', result.job_id);
-      
-      if (!result.job_id) {
-        throw new Error('No job ID returned');
-      }
-      
-      // Poll for completion
-      setUploadStatus(`Processing audio (Job: ${result.job_id.substring(0, 8)}...)`);
-      
-      let attempts = 0;
-      const maxAttempts = 400; // 20 minutes
-      
-      while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-        attempts++;
-        
-        const statusResponse = await fetch(`/api/speech/status/${result.job_id}`);
-        if (!statusResponse.ok) {
-          console.error('Status check failed');
-          continue;
-        }
-        
-        const statusData = await statusResponse.json();
-        console.log('Job status:', statusData.status);
-        
-        if (statusData.status === 'processing') {
-          setUploadStatus(`Processing audio... (${Math.floor(attempts * 3 / 60)}m ${(attempts * 3) % 60}s)`);
-        }
-        
-        if (statusData.status === 'completed' && statusData.result) {
-          // Don't auto-download - just show success message
-          setUploadStatus(`✅ Success! Transcript saved with ${statusData.result.speaker_count || 0} speakers identified.`);
-          
-          setTimeout(() => setUploadStatus(""), 10000); // Clear after 10 seconds
-          break;
-        }
-        
-        if (statusData.status === 'failed') {
-          throw new Error(statusData.error || 'Processing failed');
-        }
-      }
-      
-      if (attempts >= maxAttempts) {
-        throw new Error('Processing timeout');
-      }
+      await processAudioJob(formData);
       
     } catch (error: any) {
       console.error('Error:', error);
       setUploadError(error.message || 'Failed to process audio file');
       setUploadStatus("");
-    } finally {
       setIsUploading(false);
     }
   };
 
+  const processAudioJob = async (formData: FormData) => {
+    // Submit job
+    const response = await fetch('/api/speech/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+    
+    const result = await response.json();
+    console.log('Job submitted:', result.job_id);
+    
+    if (!result.job_id) {
+      throw new Error('No job ID returned');
+    }
+    
+    setCurrentJobId(result.job_id);
+    
+    // Poll for completion
+    setUploadStatus(`Processing audio (Job: ${result.job_id.substring(0, 8)}...)`);
+    
+    let attempts = 0;
+    const maxAttempts = 400; // 20 minutes
+    
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      attempts++;
+      
+      const statusResponse = await fetch(`/api/speech/status/${result.job_id}`);
+      if (!statusResponse.ok) {
+        console.error('Status check failed');
+        continue;
+      }
+      
+      const statusData = await statusResponse.json();
+      console.log('Job status:', statusData.status);
+      
+      if (statusData.status === 'processing') {
+        setUploadStatus(`Processing audio... (${Math.floor(attempts * 3 / 60)}m ${(attempts * 3) % 60}s)`);
+      }
+      
+      if (statusData.status === 'completed' && statusData.result) {
+        setUploadStatus(`✅ Processing complete! ${statusData.result.speaker_count || 0} speakers identified.`);
+        setCompletedTranscript(statusData.result.transcript || '');
+        setSpeakerCount(statusData.result.speaker_count || 0);
+        setIsUploading(false);
+        
+        setTimeout(() => setUploadStatus(""), 3000);
+        break;
+      }
+      
+      if (statusData.status === 'failed') {
+        throw new Error(statusData.error || 'Processing failed');
+      }
+    }
+    
+    if (attempts >= maxAttempts) {
+      throw new Error('Processing timeout');
+    }
+  };
+
+  const handleSaveToDatabase = () => {
+    // TODO: Implement database save functionality
+    console.log('Save to database clicked');
+  };
+
+  const isProcessing = isUploading || isRecording;
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] gap-12 p-8">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] gap-8 p-8">
       {/* Header */}
       <div className="text-center">
         <h1 className="text-5xl font-bold text-gray-800 mb-4">Create New Session</h1>
         <p className="text-lg text-gray-600">Upload audio or start recording your D&D session</p>
       </div>
 
+      {/* Recording Timer */}
+      {isRecording && (
+        <div className="text-center">
+          <div className="text-4xl font-mono font-bold text-gray-700 mb-2">
+            {formatTime(recordingTime)}
+          </div>
+          <div className="flex items-center justify-center bg-red-50 rounded-lg px-4 py-2 inline-flex">
+            <div className={`w-3 h-3 rounded-full mr-3 ${
+              isPaused ? 'bg-yellow-500' : 'bg-red-500 animate-pulse'
+            }`} />
+            <span className="text-sm font-medium text-gray-700">
+              {isPaused ? 'Recording Paused' : 'Recording in Progress...'}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Action Buttons */}
-      <div className="flex gap-6">
-        <button
-          className="flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={handleUploadClick}
-          disabled={isUploading}>
-          {isUploading ? (
-            <>
-              <Loader2 className="animate-spin" size={24} />
-              Processing...
-            </>
-          ) : (
-            <>
-              <Upload size={24} />
-              Upload Audio File
-            </>
-          )}
-        </button>
-        
-        <Link href="/new_session/recording">
-          <button 
-            className="flex items-center gap-3 px-8 py-4 bg-red-500 text-white text-lg font-semibold rounded-lg hover:bg-red-600 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isUploading}
-          >
-            <Mic size={24} />
-            Start Recording
+      <div className="flex flex-col items-center gap-4">
+        <div className="flex gap-6">
+          <button
+            className="flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleUploadClick}
+            disabled={isProcessing}>
+            {isUploading && !isRecording ? (
+              <>
+                <Loader2 className="animate-spin" size={24} />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Upload size={24} />
+                Upload Audio File
+              </>
+            )}
           </button>
-        </Link>
+          
+          {!isRecording ? (
+            <button 
+              className="flex items-center gap-3 px-8 py-4 bg-red-500 text-white text-lg font-semibold rounded-lg hover:bg-red-600 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={startRecording}
+              disabled={isUploading}
+            >
+              <Mic size={24} />
+              Start Recording
+            </button>
+          ) : (
+            <button 
+              className="flex items-center gap-3 px-8 py-4 bg-gray-600 text-white text-lg font-semibold rounded-lg hover:bg-gray-700 transition-colors shadow-lg"
+              onClick={stopRecording}
+            >
+              <MicOff size={24} />
+              Stop Recording
+            </button>
+          )}
+        </div>
+
+        {/* Pause Button (appears when recording) */}
+        {isRecording && (
+          <button
+            onClick={pauseRecording}
+            className="flex items-center gap-2 px-6 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors shadow"
+          >
+            {isPaused ? (
+              <>
+                <Play size={18} />
+                Resume
+              </>
+            ) : (
+              <>
+                <Pause size={18} />
+                Pause
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Status Messages */}
-      {uploadStatus && (
+      {uploadStatus && !completedTranscript && (
         <div className={`flex items-center gap-3 p-4 rounded-lg shadow ${
           uploadStatus.includes('✅') 
             ? 'bg-green-50 border-l-4 border-green-500' 
@@ -144,7 +362,7 @@ export default function NewSession() {
           {uploadStatus.includes('✅') ? (
             <CheckCircle className="text-green-600" size={20} />
           ) : (
-            <Loader2 className={isUploading ? "animate-spin text-blue-600" : "text-blue-600"} size={20} />
+            <Loader2 className="animate-spin text-blue-600" size={20} />
           )}
           <p className={uploadStatus.includes('✅') ? "text-green-800 font-medium" : "text-blue-800 font-medium"}>
             {uploadStatus}
@@ -159,28 +377,38 @@ export default function NewSession() {
         </div>
       )}
 
-      {/* Info Card */}
-      <div className="max-w-2xl mt-8 p-6 bg-gray-50 rounded-lg shadow">
-        <h3 className="text-xl font-semibold text-gray-800 mb-3">How it works:</h3>
-        <ul className="space-y-2 text-gray-700">
-          <li className="flex items-start gap-2">
-            <span className="text-indigo-600 font-bold">1.</span>
-            <span>Upload an audio file or record your session live</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-indigo-600 font-bold">2.</span>
-            <span>AI transcribes the audio and identifies different speakers</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-indigo-600 font-bold">3.</span>
-            <span>Transcript is automatically saved in the transcripts folder</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-indigo-600 font-bold">4.</span>
-            <span>Large files (1+ hour) may take 15-20 minutes to process</span>
-          </li>
-        </ul>
-      </div>
+      {/* Completed Transcript Display */}
+      {completedTranscript && (
+        <div className="w-full max-w-4xl mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg shadow-lg border-2 border-green-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800 flex items-center">
+                <CheckCircle className="mr-2 text-green-600" size={28} />
+                Transcription Complete
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                {speakerCount} speaker{speakerCount !== 1 ? 's' : ''} identified
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg border border-gray-200 max-h-96 overflow-y-auto mb-4">
+            <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700">
+              {completedTranscript}
+            </pre>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              onClick={handleSaveToDatabase}
+              className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow"
+            >
+              <Database size={20} />
+              Save to Database
+            </button>
+          </div>
+        </div>
+      )}
 
       <input
         type="file"

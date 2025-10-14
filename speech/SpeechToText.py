@@ -240,25 +240,40 @@ class SpeechToText:
             return "Error: Models not loaded"
 
         try:
-            # Get audio duration
-            result = subprocess.run(
-                ['ffprobe', '-v', 'error', '-show_entries', 'format=duration', 
-                 '-of', 'default=noprint_wrappers=1:nokey=1', audio_file_path],
-                capture_output=True, text=True
-            )
-            duration = float(result.stdout.strip())
-            print(f"  → Audio duration: {duration/60:.1f} minutes")
+            import subprocess
+            
+            # Try to get audio duration (may fail for some formats like browser webm)
+            try:
+                result = subprocess.run(
+                    ['ffprobe', '-v', 'error', '-show_entries', 'format=duration', 
+                    '-of', 'default=noprint_wrappers=1:nokey=1', audio_file_path],
+                    capture_output=True, text=True, timeout=10
+                )
+                duration_str = result.stdout.strip()
+                
+                # Handle 'N/A' or empty responses
+                if duration_str and duration_str != 'N/A':
+                    duration = float(duration_str)
+                    print(f"  → Audio duration: {duration/60:.1f} minutes")
+                else:
+                    # Duration unavailable (common for browser recordings)
+                    print(f"  → Audio duration: Unknown (will process without chunking)")
+                    duration = 0  # Process normally without chunking
+            except (ValueError, subprocess.TimeoutExpired) as e:
+                print(f"  → Could not determine duration: {e}")
+                print(f"  → Will process without chunking")
+                duration = 0
             
             # If file is longer than 30 minutes, process in chunks
             if duration > 1800:  # 30 minutes
                 print(f"  → Large file detected, processing in 15-minute chunks...")
                 return self._transcribe_in_chunks(audio_file_path, duration)
             
-            # Normal processing for shorter files
+            # Normal processing for shorter files or unknown duration
             print("  → Running WhisperX transcription...")
             result = self.whisper_model.transcribe(
                 audio_file_path, 
-                batch_size=16,
+                batch_size=8,
                 language="en"
             )
             print(f"  → Found {len(result.get('segments', []))} segments")
@@ -306,22 +321,31 @@ class SpeechToText:
 
     def _transcribe_in_chunks(self, audio_file_path, total_duration):
         """Process large audio files in chunks to save memory"""
+        import subprocess
+        import os
+        
         chunk_duration = 900  # 15 minutes per chunk
         all_segments = []
-        chunk_dir = "temp_chunks"
-        os.makedirs(chunk_dir, exist_ok=True)
+        
+        # Use absolute path for chunk directory
+        chunk_dir = os.path.join(os.path.dirname(audio_file_path), "temp_chunks")
         
         try:
+            # Create chunk directory
+            os.makedirs(chunk_dir, exist_ok=True)
+            print(f"  → Created chunk directory: {chunk_dir}")
+            
             num_chunks = int(total_duration / chunk_duration) + 1
             print(f"  → Processing {num_chunks} chunks...")
             
             for i in range(num_chunks):
                 start_time = i * chunk_duration
-                chunk_file = f"{chunk_dir}/chunk_{i}.wav"
+                chunk_file = os.path.join(chunk_dir, f"chunk_{i}.wav")
                 
                 # Extract chunk using ffmpeg
                 print(f"  → Chunk {i+1}/{num_chunks}: {start_time/60:.1f}-{(start_time+chunk_duration)/60:.1f} min")
-                subprocess.run([
+                
+                ffmpeg_result = subprocess.run([
                     'ffmpeg', '-i', audio_file_path,
                     '-ss', str(start_time),
                     '-t', str(chunk_duration),
@@ -330,7 +354,17 @@ class SpeechToText:
                     '-ac', '1',
                     '-y',
                     chunk_file
-                ], capture_output=True)
+                ], capture_output=True, text=True)
+                
+                if ffmpeg_result.returncode != 0:
+                    print(f"  ❌ FFmpeg error for chunk {i}:")
+                    print(ffmpeg_result.stderr)
+                    raise Exception(f"Failed to create chunk {i}")
+                
+                if not os.path.exists(chunk_file):
+                    raise Exception(f"Chunk file not created: {chunk_file}")
+                
+                print(f"     ✓ Chunk saved: {os.path.getsize(chunk_file) / 1024 / 1024:.2f} MB")
                 
                 # Transcribe chunk
                 result = self.whisper_model.transcribe(
@@ -346,11 +380,16 @@ class SpeechToText:
                 
                 all_segments.extend(result.get('segments', []))
                 
-                # Clean up chunk file
-                os.remove(chunk_file)
+                # Clean up chunk file immediately
+                try:
+                    os.remove(chunk_file)
+                except:
+                    pass
                 
                 # Force garbage collection
                 gc.collect()
+            
+            print(f"  → All chunks processed, total segments: {len(all_segments)}")
             
             # Combine results
             combined_result = {'segments': all_segments}
@@ -367,10 +406,21 @@ class SpeechToText:
             
             return transcript
             
+        except Exception as e:
+            print(f"  ❌ Chunking error: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
+            
         finally:
             # Clean up temp directory
+            import shutil
             if os.path.exists(chunk_dir):
-                shutil.rmtree(chunk_dir)
+                try:
+                    shutil.rmtree(chunk_dir)
+                    print(f"  → Cleaned up chunk directory")
+                except Exception as e:
+                    print(f"  ⚠️  Could not clean up chunk directory: {e}")
 
     def _perform_diarization(self, audio_path, segments):
         """Internal method to perform speaker diarization"""
