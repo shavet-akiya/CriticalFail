@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Pirata_One, Noto_Serif, Faculty_Glyphic, Metal_Mania } from "next/font/google";
-
 import "./globals.css";
 import NavBar from "@/components/navbar";
 import { RecordingProvider } from "@/contexts/RecordingContext";
@@ -52,7 +51,7 @@ export default function RootLayout({
       >
         <RecordingProvider>
           <NavBar />
-          <main className="flex-1 flex flex-col items-center justify-center w-screen pt-16">
+          <main className="flex-1 flex flex-col items-center justify-center w-screen pt-16 bg-[#eff1ed] h-screen overflow-hidden">
             {children}
           </main>
           <RecordingPopup />

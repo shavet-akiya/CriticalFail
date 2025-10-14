@@ -23,7 +23,7 @@ export default function RecordingPage() {
     }, [isRecording, isPaused, router]);
 
     return (
-        <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center select-none">
             <p className="text-lg text-gray-600">
                 {isRecording ? "Recording in progress..." : "Recording stopped."}
             </p>

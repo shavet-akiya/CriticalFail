@@ -1,28 +1,7 @@
-// "use client";
-// import { useState } from "react";
-// import EventCard from "@/components/eventCard";
-// import FilterDrawer from "@/components/filterDrawer";
-
-// export default function Timeline() {
-//     const [characterFilter, setCharacterFilter] = useState<
-//         "all" | "players" | "npc"
-//     >("all");
-//     const [tagFilter, setTagFilter] = useState<string[]>([]);
-//     const [themeFilter, setThemeFilter] = useState<string[]>([]);
-
-//     return (
-//         <div className="w-full">
-//             <div className="grid grid-cols-[250px_1fr] min-h-screen"></div>
-//         </div>
-//     );
-// }
-
-
-
 "use client";
 
 import EventCard from "@/components/eventCard";
-import eventsData from "@/types/events.json"; // adjust path if needed
+import eventsData from "@/types/events.json";
 import type { Event, CampaignTags } from "@/types/types";
 import SearchBar from "@/components/SearchBar"
 
