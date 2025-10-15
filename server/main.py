@@ -8,12 +8,21 @@ import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi import Path, Body
+from fastapi import Path, Body, UploadFile, Form, File
 from pydantic import BaseModel
 from typing import Optional, List
 
 from chromadb import HttpClient
 from llm import dnd_ai
+
+try:
+    import httpx  # type: ignore
+except Exception:  # pragma: no cover - dev env without httpx
+    httpx = None  # type: ignore
+
+# Speech service configuration
+SPEECH_SERVICE_URL = os.getenv("SPEECH_SERVICE_URL", "http://speech:8001")
+
 
 # --- ChromaDB Setup (via HTTP client) ---
 CHROMA_HOST = os.getenv("CHROMA_HOST", "chroma")  # container name in docker-compose
@@ -121,7 +130,122 @@ class TranscriptInput(BaseModel):
 
 
 class DeleteRequest(BaseModel):
-    session_id: str
+    session_code: str
+
+
+# --- Speech Proxy Routes ---
+@app.post("/speech/upload")
+async def proxy_speech_upload(
+    file: UploadFile = File(...),
+    min_speakers: Optional[int] = Form(2),
+    max_speakers: Optional[int] = Form(8),
+):
+    """Proxy audio uploads to the speech processing service"""
+    print("\n" + "=" * 80)
+    print("[SERVER PROXY] RECEIVED UPLOAD REQUEST")
+    print("=" * 80)
+    print(f"[SERVER PROXY] File: {file.filename}")
+    print(
+        f"[SERVER PROXY] Size: {file.size / 1024 / 1024:.2f} MB"
+        if file.size
+        else "[SERVER PROXY] Size: unknown"
+    )
+
+    if not httpx:
+        return JSONResponse(
+            status_code=503,
+            content={"error": "httpx not available"},
+        )
+
+    try:
+        print("[SERVER PROXY] Forwarding to speech service...")
+
+        # Forward the file to the speech service (returns job_id immediately)
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            files = {"file": (file.filename, await file.read(), file.content_type)}
+            data = {
+                "min_speakers": str(min_speakers),
+                "max_speakers": str(max_speakers),
+            }
+
+            print(
+                f"[SERVER PROXY] Calling speech service at {SPEECH_SERVICE_URL}/process"
+            )
+
+            response = await client.post(
+                f"{SPEECH_SERVICE_URL}/process",
+                files=files,
+                data=data,
+            )
+
+            print(f"[SERVER PROXY] ✓ Got response: {response.status_code}")
+
+            return JSONResponse(
+                status_code=response.status_code,
+                content=response.json(),
+            )
+
+    except Exception as e:
+        print(f"[SERVER PROXY] ❌ ERROR: {e}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to process audio: {str(e)}"},
+        )
+
+
+@app.get("/speech/status/{job_id}")
+async def proxy_speech_job_status(job_id: str):
+    """Proxy job status check to speech service"""
+    if not httpx:
+        return JSONResponse(
+            status_code=503,
+            content={"error": "httpx not available"},
+        )
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{SPEECH_SERVICE_URL}/status/{job_id}")
+            return JSONResponse(
+                status_code=response.status_code,
+                content=response.json(),
+            )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)},
+        )
+
+
+@app.get("/speech/jobs")
+async def proxy_speech_jobs():
+    """Proxy jobs list to speech service"""
+    if not httpx:
+        return JSONResponse(
+            status_code=503,
+            content={"error": "httpx not available"},
+        )
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{SPEECH_SERVICE_URL}/jobs")
+            return response.json()
+    except Exception as e:
+        return {"error": str(e), "jobs": []}
+
+
+@app.get("/speech/status")
+async def proxy_speech_status():
+    """Check if speech service is ready"""
+    if not httpx:
+        return {"initialized": False, "error": "httpx not available"}
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get(f"{SPEECH_SERVICE_URL}/")
+            return response.json()
+    except Exception as e:
+        return {"initialized": False, "error": str(e)}
 
 
 # --- Routes ---

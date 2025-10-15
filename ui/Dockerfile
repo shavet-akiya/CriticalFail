@@ -3,7 +3,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY ui/package.json ui/package-lock.json* ./
-RUN npm ci --no-audit --no-fund
+RUN npm install --no-audit --no-fund
 
 FROM node:20-alpine AS builder
 WORKDIR /app
@@ -13,7 +13,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY ui/ ./
 
 # Bake the API base URL at build-time for client code
-ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:9000
+ARG NEXT_PUBLIC_API_BASE_URL=http://server:9000
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 RUN npm run build
 

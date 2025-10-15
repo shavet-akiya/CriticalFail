@@ -9,25 +9,30 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - OLLAMA_BASE_URL=http://ollama:11434
+      - SPEECH_SERVICE_URL=http://speech:8001 
       - OLLAMA_MODEL=gemma3
     depends_on:
       - ollama
       - chroma
-  # speech:
-  #   container_name: speech
-  #   build:
-  #     context: ./speech
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8001:8001"
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #     - HF_HUB_OFFLINE=1
-  #     - HF_HUB_DISABLE_SYMLINKS_WARNING=1
-  #   volumes:
-  #     - ./src/recordings:/app/recordings
-  #     - ./src/transcripts:/app/transcripts
-  #     - ./models:/app/models
+      
+  speech:
+    container_name: speech
+    build:
+      context: ./speech
+      dockerfile: Dockerfile
+    # Remove the entire deploy section
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HF_HUB_CACHE=/app/models
+      - HF_HUB_DISABLE_SYMLINKS_WARNING=1
+      # Remove NVIDIA environment variables
+    volumes:
+      - ./server/src/recordings:/app/recordings
+      - ./server/src/transcripts:/app/transcripts
+      - ./models:/app/models
+
 
   ui:
     container_name: ui

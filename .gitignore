@@ -229,3 +229,5 @@ server/DND_Database
 
 server/src/database-structures/main_alt.py
 server/src/chroma
+
+models/
