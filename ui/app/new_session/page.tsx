@@ -290,9 +290,41 @@ export default function NewSession() {
         }
     };
 
-    const handleSaveToDatabase = () => {
-        // TODO: Implement database save functionality
-        console.log("Save to database clicked");
+    const handleSaveToDatabase = async () => {
+        if (!completedTranscript) return;
+
+        try {
+            setUploadStatus("🧠 Processing transcript with AI...");
+            setIsUploading(true);
+            setUploadError("");
+
+            const response = await fetch("/api/sessions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ transcript: completedTranscript }),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.details || "Failed to save session");
+            }
+
+            const data = await response.json();
+
+            console.log("LLM processed session:", data);
+            setUploadStatus("✅ Session saved to database!");
+            setIsUploading(false);
+
+            // Optional: you could show the structured output here
+            alert("Session saved successfully!");
+        } catch (err: any) {
+            console.error(err);
+            setUploadError(err.message || "Failed to save session");
+            setIsUploading(false);
+            setUploadStatus("");
+        }
     };
 
     const isProcessing = isUploading || isRecording;

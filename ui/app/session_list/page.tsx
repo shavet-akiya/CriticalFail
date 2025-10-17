@@ -26,8 +26,7 @@ export default function SessionList() {
             const data = await res.json();
             setSession(data);
             setTranscript("");
-            // only fetch after posting is done
-            await fetchSessions();
+            await fetchSessions(); // refresh list
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {
@@ -53,13 +52,15 @@ export default function SessionList() {
             });
             if (!res.ok) throw new Error(`GET failed: ${res.status}`);
             const data = await res.json();
-            setSessions(
-                data.documents.map((doc: string, i: number) => ({
-                    id: data.ids[i],
-                    document: doc,
-                    metadata: data.metadatas[i],
-                }))
-            );
+
+            // Align data shape with backend JSON
+            const mapped = data.documents.map((doc: string, i: number) => ({
+                id: data.ids[i],
+                document: doc,
+                metadata: data.metadatas[i],
+            }));
+
+            setSessions(mapped);
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {
@@ -133,25 +134,37 @@ export default function SessionList() {
                                 className="p-4 bg-gray-800 rounded shadow-sm text-white"
                             >
                                 <strong>Session Code:</strong>{" "}
-                                {s.metadata.session_id}
+                                {s.metadata?.session_id || "None"}
                                 <br />
                                 <strong>Campaign:</strong>{" "}
-                                {s.metadata.campaign_id || "Unassigned"}
+                                {s.metadata?.campaign_id ?? "Unassigned"}
                                 <br />
                                 <strong>Characters:</strong>{" "}
-                                {s.metadata.characters
-                                    ?.map((c: any) => c.name)
-                                    .join(", ") || "None"}
+                                {s.metadata?.characters?.length
+                                    ? s.metadata.characters
+                                          .map((c: any) => c.name)
+                                          .join(", ")
+                                    : "None"}
                                 <br />
                                 <strong>Locations:</strong>{" "}
-                                {s.metadata.locations
-                                    ?.map((l: any) => l.location_name || l.name)
-                                    .join(", ") || "None"}
+                                {s.metadata?.locations?.length
+                                    ? s.metadata.locations
+                                          .map(
+                                              (l: any) =>
+                                                  l.location_name || l.name
+                                          )
+                                          .join(", ")
+                                    : "None"}
                                 <br />
                                 <strong>Events:</strong>{" "}
-                                {s.metadata.events
-                                    ?.map((e: any) => e.event)
-                                    .join(", ") || "None"}
+                                {s.metadata?.events?.length
+                                    ? s.metadata.events
+                                          .map(
+                                              (e: any) =>
+                                                  `${e.event} — ${e.event_summary}`
+                                          )
+                                          .join("; ")
+                                    : "None"}
                                 <br />
                                 <strong>Summary:</strong>
                                 <p className="mt-2 text-sm text-gray-300">

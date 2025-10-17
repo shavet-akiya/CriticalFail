@@ -150,23 +150,23 @@ export default function Home() {
                                 className="p-4 bg-gray-800 rounded shadow-sm text-white"
                             >
                                 <strong>Session Code:</strong>{" "}
-                                {s.metadata.session_id}
+                                {s.session_id || "None"}
                                 <br />
                                 <strong>Campaign:</strong>{" "}
-                                {s.metadata.campaign_id || "Unassigned"}
+                                {s.campaign_id || "Unassigned"}
                                 <br />
                                 <strong>Characters:</strong>{" "}
-                                {s.metadata.characters
+                                {s.characters
                                     ?.map((c: any) => c.name)
                                     .join(", ") || "None"}
                                 <br />
                                 <strong>Locations:</strong>{" "}
-                                {s.metadata.locations
+                                {s.locations
                                     ?.map((l: any) => l.location_name || l.name)
                                     .join(", ") || "None"}
                                 <br />
                                 <strong>Events:</strong>{" "}
-                                {s.metadata.events
+                                {s.events
                                     ?.map(
                                         (e: any) =>
                                             `${e.event} — ${e.event_summary}`

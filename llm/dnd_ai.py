@@ -9,11 +9,10 @@ import uuid
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3")
 
-
 import requests
 
 
-def run_ollama(prompt: str, model: str = None) -> str:
+def run_ollama(prompt: str, model: str = OLLAMA_MODEL) -> str:
     model = model or OLLAMA_MODEL
     url = f"{OLLAMA_BASE_URL}/api/generate"
     payload = {"model": model, "prompt": prompt}
@@ -53,7 +52,7 @@ Instructions:
    - Include only story events - this may include important conversations between characters, battles, or quests.  
    - Ignore any non-game or non-D&D story related discussion.
   "characters": [
-      {{"name": "Name or alias of the character", "race": "if known", "class":"if known", "npc": true or false}}
+      {{"name": "Name or alias of the character", "race": "if known or unknown", "class":"if known or unknown", "npc": true or false}}
   ],
   "locations": [{{"location_name": "any location referenced in the session, such as a named place or a notable location (e.g., tavern)"}}],
   "events": [
@@ -156,7 +155,6 @@ Instructions:
                 "event_tags": ["miscellaneous"],
             }
 
-    print(session_data)
     return session_data
 
 

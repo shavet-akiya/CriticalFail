@@ -34,71 +34,109 @@ session_collection = chroma_client.get_or_create_collection(name="dnd_sessions")
 
 def save_session_to_chroma(session_data: dict) -> str:
     chroma_id = str(uuid.uuid4())
-    summary_text = session_data["summary"].get("session_summary", "")
+    summary = session_data.get("summary", {})
+    summary_text = summary.get("session_summary", "")
 
-    # Save the session itself
+    # --- Save main session summary ---
     session_collection.add(
-        documents=[summary_text],
+        documents=[summary_text or "No summary"],
         ids=[chroma_id],
         metadatas=[
             {
-                "session_id": session_data["session_id"],
-                "campaign_id": session_data.get("campaign_id", 0),
-                "processed_at": session_data["processed_at"],
+                "session_id": session_data.get("session_id", str(uuid.uuid4())),
+                "campaign_id": session_data.get("campaign_id", "Unassigned"),
+                "processed_at": session_data.get(
+                    "processed_at", str(datetime.datetime.utcnow())
+                ),
                 "type": "session",
             }
         ],
     )
 
-    # Save each character
-    for character in session_data["summary"].get("characters", []):
-        character_id = character["character_id"]
-        session_collection.add(
-            documents=[character.get("name", "")],
-            ids=[character_id],
-            metadatas=[
-                {
-                    "character_id": character_id,
-                    "session_id": session_data["session_id"],
-                    "type": "character",
-                    **character,
-                }
-            ],
+    # --- Save characters safely ---
+    for character in summary.get("characters", []):
+        if not isinstance(character, dict):
+            print(f"⚠️ Skipping invalid character entry: {character}")
+            continue
+
+        character_id = character.get("character_id") or str(uuid.uuid4())
+        name = character.get("name", "Unknown Character")
+
+        try:
+            session_collection.add(
+                documents=[name],
+                ids=[character_id],
+                metadatas=[
+                    {
+                        "character_id": character_id,
+                        "session_id": session_data.get("session_id"),
+                        "type": "character",
+                        **character,
+                    }
+                ],
+            )
+        except Exception as e:
+            print(f"❌ Failed to save character {name}: {e}")
+
+    # --- Save locations safely ---
+    for loc in summary.get("locations", []):
+        if not isinstance(loc, dict):
+            print(f"⚠️ Skipping invalid location entry: {loc}")
+            continue
+
+        loc_id = loc.get("location_id") or str(uuid.uuid4())
+        loc_name = loc.get("location_name") or loc.get("name", "Unknown Location")
+
+        try:
+            session_collection.add(
+                documents=[loc_name],
+                ids=[loc_id],
+                metadatas=[
+                    {
+                        "location_id": loc_id,
+                        "session_id": session_data.get("session_id"),
+                        "type": "location",
+                        **loc,
+                    }
+                ],
+            )
+        except Exception as e:
+            print(f"❌ Failed to save location {loc_name}: {e}")
+
+    # --- Save events safely ---
+    for ev in summary.get("events", []):
+        if not isinstance(ev, dict):
+            print(f"⚠️ Skipping invalid event entry: {ev}")
+            continue
+
+        ev_id = ev.get("event_id") or str(uuid.uuid4())
+        event_text = ev.get("event", "Unnamed Event")
+
+        # Make a shallow copy so we can safely modify it
+        ev_metadata = ev.copy()
+
+        # Flatten lists that Chroma won't accept
+        for key in ["participants", "event_tags"]:
+            if isinstance(ev_metadata.get(key), list):
+                ev_metadata[key] = ", ".join(map(str, ev_metadata[key]))
+
+        # Add Chroma-required fields
+        ev_metadata.update(
+            {
+                "event_id": ev_id,
+                "session_id": session_data.get("session_id"),
+                "type": "event",
+            }
         )
 
-    # Save each location
-    for loc in session_data["summary"].get("locations", []):
-        loc_id = loc.get("location_id", str(uuid.uuid4()))
-        session_collection.add(
-            documents=[loc.get("location_name", "")],
-            ids=[loc_id],
-            metadatas=[
-                {
-                    "location_id": loc_id,
-                    "session_id": session_data["session_id"],
-                    "type": "location",
-                    **loc,
-                }
-            ],
-        )
-
-        # --- Save events ---
-    for ev in session_data["summary"].get("events", []):
-        ev_id = ev.get("event_id", str(uuid.uuid4()))
-        metadata = {
-            **ev,
-            "event_id": ev_id,
-            "session_id": session_data["session_id"],
-            "type": "event",
-            "participants": ", ".join(ev.get("participants", [])),
-            "event_tags": ", ".join(ev.get("event_tags", [])),
-        }
-
-        session_collection.add(
-            documents=[ev.get("event", "")],
-            ids=[ev_id],
-            metadatas=[metadata],
-        )
+        try:
+            session_collection.add(
+                documents=[event_text],
+                ids=[ev_id],
+                metadatas=[ev_metadata],
+            )
+        except Exception as e:
+            print(f"❌ Failed to save event {event_text}: {e}")
 
     return chroma_id
 
@@ -196,24 +234,45 @@ async def proxy_speech_upload(
 
 @app.get("/speech/status/{job_id}")
 async def proxy_speech_job_status(job_id: str):
-    """Proxy job status check to speech service"""
+    """Proxy job status check to speech service and auto-process completed jobs"""
     if not httpx:
-        return JSONResponse(
-            status_code=503,
-            content={"error": "httpx not available"},
-        )
+        return JSONResponse(status_code=503, content={"error": "httpx not available"})
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(f"{SPEECH_SERVICE_URL}/status/{job_id}")
-            return JSONResponse(
-                status_code=response.status_code,
-                content=response.json(),
-            )
+            data = response.json()
+
+            # If the speech job is finished, auto-process the transcript
+            if data.get("status") == "completed" and "transcript" in data:
+                transcript_text = data["transcript"]
+
+                # Run through LLM (existing logic)
+                structured_json = await dnd_ai.extract_session_data(transcript_text)
+
+                # Save to Chroma
+                chroma_id = save_session_to_chroma(structured_json)
+
+                # Store in recent memory
+                recent_sessions.insert(0, structured_json)
+                if len(recent_sessions) > MAX_SESSIONS:
+                    recent_sessions.pop()
+
+                return {
+                    "status": "completed",
+                    "job_id": job_id,
+                    "transcript": transcript_text,
+                    "session_data": structured_json,
+                    "chroma_id": chroma_id,
+                }
+
+            return data  # not yet complete or error
+
     except Exception as e:
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)},
+            content={"error": f"Failed to get speech job status: {str(e)}"},
         )
 
 
