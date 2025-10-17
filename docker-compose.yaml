@@ -69,8 +69,8 @@ services:
     
     healthcheck:
       test: ["CMD", "ollama", "ps"]
-      interval: 10s
-      timeout: 5s
+      interval: 20s
+      timeout: 10s
       retries: 5
 
 volumes:

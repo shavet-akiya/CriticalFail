@@ -11,9 +11,16 @@ from fastapi.responses import JSONResponse
 from fastapi import Path, Body, UploadFile, Form, File
 from pydantic import BaseModel
 from typing import Optional, List
+import asyncio
+from fastapi import BackgroundTasks
 
 from chromadb import HttpClient
 from llm import dnd_ai
+
+llm_jobs: dict[str, dict] = (
+    {}
+)  # job_id -> {"status": "processing"|"completed"|"error", "result": ..., "error": ...}
+
 
 try:
     import httpx  # type: ignore
@@ -307,35 +314,35 @@ async def proxy_speech_status():
         return {"initialized": False, "error": str(e)}
 
 
-# --- Routes ---
-@app.post("/sessions")
-async def process_session(input_data: TranscriptInput):
-    try:
-        structured_json = await dnd_ai.extract_session_data(input_data.transcript)
+# # --- Routes ---
+# @app.post("/sessions")
+# async def process_session(input_data: TranscriptInput):
+#     try:
+#         structured_json = await dnd_ai.extract_session_data(input_data.transcript)
 
-        recent_sessions.insert(0, structured_json)
-        if len(recent_sessions) > MAX_SESSIONS:
-            recent_sessions.pop()
+#         recent_sessions.insert(0, structured_json)
+#         if len(recent_sessions) > MAX_SESSIONS:
+#             recent_sessions.pop()
 
-        chroma_id = save_session_to_chroma(structured_json)
+#         chroma_id = save_session_to_chroma(structured_json)
 
-        return {
-            "status": "success",
-            "session_data": structured_json,
-            "chroma_id": chroma_id,
-        }
+#         return {
+#             "status": "success",
+#             "session_data": structured_json,
+#             "chroma_id": chroma_id,
+#         }
 
-    except Exception as e:
-        traceback.print_exc()
-        if hasattr(e, "request") or hasattr(e, "response"):
-            return JSONResponse(
-                status_code=502,
-                content={"error": "Ollama API error", "details": str(e)},
-            )
-        return JSONResponse(
-            status_code=500,
-            content={"error": "Failed to process session", "details": str(e)},
-        )
+#     except Exception as e:
+#         traceback.print_exc()
+#         if hasattr(e, "request") or hasattr(e, "response"):
+#             return JSONResponse(
+#                 status_code=502,
+#                 content={"error": "Ollama API error", "details": str(e)},
+#             )
+#         return JSONResponse(
+#             status_code=500,
+#             content={"error": "Failed to process session", "details": str(e)},
+#         )
 
 
 @app.get("/sessions/recent")
@@ -633,3 +640,42 @@ async def delete_event(event_id: str):
         return {"status": "deleted", "event_id": event_id}
     except Exception as e:
         return {"status": "error", "details": str(e)}
+
+
+# Background task
+async def process_and_save_session(job_id: str, transcript: str):
+    try:
+        llm_jobs[job_id] = {"status": "processing"}
+        # Run LLM
+        structured_json = await dnd_ai.extract_session_data(transcript)
+        # Save to Chroma in a thread (blocking code)
+        chroma_id = await asyncio.to_thread(save_session_to_chroma, structured_json)
+        structured_json["chroma_id"] = chroma_id
+
+        # Store result
+        llm_jobs[job_id] = {"status": "completed", "result": structured_json}
+        # Also update recent_sessions
+        recent_sessions.insert(0, structured_json)
+        if len(recent_sessions) > MAX_SESSIONS:
+            recent_sessions.pop()
+    except Exception as e:
+        llm_jobs[job_id] = {"status": "error", "error": str(e)}
+
+
+@app.post("/sessions")
+async def create_session(
+    input_data: TranscriptInput, background_tasks: BackgroundTasks
+):
+    job_id = str(uuid.uuid4())
+    # Start background processing
+    background_tasks.add_task(process_and_save_session, job_id, input_data.transcript)
+    # Return immediately
+    return {"status": "processing", "job_id": job_id}
+
+
+@app.get("/sessions/status/{job_id}")
+async def get_session_status(job_id: str):
+    job = llm_jobs.get(job_id)
+    if not job:
+        return JSONResponse(status_code=404, content={"error": "Job not found"})
+    return job

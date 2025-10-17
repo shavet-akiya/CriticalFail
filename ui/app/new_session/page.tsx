@@ -294,36 +294,46 @@ export default function NewSession() {
         if (!completedTranscript) return;
 
         try {
-            setUploadStatus("🧠 Processing transcript with AI...");
+            setUploadStatus("Sending transcript for processing...");
             setIsUploading(true);
             setUploadError("");
 
+            // Step 1: Send transcript (get job_id back)
             const response = await fetch("/api/sessions", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ transcript: completedTranscript }),
             });
 
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.details || "Failed to save session");
+            const { job_id } = await response.json();
+
+            if (!job_id) throw new Error("No job ID returned from server.");
+
+            setUploadStatus("⚙️ AI is analyzing the session...");
+
+            // Step 2: Poll until job is completed
+            let resultData = null;
+            for (;;) {
+                const statusRes = await fetch(`/api/sessions/status/${job_id}`);
+                const job = await statusRes.json();
+
+                if (job.status === "completed") {
+                    resultData = job.result;
+                    break;
+                } else if (job.status === "error") {
+                    throw new Error(job.error || "LLM processing failed");
+                }
+
+                await new Promise((r) => setTimeout(r, 3000)); // poll every 3s
             }
 
-            const data = await response.json();
-
-            console.log("LLM processed session:", data);
-            setUploadStatus("✅ Session saved to database!");
+            console.log("LLM processed session:", resultData);
+            setUploadStatus("Session saved to database!");
             setIsUploading(false);
-
-            // Optional: you could show the structured output here
-            alert("Session saved successfully!");
         } catch (err: any) {
             console.error(err);
-            setUploadError(err.message || "Failed to save session");
+            setUploadError(err.message || "Failed to process session");
             setIsUploading(false);
-            setUploadStatus("");
         }
     };
 

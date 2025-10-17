@@ -2,18 +2,18 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
-  },
+  eslint: { ignoreDuringBuilds: true },
   async rewrites() {
     return [
       {
         source: "/api/:path*",
-        destination: "http://server:9000/:path*", // goes to FastAPI container
+        destination: "http://server:9000/:path*",
       },
     ];
+  },
+  // Keep long HTTP requests alive
+  serverRuntimeConfig: {
+    httpServerTimeout: 0, // 0 = no timeout
   },
 };
 
