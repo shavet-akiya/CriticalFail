@@ -1,6 +1,7 @@
 // src/App.jsx
 import React from "react";
 import Link from "next/link";
+import CamapignCard from "@/components/CampaignCard";
 
 // future consideration: if campaign id: show welcome back
 function App() {
@@ -28,9 +29,12 @@ function App() {
                     className="h-screen flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
                 >
                     <h2 className="text-4xl font-bold mb-4">Campaign Selection</h2>
-                    <p className="text-lg max-w-xl text-center">
+
+                    {/* <p className="text-lg max-w-xl text-center">
                         This is where your available campaigns will appear. You can scroll or click above to return to the top.
-                    </p>
+                    </p> */}
+
+                    <CamapignCard />
                 </section>
             </div>
         </>
