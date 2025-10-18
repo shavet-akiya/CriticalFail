@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation"; // for app directory
 
 interface Character {
     name: string;
@@ -38,6 +39,10 @@ export default function SessionList() {
     const [error, setError] = useState<string | null>(null);
     const [latestSession, setLatestSession] = useState<any>(null);
 
+    const params = useParams();
+    const campaignId = params?.campaignId;
+
+    // Use environment variable with fallback
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     async function submitTranscript() {
@@ -45,7 +50,7 @@ export default function SessionList() {
         setPosting(true);
         setError(null);
         try {
-            const res = await fetch(`${baseUrl}/sessions`, {
+            const res = await fetch(`${baseUrl}/sessions/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ transcript }),
@@ -78,9 +83,12 @@ export default function SessionList() {
         setFetching(true);
         setError(null);
         try {
-            const res = await fetch(`${baseUrl}/sessions`, {
-                cache: "no-store",
-            });
+            // Add campaignId as query param
+            const url = campaignId
+                ? `${baseUrl}/sessions?campaign_id=${campaignId}`
+                : `${baseUrl}/sessions`;
+
+            const res = await fetch(url, { cache: "no-store" });
             if (!res.ok) throw new Error(`GET failed: ${res.status}`);
             const data = await res.json();
 
@@ -100,27 +108,27 @@ export default function SessionList() {
 
     useEffect(() => {
         fetchSessions();
-    }, []);
+    }, [campaignId]);
 
     return (
-        <div className="min-h-screen p-6 bg-gray-100">
+        <div className="min-h-screen p-6 bg-gray-100 text-black">
             <h1 className="text-4xl font-bold text-center mb-8">
                 Dungeons & Dragons AI Sessions
             </h1>
-
             <button
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                 onClick={resetDatabase}
             >
                 Delete All Sessions
             </button>
+
             {/* Latest Session */}
             {latestSession && (
                 <div className="bg-white shadow rounded p-6 mb-8">
                     <h2 className="text-xl font-semibold mb-2">
                         Latest Session
                     </h2>
-                    <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+                    <pre className="bg-gray-100 p-2 rounded overflow-x-auto text-black">
                         {JSON.stringify(latestSession, null, 2)}
                     </pre>
                 </div>
@@ -130,15 +138,15 @@ export default function SessionList() {
             <div className="bg-white shadow rounded p-6">
                 <h2 className="text-xl font-semibold mb-4">Past Sessions</h2>
                 {fetching ? (
-                    <p className="text-gray-600">Loading sessions…</p>
+                    <p className="text-black">Loading sessions…</p>
                 ) : sessions.length === 0 ? (
-                    <p className="text-gray-600">No sessions available.</p>
+                    <p className="text-black">No sessions available.</p>
                 ) : (
                     <ul className="space-y-4">
                         {sessions.map((s) => (
                             <li
                                 key={s.id}
-                                className="p-4 bg-gray-50 rounded shadow"
+                                className="p-4 bg-gray-50 rounded shadow text-black"
                             >
                                 <p>
                                     <strong>Session ID:</strong>{" "}
@@ -183,7 +191,7 @@ export default function SessionList() {
                                 <p className="mt-2">
                                     <strong>Summary:</strong>
                                 </p>
-                                <p className="text-sm text-gray-700">
+                                <p className="text-sm text-black">
                                     {s.document}
                                 </p>
                             </li>

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import uuid, asyncio
@@ -77,16 +77,27 @@ async def process_and_save_session(job_id: str, transcript: str):
 
 
 @router.get("/")
-async def list_chroma_sessions():
+async def list_chroma_sessions(
+    campaign_id: str | None = Query(None, description="Filter by campaign ID")
+):
+    """
+    List sessions from Chroma, optionally filtered by campaign_id.
+    """
     try:
+        # Fetch all sessions
         sessions = session_collection.get(where={"type": "session"})
         decoded = {
-            "ids": sessions["ids"],
-            "documents": sessions["documents"],
+            "ids": [],
+            "documents": [],
             "metadatas": [],
         }
 
-        for md in sessions["metadatas"]:
+        for i, md in enumerate(sessions["metadatas"]):
+            # If campaign_id is specified, skip sessions that don't match
+            if campaign_id is not None and str(md.get("campaign_id")) != str(
+                campaign_id
+            ):
+                continue
             session_id = md["session_id"]
 
             # Fetch characters
@@ -109,6 +120,8 @@ async def list_chroma_sessions():
             md_with_data["locations"] = locs["metadatas"]
             md_with_data["events"] = evs["metadatas"]
 
+            decoded["ids"].append(sessions["ids"][i])
+            decoded["documents"].append(sessions["documents"][i])
             decoded["metadatas"].append(md_with_data)
 
         return decoded
