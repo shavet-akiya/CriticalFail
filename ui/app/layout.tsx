@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Pirata_One, Noto_Serif, Faculty_Glyphic, Metal_Mania } from "next/font/google";
 import "./globals.css";
-import ClientLayout from "@/components/ClientLayout"; // 👈 import new client wrapper
+import ClientLayout from "@/components/ClientLayout";
 
 const pirataOne = Pirata_One({ variable: "--font-pirata-one", subsets: ["latin"], weight: "400" });
 const metalMania = Metal_Mania({ variable: "--font-metal-mania", subsets: ["latin"], weight: "400" });

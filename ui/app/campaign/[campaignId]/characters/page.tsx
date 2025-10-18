@@ -56,7 +56,7 @@ export default function Characters() {
     });
 
     return (
-        <div className="p-16">
+        <div className="pl-16 pr-16 pt-16">
             {error && <div className="text-error mb-4">{error}</div>}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16">
                 {filteredCharacters.map((character) => (
