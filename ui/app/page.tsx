@@ -26,7 +26,7 @@ function App() {
                 {/* Section 2 Select campaign */}
                 <section
                     id="campaign_selection"
-                    className="h-screen flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
+                    className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
                 >
                     <h2 className="text-4xl font-bold mb-4">Campaign Selection</h2>
 
@@ -34,7 +34,11 @@ function App() {
                         This is where your available campaigns will appear. You can scroll or click above to return to the top.
                     </p> */}
 
-                    <CamapignCard />
+                    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-16 p-16">
+                        <CamapignCard />
+                        <CamapignCard />
+                        <CamapignCard />
+                    </div>
                 </section>
             </div>
         </>

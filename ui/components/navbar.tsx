@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRecording } from "@/contexts/RecordingContext";
 import { useCampaign } from "@/contexts/CampaignContext";
 
+// need to check for if recording bc rn it's a useeffect that will force navigate back 
+
 // if campaignID: returns a nav bar
 // else: returns nothing
 function NavBar() {
