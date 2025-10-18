@@ -85,3 +85,14 @@ async def delete_event(event_id: str):
             status_code=500,
             content={"error": "Failed to delete event", "details": str(e)},
         )
+
+
+@router.get("/campaigns/{campaign_id}/events")
+async def list_campaign_events(campaign_id: str):
+    try:
+        results = session_collection.get(
+            where={"type": "event", "campaign_id": campaign_id}
+        )
+        return {"events": results["metadatas"]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
