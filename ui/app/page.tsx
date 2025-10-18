@@ -19,7 +19,9 @@ function App() {
                             Select Campaign
                         </a>
 
-                        <button className="btn btn-primary">New Campaign</button>
+                        <button className="btn btn-primary">
+                            <Link href={`/new_campaign`}>New Campaign</Link>
+                        </button>
                     </div>
                 </section>
 
@@ -28,7 +30,7 @@ function App() {
                     id="campaign_selection"
                     className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
                 >
-                    <h2 className="text-4xl font-bold mb-4">Campaign Selection</h2>
+                    <h2 className="text-4xl font-bold mb-4 pt-16">Campaign Selection</h2>
 
                     {/* <p className="text-lg max-w-xl text-center">
                         This is where your available campaigns will appear. You can scroll or click above to return to the top.
