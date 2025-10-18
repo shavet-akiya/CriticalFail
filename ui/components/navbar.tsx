@@ -39,7 +39,7 @@ function NavBar() {
                     </li>
                     <li>
                         <Link
-                            href={`/campaign/${campaignID}/timeline`}
+                            href={`/campaign/${campaignID}/events`}
                             className="white-colour"
                         >
                             Event Timeline
