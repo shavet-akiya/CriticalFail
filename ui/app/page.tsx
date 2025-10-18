@@ -54,21 +54,18 @@ function App() {
                 </div>
             </section>
 
-            {/* Campaign Selection */}
-            <section
-                id="campaign_selection"
-                className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
-            >
-                <h2 className="text-4xl font-bold mb-4 pt-16">
-                    Campaign Selection
-                </h2>
+                        <button className="btn btn-primary">
+                            <Link href={`/new_campaign`}>New Campaign</Link>
+                        </button>
+                    </div>
+                </section>
 
-                <div className="p-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                    {loading && <p>Loading campaigns…</p>}
-                    {error && <p className="text-red-600">{error}</p>}
-                    {!loading && campaigns.length === 0 && (
-                        <p>No campaigns found.</p>
-                    )}
+                {/* Section 2 Select campaign */}
+                <section
+                    id="campaign_selection"
+                    className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
+                >
+                    <h2 className="text-4xl font-bold mb-4 pt-16">Campaign Selection</h2>
 
                     {!loading &&
                         campaigns.map((c) => (
