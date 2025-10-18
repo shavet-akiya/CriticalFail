@@ -7,15 +7,7 @@ import { useRecording } from "@/contexts/RecordingContext";
 export default function RecordingPage() {
     const { isRecording, isPaused, startRecording } = useRecording();
     const router = useRouter();
-
-    // useEffect(() => {
-    //     if (!isRecording) {
-    //         startRecording();
-    //     }
-    // }, []);
-    console.log(isRecording)
-
-    console.log(isRecording, isPaused)
+ 
     useEffect(() => {
         if (!isRecording && !isPaused) {
             router.push("/new_session");
