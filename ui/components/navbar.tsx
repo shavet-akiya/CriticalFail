@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRecording } from "@/contexts/RecordingContext";
 
+const campaignID = 0; // need to do this dynamically
+
 function NavBar() {
     const { isRecording, isPaused } = useRecording();
 
@@ -16,26 +18,26 @@ function NavBar() {
             <div className="flex-none">
                 <ul className="menu menu-horizontal px-1 gap-4">
                     <li>
-                        <Link href="/summary">Campaign Summary</Link>
+                        <Link href={`/campaign/${campaignID}/summary`}>Campaign Summary</Link>
                     </li>
                     <li>
-                        <Link href="/sessions">Session List</Link>
+                        <Link href={`/campaign/${campaignID}/sessions`}>Session List</Link>
                     </li>
                     <li>
-                        <Link href="/timeline">Event Timeline</Link>
+                        <Link href={`/campaign/${campaignID}/timeline`}>Event Timeline</Link>
                     </li>
                     <li>
-                        <Link href="/characters">Characters</Link>
+                        <Link href={`/campaign/${campaignID}/characters`}>Characters</Link>
                     </li>
                     <li>
-                        <Link href="/locations">Locations</Link>
+                        <Link href={`/campaign/${campaignID}/locations`}>Locations</Link>
                     </li>
                     <li>
                         <Link
                             href={
                                 isRecording || isPaused
-                                    ? "/new_session/recording"
-                                    : "/new_session"
+                                    ? `/campaign/${campaignID}/new_session/recording`
+                                    : `/campaign/${campaignID}/new_session`
                             }
                             className="border-1"
                         >
