@@ -13,7 +13,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY ui/ ./
 
 # Bake the API base URL at build-time for client code
-ARG NEXT_PUBLIC_API_BASE_URL=http://server:9000
+ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:9000
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 RUN npm run build
 
