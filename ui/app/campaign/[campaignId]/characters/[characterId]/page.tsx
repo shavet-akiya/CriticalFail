@@ -5,7 +5,7 @@ import type { Character } from "@/types/types";
 
 export default function CharacterDetail() {
     const { characterId } = useParams<{ characterId: string }>();
-    const baseUrl = "/api";
+    const baseUrl = "/localhost:9000/";
     const [form, setForm] = useState<Character | null>(null);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -15,7 +15,7 @@ export default function CharacterDetail() {
         if (!characterId) return;
         console.log("Fetching character", characterId);
 
-        fetch(`/api/characters/${encodeURIComponent(characterId)}`)
+        fetch(`${baseUrl}/characters/${encodeURIComponent(characterId)}`)
             .then((res) => {
                 console.log("Response status", res.status);
                 return res.json();

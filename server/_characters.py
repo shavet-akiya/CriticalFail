@@ -6,29 +6,38 @@ from ._database import session_collection
 router = APIRouter()
 
 
-# need to check if character name already exists in campaign
 def save_characters(collection, summary, session_data):
+    session_id = session_data.get("session_id")
+    campaign_id = session_data.get("campaign_id")  # ← grab it from session
+
     for character in summary.get("characters", []):
         if not isinstance(character, dict):
             continue
         character_id = character.get("character_id") or str(uuid.uuid4())
         name = character.get("name", "Unknown Character")
+
         collection.add(
             documents=[name],
             ids=[character_id],
             metadatas={
                 "character_id": character_id,
-                "session_id": session_data.get("session_id"),
+                "session_id": session_id,
+                "campaign_id": campaign_id,  # ← include campaign
                 "type": "character",
                 **character,
             },
         )
 
 
-# list all characters in db
-@router.get("/")
-async def list_characters():
-    results = session_collection.get(where={"type": "character"})
+@router.get("/campaign/{campaign_id}")
+async def list_campaign_characters(campaign_id: str):
+    """List all characters linked to a campaign (through its sessions)."""
+    results = session_collection.get(
+        where={
+            "type": "character",
+            "campaign_id": campaign_id,
+        }
+    )
     return {"characters": results["metadatas"]}
 
 

@@ -17,11 +17,9 @@
 //     );
 // }
 
-
-
 "use client";
 import { useEffect, useState } from "react";
-
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 type Event = {
     event_id: string;
     session_id: string;
@@ -41,7 +39,7 @@ export default function Timeline() {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const res = await fetch("/api/events");
+                const res = await fetch(`/${baseUrl}/events`);
                 const data = await res.json();
                 setEvents(data.events || []);
             } catch (err) {
@@ -107,5 +105,3 @@ export default function Timeline() {
         </div>
     );
 }
-
-

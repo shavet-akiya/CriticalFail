@@ -38,7 +38,7 @@ export default function SessionList() {
     const [error, setError] = useState<string | null>(null);
     const [latestSession, setLatestSession] = useState<any>(null);
 
-    const baseUrl = "/api";
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     async function submitTranscript() {
         if (!transcript.trim()) return;
@@ -108,36 +108,12 @@ export default function SessionList() {
                 Dungeons & Dragons AI Sessions
             </h1>
 
-            {/* Submit Transcript */}
-            <div className="bg-white shadow rounded p-6 mb-8">
-                <h2 className="text-xl font-semibold mb-2">
-                    Submit Transcript
-                </h2>
-                <textarea
-                    className="w-full h-40 p-2 border rounded mb-4 resize-none"
-                    placeholder="Paste your D&D transcript here..."
-                    value={transcript}
-                    onChange={(e) => setTranscript(e.target.value)}
-                    disabled={posting}
-                />
-                <div className="flex justify-end gap-2">
-                    <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                        onClick={submitTranscript}
-                        disabled={posting || !transcript.trim()}
-                    >
-                        {posting ? "Processing…" : "Submit"}
-                    </button>
-                    <button
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                        onClick={resetDatabase}
-                    >
-                        Delete All Sessions
-                    </button>
-                </div>
-                {error && <p className="mt-2 text-red-600">{error}</p>}
-            </div>
-
+            <button
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                onClick={resetDatabase}
+            >
+                Delete All Sessions
+            </button>
             {/* Latest Session */}
             {latestSession && (
                 <div className="bg-white shadow rounded p-6 mb-8">
