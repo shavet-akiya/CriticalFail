@@ -7,6 +7,8 @@ interface NavBarProps {
     campaignID?: number;
 }
 
+// if campaignID: returns a nav bar
+// else: returns nothing
 function NavBar({ campaignID }: NavBarProps) {
     const { isRecording, isPaused } = useRecording();
 
@@ -52,16 +54,7 @@ function NavBar({ campaignID }: NavBarProps) {
             </div>
         );
     }
-    return (
-        <div className="fixed top-0 left-0 right-0 z-50 navbar bg-[#0B1215]">
-            <div className="flex-1 font-metal-mania">
-                <Link href="/" className="text-3xl red-colour">
-                    Dungeon Scribe
-                </Link>
-            </div>
-        </div>
-    );
-
+    return
 }
 
 export default NavBar;

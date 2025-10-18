@@ -2,17 +2,39 @@
 import React from "react";
 import Link from "next/link";
 
+// future consideration: if campaign id: show welcome back
 function App() {
-    return (<div>
-        <p>Landing</p>
-        <button className="btn btn-primary">
-            <Link href="/campaign">Select Campaign</Link>
-        </button>
-        <button className="btn btn-primary">
-            <Link href="/campaign">Select Campaign</Link>
-        </button>
+    return (
+        <>
+            <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+                <section className="h-screen flex flex-col items-center justify-center bg-[#eff1ed] text-[#3c1642] snap-start relative gap-32">
+                    <h1 className="text-9xl font-bold select-none font-metal-mania red-colour text-center text-shadow-lg text-shadow-gray-300">
+                        Dungeon Scribe
+                    </h1>
 
-    </div>);
+                    {/* Scroll hint */}
+                    <div className="bottom-20 text-center flex flex-row gap-8">
+                        <a href="#campaign_selection" className="btn btn-primary scroll-smooth">
+                            Select Campaign
+                        </a>
+
+                        <button className="btn btn-primary">New Campaign</button>
+                    </div>
+                </section>
+
+                {/* Section 2 Select campaign */}
+                <section
+                    id="campaign_selection"
+                    className="h-screen flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
+                >
+                    <h2 className="text-4xl font-bold mb-4">Campaign Selection</h2>
+                    <p className="text-lg max-w-xl text-center">
+                        This is where your available campaigns will appear. You can scroll or click above to return to the top.
+                    </p>
+                </section>
+            </div>
+        </>
+    )
 }
 
 export default App;
