@@ -1,0 +1,120 @@
+from fastapi import APIRouter, BackgroundTasks
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+import uuid, asyncio
+from ._database import save_session_to_chroma
+from ._speech import llm_jobs
+from llm import dnd_ai
+from ._database import session_collection
+
+router = APIRouter()
+MAX_SESSIONS = 1000
+recent_sessions = []
+
+
+class TranscriptInput(BaseModel):
+    transcript: str
+
+
+async def process_and_save_session(job_id: str, transcript: str):
+    try:
+        llm_jobs[job_id] = {"status": "processing"}
+        structured_json = await dnd_ai.extract_session_data(transcript)
+        chroma_id = await asyncio.to_thread(save_session_to_chroma, structured_json)
+        structured_json["chroma_id"] = chroma_id
+        llm_jobs[job_id] = {"status": "completed", "result": structured_json}
+        recent_sessions.insert(0, structured_json)
+        if len(recent_sessions) > MAX_SESSIONS:
+            recent_sessions.pop()
+    except Exception as e:
+        llm_jobs[job_id] = {"status": "error", "error": str(e)}
+
+
+@router.post("/")
+async def create_session(
+    input_data: TranscriptInput, background_tasks: BackgroundTasks
+):
+    job_id = str(uuid.uuid4())
+    # Start background processing
+    background_tasks.add_task(process_and_save_session, job_id, input_data.transcript)
+    # Return immediately
+    return {"status": "processing", "job_id": job_id}
+
+
+@router.delete("/")
+async def reset_database():
+    try:
+        all_ids = session_collection.get()["ids"]
+        if all_ids:
+            session_collection.delete(ids=all_ids)
+        return {"status": "all data deleted"}
+    except Exception as e:
+        return {"status": "error", "details": str(e)}
+
+
+@router.get("/status/{job_id}")
+async def get_session_status(job_id: str):
+    job = llm_jobs.get(job_id)
+    if not job:
+        return JSONResponse(status_code=404, content={"error": "Job not found"})
+    return job
+
+
+# Background task
+async def process_and_save_session(job_id: str, transcript: str):
+    try:
+        llm_jobs[job_id] = {"status": "processing"}
+        # Run LLM
+        structured_json = await dnd_ai.extract_session_data(transcript)
+        # Save to Chroma in a thread (blocking code)
+        chroma_id = await asyncio.to_thread(save_session_to_chroma, structured_json)
+        structured_json["chroma_id"] = chroma_id
+
+        # Store result
+        llm_jobs[job_id] = {"status": "completed", "result": structured_json}
+    except Exception as e:
+        llm_jobs[job_id] = {"status": "error", "error": str(e)}
+
+
+@router.get("/")
+async def list_chroma_sessions():
+    try:
+        sessions = session_collection.get(where={"type": "session"})
+        decoded = {
+            "ids": sessions["ids"],
+            "documents": sessions["documents"],
+            "metadatas": [],
+        }
+
+        for md in sessions["metadatas"]:
+            session_id = md["session_id"]
+
+            # Fetch characters
+            chars = session_collection.get(
+                where={"$and": [{"type": "character"}, {"session_id": session_id}]}
+            )
+
+            # Fetch locations
+            locs = session_collection.get(
+                where={"$and": [{"type": "location"}, {"session_id": session_id}]}
+            )
+
+            # Fetch events
+            evs = session_collection.get(
+                where={"$and": [{"type": "event"}, {"session_id": session_id}]}
+            )
+
+            md_with_data = md.copy()
+            md_with_data["characters"] = chars["metadatas"]
+            md_with_data["locations"] = locs["metadatas"]
+            md_with_data["events"] = evs["metadatas"]
+
+            decoded["metadatas"].append(md_with_data)
+
+        return decoded
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to fetch from Chroma", "details": str(e)},
+        )

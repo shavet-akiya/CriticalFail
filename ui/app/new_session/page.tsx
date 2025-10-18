@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 export default function NewSession() {
+    const BASE_URL = "http://localhost:9000"; // FastAPI backend
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Upload states
@@ -217,7 +218,7 @@ export default function NewSession() {
 
     const processAudioJob = async (formData: FormData) => {
         // Submit job
-        const response = await fetch("/api/speech/upload", {
+        const response = await fetch(`${BASE_URL}/speech/upload`, {
             method: "POST",
             body: formData,
         });
@@ -248,7 +249,7 @@ export default function NewSession() {
             attempts++;
 
             const statusResponse = await fetch(
-                `/api/speech/status/${result.job_id}`
+                `${BASE_URL}/speech/status/${result.job_id}`
             );
             if (!statusResponse.ok) {
                 console.error("Status check failed");
@@ -299,7 +300,7 @@ export default function NewSession() {
             setUploadError("");
 
             // Step 1: Send transcript (get job_id back)
-            const response = await fetch("/api/sessions", {
+            const response = await fetch(`${BASE_URL}/sessions`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ transcript: completedTranscript }),
@@ -309,12 +310,14 @@ export default function NewSession() {
 
             if (!job_id) throw new Error("No job ID returned from server.");
 
-            setUploadStatus("⚙️ AI is analyzing the session...");
+            setUploadStatus("AI is analyzing the session...");
 
             // Step 2: Poll until job is completed
             let resultData = null;
             for (;;) {
-                const statusRes = await fetch(`/api/sessions/status/${job_id}`);
+                const statusRes = await fetch(
+                    `${BASE_URL}/sessions/status/${job_id}`
+                );
                 const job = await statusRes.json();
 
                 if (job.status === "completed") {
