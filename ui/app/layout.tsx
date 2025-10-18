@@ -39,6 +39,9 @@ export const metadata: Metadata = {
   description: "DECO3801 Sem 2 2025 Critical Fail",
 };
 
+
+// passes in campaign ID here
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -51,8 +54,8 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-faculty-glyphic), serif" }}
       >
         <RecordingProvider>
-          <NavBar />
-          <main className="flex-1 flex flex-col items-center justify-center w-screen pt-16">
+          <NavBar campaignID={1} />
+          <main className="flex-1 flex flex-col items-center justify-center w-screen pt-16 bg-[#eff1ed] h-screen overflow-hidden">
             {children}
           </main>
           <RecordingPopup />

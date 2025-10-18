@@ -12,3 +12,30 @@
 .font-metal-mania {
   font-family: var(--font-metal-mania);
 }
+
+:root {
+  --red-color: #a80d18; 
+  --purple-colour: #3c1642;
+  --white-colour: #eff1ed;
+  --obsidian-colour: #0B1215;
+}
+
+.red-colour {
+  color: var(--red-color);
+}
+
+.white-colour {
+  color: var(--white-colour);
+}
+
+.purple-colour {
+  color: var(--purple-colour);
+}
+
+.obsidian-colour {
+  color: var(--obsidian-colour);
+}
+
+
+
+
