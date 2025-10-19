@@ -17,7 +17,10 @@ export default function NavBar({ found = true }: NavBarProps) {
         return (
             <div className="fixed top-0 left-0 right-0 z-50 navbar bg-[#0B1215]">
                 <div className="flex-1 font-metal-mania">
-                    <Link href="/" className="btn btn-ghost text-3xl red-colour">
+                    <Link
+                        href="/"
+                        className="btn btn-ghost text-3xl red-colour"
+                    >
                         Dungeon Scribe
                     </Link>
                 </div>
@@ -34,11 +37,46 @@ export default function NavBar({ found = true }: NavBarProps) {
             </div>
             <div className="flex-none">
                 <ul className="menu menu-horizontal px-1 gap-4">
-                    <li><Link href={`/campaign/${campaignID}/summary`} className="white-colour">Campaign Summary</Link></li>
-                    <li><Link href={`/campaign/${campaignID}/sessions`} className="white-colour">Session List</Link></li>
-                    <li><Link href={`/campaign/${campaignID}/events`} className="white-colour">Event Timeline</Link></li>
-                    <li><Link href={`/campaign/${campaignID}/characters`} className="white-colour">Characters</Link></li>
-                    <li><Link href={`/campaign/${campaignID}/locations`} className="white-colour">Locations</Link></li>
+                    <li>
+                        <Link
+                            href={`/campaign/${campaignID}/summary`}
+                            className="white-colour"
+                        >
+                            Campaign Summary
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            href={`/campaign/${campaignID}/sessions`}
+                            className="white-colour"
+                        >
+                            Session List
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            href={`/campaign/${campaignID}/events`}
+                            className="white-colour"
+                        >
+                            Event Timeline
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            href={`/campaign/${campaignID}/characters`}
+                            className="white-colour"
+                        >
+                            Characters
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            href={`/campaign/${campaignID}/locations`}
+                            className="white-colour"
+                        >
+                            Locations
+                        </Link>
+                    </li>
                     <li>
                         <Link
                             href={

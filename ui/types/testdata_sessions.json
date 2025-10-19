@@ -1,0 +1,208 @@
+{
+  "ids": [
+    "b72f70c1-9f1e-4b0e-b640-d8846ff9c001",
+    "91b112e0-4036-45d4-9e37-90f87e11219a",
+    "3cc9d85c-33cd-4f07-bf7d-3a1953d0973a",
+    "d148a7d5-503b-4cb3-817c-0b3574a3f534"
+  ],
+  "documents": [
+    "The party investigates the ruins of the fallen citadel, uncovering remnants of the empire’s once-glorious banners. Tensions rise as faint echoes of magic hum through the halls.",
+    "After uncovering the sigil of the old emperor, the group debates whether to disturb the sealed chamber beneath the citadel. Strange whispers grow louder.",
+    "The crew lands on the rocky shoreline of the Shattered Coast. Rumors of a dragon’s hoard buried in the cliffs draw the adventurers inland.",
+    "Inside a cliffside cavern, the group discovers ancient draconic carvings hinting at a buried treasure—and a curse that still lingers."
+  ],
+  "metadatas": [
+    {
+      "type": "session",
+      "session_id": "20251019130501",
+      "campaign_id": "c1f84e53-5e7a-45cf-9e58-56c441ae78aa",
+      "processed_at": "2025-10-19T13:05:01Z",
+      "characters": [
+        {
+          "type": "character",
+          "character_id": "d2dfdba0-7b7c-4b62-9c84-48a3e5b4f403",
+          "session_id": "20251019130501",
+          "campaign_id": "c1f84e53-5e7a-45cf-9e58-56c441ae78aa",
+          "name": "Kaelen",
+          "class": "Ranger",
+          "race": "Half-Elf",
+          "npc": false,
+          "HP": 24,
+          "AC": 14,
+          "STR": 12,
+          "DEX": 16,
+          "CON": 13,
+          "INT": 10,
+          "WIS": 15,
+          "CHA": 11
+        }
+      ],
+      "locations": [
+        {
+          "type": "location",
+          "location_id": "f49eb071-3a56-4f7f-9a88-d7c83971f73d",
+          "session_id": "20251019130501",
+          "location_name": "Ruined Citadel",
+          "description": "Crumbling stone towers surrounded by creeping vines."
+        }
+      ],
+      "events": [
+        {
+          "type": "event",
+          "event_id": "ab50f1a2-8a10-4d63-b5f3-77e8f0b5e317",
+          "session_id": "20251019130501",
+          "event": "Echoes of Magic",
+          "timeline_order": 1,
+          "participants": "Kaelen",
+          "location": "Ruined Citadel",
+          "event_summary": "Kaelen detects residual arcane energy beneath the citadel floor.",
+          "event_tags": "exploration, mystery, magic"
+        }
+      ]
+    },
+    {
+      "type": "session",
+      "session_id": "20251019132217",
+      "campaign_id": "c1f84e53-5e7a-45cf-9e58-56c441ae78aa",
+      "processed_at": "2025-10-19T13:22:17Z",
+      "characters": [
+        {
+          "type": "character",
+          "character_id": "74b316b4-9b11-4a18-8e83-1d6a64d3f911",
+          "session_id": "20251019132217",
+          "campaign_id": "c1f84e53-5e7a-45cf-9e58-56c441ae78aa",
+          "name": "Lira",
+          "class": "Wizard",
+          "race": "Human",
+          "npc": false,
+          "HP": 18,
+          "AC": 12,
+          "STR": 8,
+          "DEX": 13,
+          "CON": 11,
+          "INT": 17,
+          "WIS": 14,
+          "CHA": 10
+        }
+      ],
+      "locations": [
+        {
+          "type": "location",
+          "location_id": "a8ec8a37-f71c-4952-9279-4cbadfd6a1b0",
+          "session_id": "20251019132217",
+          "location_name": "Sealed Chamber",
+          "description": "A subterranean vault engraved with imperial glyphs."
+        }
+      ],
+      "events": [
+        {
+          "type": "event",
+          "event_id": "f8c2e3d2-7c4c-41e2-87ee-64e2d97e4d55",
+          "session_id": "20251019132217",
+          "event": "The Whispering Sigil",
+          "timeline_order": 1,
+          "participants": "Lira",
+          "location": "Sealed Chamber",
+          "event_summary": "Lira deciphers the emperor’s sigil and hears faint whispers warning her not to proceed.",
+          "event_tags": "mystery, magic, dialogue"
+        }
+      ]
+    },
+    {
+      "type": "session",
+      "session_id": "20251019133750",
+      "campaign_id": "9b20813b-6df5-49a4-b8ab-2f47786ac66b",
+      "processed_at": "2025-10-19T13:37:50Z",
+      "characters": [
+        {
+          "type": "character",
+          "character_id": "9f377b60-0c84-4b68-8c81-807305edcc40",
+          "session_id": "20251019133750",
+          "campaign_id": "9b20813b-6df5-49a4-b8ab-2f47786ac66b",
+          "name": "Rogan",
+          "class": "Fighter",
+          "race": "Dwarf",
+          "npc": false,
+          "HP": 32,
+          "AC": 16,
+          "STR": 17,
+          "DEX": 10,
+          "CON": 15,
+          "INT": 9,
+          "WIS": 12,
+          "CHA": 11
+        }
+      ],
+      "locations": [
+        {
+          "type": "location",
+          "location_id": "b98a0b11-f6b9-4b4a-9b64-f5b0d0ed95a7",
+          "session_id": "20251019133750",
+          "location_name": "Shattered Coast",
+          "description": "A jagged shoreline where waves crash against sharp black cliffs."
+        }
+      ],
+      "events": [
+        {
+          "type": "event",
+          "event_id": "d7aaf814-d6cb-4b37-8eac-18eb5311e9a1",
+          "session_id": "20251019133750",
+          "event": "Landing at the Coast",
+          "timeline_order": 1,
+          "participants": "Rogan",
+          "location": "Shattered Coast",
+          "event_summary": "Rogan secures the landing craft and scouts ahead, marking a safe path inland.",
+          "event_tags": "exploration, travel, setup"
+        }
+      ]
+    },
+    {
+      "type": "session",
+      "session_id": "20251019135202",
+      "campaign_id": "9b20813b-6df5-49a4-b8ab-2f47786ac66b",
+      "processed_at": "2025-10-19T13:52:02Z",
+      "characters": [
+        {
+          "type": "character",
+          "character_id": "e17e6f51-00e8-42d2-9d59-80b6a6c9d2cd",
+          "session_id": "20251019135202",
+          "campaign_id": "9b20813b-6df5-49a4-b8ab-2f47786ac66b",
+          "name": "Sera",
+          "class": "Cleric",
+          "race": "Human",
+          "npc": false,
+          "HP": 28,
+          "AC": 15,
+          "STR": 10,
+          "DEX": 12,
+          "CON": 14,
+          "INT": 13,
+          "WIS": 17,
+          "CHA": 12
+        }
+      ],
+      "locations": [
+        {
+          "type": "location",
+          "location_id": "d894a61c-bf76-4b58-8f83-2e3b66b1c81e",
+          "session_id": "20251019135202",
+          "location_name": "Cliffside Cavern",
+          "description": "A torchlit cavern marked with ancient draconic symbols."
+        }
+      ],
+      "events": [
+        {
+          "type": "event",
+          "event_id": "56ad3cf2-0a48-46c1-a1e4-519b3f64bcb1",
+          "session_id": "20251019135202",
+          "event": "The Carvings’ Warning",
+          "timeline_order": 1,
+          "participants": "Sera",
+          "location": "Cliffside Cavern",
+          "event_summary": "Sera reads an inscription warning of the dragon’s curse and senses divine unrest.",
+          "event_tags": "exploration, lore, divine"
+        }
+      ]
+    }
+  ]
+}

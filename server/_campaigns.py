@@ -50,7 +50,7 @@ async def create_campaign(
         "type": "campaign",
         "campaign_id": campaign_id,
         "campaign_name": campaign_name,
-        "session_ids": [],
+        "session_ids": json.dumps([]),
         "campaign_image_url": image_url or "",  # Always a string, never None
         "created_at": str(datetime.datetime.utcnow()),
     }
@@ -116,7 +116,8 @@ async def list_campaigns():
             {
                 "campaign_id": c.get("campaign_id"),
                 "campaign_name": c.get("campaign_name"),
-                "session_ids": c.get("session_ids", []),
+                "session_ids": json.loads(c.get("session_ids", "[]")),  # ✅ decode JSON
+                "campaign_image_url": c.get("campaign_image_url", ""),
             }
             for c in campaigns
         ]
@@ -240,21 +241,5 @@ async def get_campaign(campaign_id: str):
         return campaign["metadatas"][0]
     except HTTPException:
         raise
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-@router.get("/{campaign_id}/sessions")
-async def get_campaign_sessions(campaign_id: str):
-    """
-    Return list of session metadata that belong to campaign_id.
-    """
-    try:
-        # Query all sessions with matching campaign_id
-        results = session_collection.get(
-            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
-        )
-        sessions = results.get("metadatas", [])
-        return {"sessions": sessions}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

@@ -38,7 +38,7 @@ export default function NewCampaign() {
             formData.append("campaign_name", campaignName);
             if (image) formData.append("campaign_image", image);
 
-            const response = await fetch(`${baseUrl}/campaigns/`, {
+            const response = await fetch(`${baseUrl}/campaign/`, {
                 method: "POST",
                 body: formData,
             });
@@ -61,7 +61,7 @@ export default function NewCampaign() {
 
                 // Delay navigation to allow toast to show
                 setTimeout(
-                    () => router.push(`${baseUrl}/campaigns/${data.campaign_id}`),
+                    () => router.push(`${baseUrl}/campaign/${data.campaign_id}`),
                     500
                 );
             }

@@ -1,14 +1,17 @@
 "use client";
+
 import { useCharacter } from "@/contexts/CharacterContext";
 import Link from "next/link";
+import { useParams } from "next/navigation"; // ✅ import useParams
 import { Character } from "@/types/types";
 
 export default function CharacterCard({ character }: { character: Character }) {
     const { setCurrentCharacter } = useCharacter();
+    const { campaignId } = useParams<{ campaignId: string }>(); // ✅ get campaignId from route
 
     return (
         <Link
-            href={`/characters/${encodeURIComponent(character.characterId)}`}
+            href={`/campaign/${campaignId}/characters/${character.characterId}`}
             onClick={() => setCurrentCharacter(character)}
             className="block"
         >

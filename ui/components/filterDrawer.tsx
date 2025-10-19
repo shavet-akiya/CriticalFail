@@ -1,7 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Event } from "@/types/types";
+
+interface Event {
+    event_id: string;
+    session_id: string;
+    campaign_id?: string;
+    timeline_order?: number;
+    event?: string;
+    event_summary?: string;
+    participants?: string[];
+    location?: string;
+    event_tags?: string[];
+    type?: string;
+}
 
 interface FilterDrawerProps {
     filters: string[];
@@ -28,7 +40,9 @@ export default function FilterDrawer({
 
     const allTags = useMemo(() => {
         const tagSet = new Set<string>();
-        events.forEach((e) => e.event_tags.forEach((t) => tagSet.add(t)));
+        events.forEach((e) =>
+            (e.event_tags ?? []).forEach((t) => tagSet.add(t))
+        );
         return Array.from(tagSet);
     }, [events]);
 

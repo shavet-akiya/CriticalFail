@@ -23,7 +23,7 @@ function App() {
         async function fetchCampaigns() {
             try {
                 setLoading(true);
-                const res = await fetch(`${baseUrl}/campaigns`);
+                const res = await fetch(`${baseUrl}/campaign`);
                 if (!res.ok) throw new Error(`Failed to fetch campaigns`);
                 const data = await res.json();
                 setCampaigns(data); // Expecting an array of campaigns
@@ -89,7 +89,7 @@ function App() {
                             campaignID={c.campaign_id}
                             campaignName={c.campaign_name}
                             sessionCount={c.session_ids.length}
-                            imageUrl={c.campaign_image_url} // ✅ pass through
+                            imageUrl={c.campaign_image_url}
                         />
                     ))}
             </section>

@@ -32,7 +32,7 @@ export default function CampaignCard({
                     <button
                         className="btn btn-primary"
                         onClick={() =>
-                            router.push(`/campaigns/${campaignID}/summary`)
+                            router.push(`/campaign/${campaignID}/summary`)
                         }
                     >
                         Go to campaign
