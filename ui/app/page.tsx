@@ -80,7 +80,7 @@ function App() {
                 {!loading && campaigns.length === 0 && (
                     <>
                         <h2 className="text-4xl font-bold mb-8">Campaign Selection</h2>
-                        <p className="text-lg italic text-gray-600">No campaigns found.</p>
+                        <p className="text-lg italic text-gray-600 pb-8">No campaigns yet we're afraid</p>
                         <button className="btn btn-primary"><Link href={`/new_campaign`}> New Campaign
                         </Link></button>
 
