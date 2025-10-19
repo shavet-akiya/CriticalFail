@@ -32,7 +32,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 async def create_campaign(
     campaign_name: str = Form(...), campaign_image: UploadFile | None = File(None)
 ):
-    campaign_id = str(uuid.uuid4())
+    campaign_id = str(uuid.uuid4())[:6]
     filename = None
     image_url = None
 
@@ -196,7 +196,7 @@ async def create_session_in_campaign(campaign_id: str, req: AssignSessionRequest
             session_collection.update(ids=[chroma_id], metadatas=[meta])
         else:
             # Create a minimal session record if not present
-            chroma_doc_id = str(uuid.uuid4())
+            chroma_doc_id = str(uuid.uuid4())[:6]
             session_collection.add(
                 documents=[req.session_id],
                 ids=[chroma_doc_id],

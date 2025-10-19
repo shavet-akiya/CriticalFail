@@ -10,7 +10,7 @@ def save_locations(collection, summary, session_data):
     for loc in summary.get("locations", []):
         if not isinstance(loc, dict):
             continue
-        loc_id = loc.get("location_id") or str(uuid.uuid4())
+        loc_id = loc.get("location_id") or str(uuid.uuid4())[:6]
         loc_name = loc.get("location_name") or loc.get("name", "Unknown Location")
         collection.add(
             documents=[loc_name],

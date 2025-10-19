@@ -38,7 +38,7 @@ session_collection = chroma_client.get_or_create_collection(name="dnd_sessions")
 
 
 def save_session_to_chroma(session_data: dict) -> str:
-    chroma_id = str(uuid.uuid4())
+    chroma_id = str(uuid.uuid4())[:6]
     summary = session_data.get("summary", {})
     summary_text = summary.get("session_summary", "")
 
@@ -48,7 +48,7 @@ def save_session_to_chroma(session_data: dict) -> str:
         ids=[chroma_id],
         metadatas=[
             {
-                "session_id": session_data.get("session_id", str(uuid.uuid4())),
+                "session_id": session_data.get("session_id", str(uuid.uuid4())[:6]),
                 "campaign_id": session_data.get("campaign_id", "Unassigned"),
                 "processed_at": session_data.get(
                     "processed_at", str(datetime.datetime.utcnow())
@@ -64,7 +64,7 @@ def save_session_to_chroma(session_data: dict) -> str:
             print(f"⚠️ Skipping invalid character entry: {character}")
             continue
 
-        character_id = character.get("character_id") or str(uuid.uuid4())
+        character_id = character.get("character_id") or str(uuid.uuid4())[:6]
         name = character.get("name", "Unknown Character")
 
         try:
@@ -89,7 +89,7 @@ def save_session_to_chroma(session_data: dict) -> str:
             print(f"⚠️ Skipping invalid location entry: {loc}")
             continue
 
-        loc_id = loc.get("location_id") or str(uuid.uuid4())
+        loc_id = loc.get("location_id") or str(uuid.uuid4())[:6]
         loc_name = loc.get("location_name") or loc.get("name", "Unknown Location")
 
         try:
@@ -114,7 +114,7 @@ def save_session_to_chroma(session_data: dict) -> str:
             print(f"⚠️ Skipping invalid event entry: {ev}")
             continue
 
-        ev_id = ev.get("event_id") or str(uuid.uuid4())
+        ev_id = ev.get("event_id") or str(uuid.uuid4())[:6]
         event_text = ev.get("event", "Unnamed Event")
 
         # Make a shallow copy so we can safely modify it
@@ -664,7 +664,7 @@ async def process_and_save_session(job_id: str, transcript: str):
 async def create_session(
     input_data: TranscriptInput, background_tasks: BackgroundTasks
 ):
-    job_id = str(uuid.uuid4())
+    job_id = str(uuid.uuid4())[:6]
     # Start background processing
     background_tasks.add_task(process_and_save_session, job_id, input_data.transcript)
     # Return immediately

@@ -11,7 +11,7 @@ def save_events(collection, summary, session_data):
     for ev in summary.get("events", []):
         if not isinstance(ev, dict):
             continue
-        ev_id = ev.get("event_id") or str(uuid.uuid4())
+        ev_id = ev.get("event_id") or str(uuid.uuid4())[:6]
         ev_text = ev.get("event", "Unnamed Event")
         ev_metadata = ev.copy()
         for key in ["participants", "event_tags"]:

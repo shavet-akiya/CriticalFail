@@ -64,7 +64,7 @@ async def process_and_save_session(job_id: str, transcript: str, campaign_id: st
 async def create_session(
     input_data: TranscriptInput, background_tasks: BackgroundTasks
 ):
-    job_id = str(uuid.uuid4())
+    job_id = str(uuid.uuid4())[:6]
     # Start background processing with campaign_id
     background_tasks.add_task(
         process_and_save_session,

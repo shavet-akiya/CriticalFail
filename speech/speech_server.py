@@ -186,7 +186,7 @@ async def process_audio(
 
     try:
         # Generate job ID
-        job_id = str(uuid.uuid4())
+        job_id = str(uuid.uuid4())[:6]
 
         # Save file
         recordings_dir = Path("recordings")

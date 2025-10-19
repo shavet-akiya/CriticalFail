@@ -13,7 +13,7 @@ def save_characters(collection, summary, session_data):
     for character in summary.get("characters", []):
         if not isinstance(character, dict):
             continue
-        character_id = character.get("character_id") or str(uuid.uuid4())
+        character_id = character.get("character_id") or str(uuid.uuid4())[:6]
         name = character.get("name", "Unknown Character")
 
         collection.add(

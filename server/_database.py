@@ -17,7 +17,7 @@ def save_campaign_to_chroma(campaign_name: str, session_ids: list[str]) -> str:
     """
     Save a campaign as a separate type in ChromaDB.
     """
-    campaign_id = str(uuid.uuid4())
+    campaign_id = str(uuid.uuid4())[:6]
 
     session_collection.add(
         documents=[campaign_name],
@@ -37,7 +37,7 @@ def save_campaign_to_chroma(campaign_name: str, session_ids: list[str]) -> str:
 
 
 def save_session_to_chroma(session_data: dict) -> str:
-    chroma_id = str(uuid.uuid4())
+    chroma_id = str(uuid.uuid4())[:6]
     summary = session_data.get("summary", {})
     summary_text = summary.get("session_summary", "No summary")
 
@@ -47,7 +47,7 @@ def save_session_to_chroma(session_data: dict) -> str:
         ids=[chroma_id],
         metadatas=[
             {
-                "session_id": session_data.get("session_id", str(uuid.uuid4())),
+                "session_id": session_data.get("session_id", str(uuid.uuid4())[:6]),
                 "campaign_id": session_data.get("campaign_id", "Unassigned"),
                 "processed_at": session_data.get(
                     "processed_at", str(datetime.datetime.utcnow())
@@ -67,6 +67,3 @@ def save_session_to_chroma(session_data: dict) -> str:
     save_events(session_collection, summary, session_data)
 
     return chroma_id
-
-
-

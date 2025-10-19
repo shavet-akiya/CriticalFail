@@ -118,7 +118,7 @@ Instructions:
 
     for char in session_data["summary"]["characters"]:
         # ensure a unique character_id
-        char.setdefault("character_id", str(uuid.uuid4()))
+        char.setdefault("character_id", str(uuid.uuid4())[:6])
         # merge defaults without overwriting existing keys
         for stat, val in default_stats.items():
             char.setdefault(stat, val)
@@ -126,18 +126,18 @@ Instructions:
     # assign UUIDs to locations
     for i, loc in enumerate(session_data["summary"]["locations"]):
         if isinstance(loc, dict):
-            loc.setdefault("location_id", str(uuid.uuid4()))
+            loc.setdefault("location_id", str(uuid.uuid4())[:6])
         else:
             # if locations are just strings, wrap them
             session_data["summary"]["locations"][i] = {
-                "location_id": str(uuid.uuid4()),
+                "location_id": str(uuid.uuid4())[:6],
                 "location_name": loc,
             }
 
     # assign UUIDs and default fields to events
     for i, ev in enumerate(session_data["summary"]["events"]):
         if isinstance(ev, dict):
-            ev.setdefault("event_id", str(uuid.uuid4()))
+            ev.setdefault("event_id", str(uuid.uuid4())[:6])
             ev.setdefault("event_summary", "")
             ev.setdefault("participants", [])
             ev.setdefault("location", "")
@@ -146,7 +146,7 @@ Instructions:
         else:
             # if events are just strings, wrap them
             session_data["summary"]["events"][i] = {
-                "event_id": str(uuid.uuid4()),
+                "event_id": str(uuid.uuid4())[:6],
                 "event": ev,
                 "event_summary": "",
                 "participants": [],
