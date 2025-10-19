@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CampaignCard from "@/components/CampaignCard";
 import Loading from "@/components/Loading";
+import { useCampaign } from "@/contexts/CampaignContext";
 
 interface Campaign {
     campaign_id: string;
@@ -16,6 +17,7 @@ function App() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { setSelectedCampaign } = useCampaign();
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -93,6 +95,7 @@ function App() {
                             campaignName={c.campaign_name}
                             sessionCount={c.session_ids.length}
                             imageUrl={c.campaign_image_url}
+                            onClick={() => setSelectedCampaign(c)} // this is the key line
                         />
                     ))}
                 </div>

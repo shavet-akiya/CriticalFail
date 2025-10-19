@@ -6,21 +6,26 @@ import { useCampaign } from "@/contexts/CampaignContext";
 interface CampaignCardProps {
     campaignID: string;
     campaignName: string;
-    sessionCount?: number;
+    sessionCount: number;
     imageUrl?: string;
+    onClick?: () => void;
 }
 
 export default function CampaignCard({
     campaignID,
     campaignName,
-    sessionCount = 0,
+    sessionCount,
     imageUrl,
+    onClick
 }: CampaignCardProps) {
     const router = useRouter();
-    const { setCampaignID } = useCampaign();
+    const { selectedCampaign, setSelectedCampaign } = useCampaign();
 
     return (
-        <>
+        <div
+            onClick={onClick}
+            className="cursor-pointer rounded shadow-lg hover:shadow-xl transition"
+        >
             <div className="card w-96 shadow-sm">
                 <div className="card-body">
                     <h2 className="card-title text-2xl">{campaignName}</h2>
@@ -35,7 +40,6 @@ export default function CampaignCard({
                         <button
                             className="btn btn-primary"
                             onClick={() => {
-                                setCampaignID(campaignID);
                                 router.push(`/campaign/${campaignID}/summary`)
                             }
                             }
@@ -44,6 +48,8 @@ export default function CampaignCard({
                         </button>                    </div>
                 </div>
             </div>
-        </>
+
+        </div>
+
     );
 }
