@@ -45,28 +45,6 @@ export default function SessionList() {
     // Use environment variable with fallback
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-    async function submitTranscript() {
-        if (!transcript.trim()) return;
-        setPosting(true);
-        setError(null);
-        try {
-            const res = await fetch(`${baseUrl}/sessions/`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ transcript }),
-            });
-            if (!res.ok) throw new Error(`POST failed: ${res.status}`);
-            const data = await res.json();
-            setLatestSession(data);
-            setTranscript("");
-            await fetchSessions();
-        } catch (e: unknown) {
-            setError(e instanceof Error ? e.message : String(e));
-        } finally {
-            setPosting(false);
-        }
-    }
-
     async function resetDatabase() {
         try {
             const res = await fetch(`${baseUrl}/sessions`, {

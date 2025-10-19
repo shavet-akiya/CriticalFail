@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+import os
+import json
 import uuid
 import datetime
 from ._database import session_collection
 
-router = APIRouter(tags=["campaigns"])
+router = APIRouter()
 
 
 class AssignSessionRequest(BaseModel):
@@ -22,39 +24,53 @@ class CreateCampaignRequest(BaseModel):
     session_ids: list[str] = []  # Optional – can be empty
 
 
-@router.post("/campaigns")
-async def create_campaign(req: CreateCampaignRequest):
-    """
-    Create a new campaign in ChromaDB, optionally with session IDs.
-    """
+UPLOAD_DIR = "../app/public/images"  # relative to your FastAPI backend folder
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+@router.post("/")
+async def create_campaign(
+    campaign_name: str = Form(...), campaign_image: UploadFile | None = File(None)
+):
+    campaign_id = str(uuid.uuid4())
+    filename = None
+    image_url = None
+
+    if campaign_image:
+        file_ext = os.path.splitext(campaign_image.filename)[1]
+        filename = f"{campaign_id}{file_ext}"
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        with open(file_path, "wb") as f:
+            f.write(await campaign_image.read())
+
+        # Public URL for Next.js frontend
+        image_url = f"/images/{filename}"
+        # ✅ Store only string-safe metadata
+    metadata = {
+        "type": "campaign",
+        "campaign_id": campaign_id,
+        "campaign_name": campaign_name,
+        "session_ids": [],
+        "campaign_image_url": image_url or "",  # Always a string, never None
+        "created_at": str(datetime.datetime.utcnow()),
+    }
+
     try:
-        campaign_id = str(uuid.uuid4())
-
         session_collection.add(
-            documents=[req.campaign_name],
+            documents=[campaign_name],
             ids=[campaign_id],
-            metadatas=[
-                {
-                    "type": "campaign",
-                    "campaign_id": campaign_id,
-                    "campaign_name": req.campaign_name,
-                    "session_ids": req.session_ids,
-                    "created_at": str(datetime.datetime.utcnow()),
-                }
-            ],
-        )
-
-        return JSONResponse(
-            status_code=201,
-            content={
-                "status": "created",
-                "campaign_id": campaign_id,
-                "campaign_name": req.campaign_name,
-                "session_count": len(req.session_ids),
-            },
+            metadatas=[metadata],
         )
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+    return {
+        "status": "created",
+        "campaign_id": campaign_id,
+        "campaign_name": campaign_name,
+        "image_url": image_url,
+        "session_count": 0,
+    }
 
 
 @router.put("/")
@@ -79,6 +95,33 @@ async def update_campaign(req: UpdateCampaignRequest):
             "session_id": req.session_id,
             "campaign_id": req.campaign_id,
         }
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.get("/")
+async def list_campaigns():
+    try:
+        results = session_collection.get(where={"type": "campaign"})
+        if not results or "metadatas" not in results:
+            return []
+
+        campaigns = results.get("metadatas", [])
+        # Ensure campaigns is always a list
+        if not isinstance(campaigns, list):
+            campaigns = [campaigns]
+
+        # Optional: normalize fields
+        normalized = [
+            {
+                "campaign_id": c.get("campaign_id"),
+                "campaign_name": c.get("campaign_name"),
+                "session_ids": c.get("session_ids", []),
+            }
+            for c in campaigns
+        ]
+
+        return normalized
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -131,7 +174,7 @@ def update_session_campaign(
     return {"message": f"Session {session_id} updated to campaign {new_campaign_id}."}
 
 
-@router.post("/campaigns/{campaign_id}/sessions", status_code=201)
+@router.post("/{campaign_id}/sessions", status_code=201)
 async def create_session_in_campaign(campaign_id: str, req: AssignSessionRequest):
     """
     Assign an existing session to this campaign or create a session entry.
@@ -186,11 +229,11 @@ async def create_session_in_campaign(campaign_id: str, req: AssignSessionRequest
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@router.get("/campaigns/{campaign_id}")
+@router.get("/{campaign_id}")
 async def get_campaign(campaign_id: str):
     try:
         campaign = session_collection.get(
-            where={"type": "campaign", "campaign_id": campaign_id}
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
         )
         if not campaign or not campaign.get("ids"):
             raise HTTPException(status_code=404, detail="Campaign not found")
@@ -201,7 +244,7 @@ async def get_campaign(campaign_id: str):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@router.get("/campaigns/{campaign_id}/sessions")
+@router.get("/{campaign_id}/sessions")
 async def get_campaign_sessions(campaign_id: str):
     """
     Return list of session metadata that belong to campaign_id.
@@ -209,7 +252,7 @@ async def get_campaign_sessions(campaign_id: str):
     try:
         # Query all sessions with matching campaign_id
         results = session_collection.get(
-            where={"type": "session", "campaign_id": campaign_id}
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
         )
         sessions = results.get("metadatas", [])
         return {"sessions": sessions}

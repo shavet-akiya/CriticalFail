@@ -6,12 +6,14 @@ interface CampaignCardProps {
     campaignID: string;
     campaignName: string;
     sessionCount?: number;
+    imageUrl?: string;
 }
 
 export default function CampaignCard({
     campaignID,
     campaignName,
     sessionCount = 0,
+    imageUrl,
 }: CampaignCardProps) {
     const router = useRouter();
 
@@ -19,7 +21,7 @@ export default function CampaignCard({
         <div className="card lg:card-side shadow-sm">
             <figure>
                 <img
-                    src="https://img.daisyui.com/images/stock/photo-1494232410401-ad00d5433cfa.webp"
+                    src={imageUrl || "/default-placeholder.png"}
                     alt="Campaign"
                 />
             </figure>

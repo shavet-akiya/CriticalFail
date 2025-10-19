@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import CampaignCard from "@/components/CampaignCard";
 import Loading from "@/components/Loading";
 
@@ -8,6 +9,7 @@ interface Campaign {
     campaign_id: string;
     campaign_name: string;
     session_ids: string[];
+    campaign_image_url?: string; // ✅ add this
 }
 
 function App() {
@@ -24,7 +26,7 @@ function App() {
                 const res = await fetch(`${baseUrl}/campaigns`);
                 if (!res.ok) throw new Error(`Failed to fetch campaigns`);
                 const data = await res.json();
-                setCampaigns(data); // Assuming your backend returns an array of campaign metadata
+                setCampaigns(data); // Expecting an array of campaigns
             } catch (err: unknown) {
                 setError(err instanceof Error ? err.message : String(err));
             } finally {
@@ -50,33 +52,37 @@ function App() {
                     >
                         Select Campaign
                     </a>
-                    <button className="btn btn-primary">New Campaign</button>
+                    <Link href="/new_campaign" className="btn btn-primary">
+                        New Campaign
+                    </Link>
                 </div>
             </section>
 
-                        <button className="btn btn-primary">
-                            <Link href={`/new_campaign`}>New Campaign</Link>
-                        </button>
-                    </div>
-                </section>
+            {/* Campaign Selection Section */}
+            <section
+                id="campaign_selection"
+                className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
+            >
+                <h2 className="text-4xl font-bold mb-4 pt-16">
+                    Campaign Selection
+                </h2>
 
-                {/* Section 2 Select campaign */}
-                <section
-                    id="campaign_selection"
-                    className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
-                >
-                    <h2 className="text-4xl font-bold mb-4 pt-16">Campaign Selection</h2>
+                {loading && <Loading />}
+                {error && <p className="text-red-500">{error}</p>}
+                {!loading && !error && campaigns.length === 0 && (
+                    <p>No campaigns available.</p>
+                )}
 
-                    {!loading &&
-                        campaigns.map((c) => (
-                            <CampaignCard
-                                key={c.campaign_id}
-                                campaignID={c.campaign_id}
-                                campaignName={c.campaign_name}
-                                sessionCount={c.session_ids.length}
-                            />
-                        ))}
-                </div>
+                {!loading &&
+                    campaigns.map((c) => (
+                        <CampaignCard
+                            key={c.campaign_id}
+                            campaignID={c.campaign_id}
+                            campaignName={c.campaign_name}
+                            sessionCount={c.session_ids.length}
+                            imageUrl={c.campaign_image_url} // ✅ pass through
+                        />
+                    ))}
             </section>
         </div>
     );
