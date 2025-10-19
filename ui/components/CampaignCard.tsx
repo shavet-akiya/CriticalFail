@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useCampaign } from "@/contexts/CampaignContext";
 
 interface CampaignCardProps {
     campaignID: string;
@@ -16,6 +17,7 @@ export default function CampaignCard({
     imageUrl,
 }: CampaignCardProps) {
     const router = useRouter();
+    const { setCampaignID } = useCampaign();
 
     return (
         <div className="card lg:card-side shadow-sm">
@@ -31,14 +33,16 @@ export default function CampaignCard({
                 <div className="card-actions justify-end">
                     <button
                         className="btn btn-primary"
-                        onClick={() =>
+                        onClick={() => {
+                            setCampaignID(campaignID);
                             router.push(`/campaign/${campaignID}/summary`)
+                        }
                         }
                     >
                         Go to campaign
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

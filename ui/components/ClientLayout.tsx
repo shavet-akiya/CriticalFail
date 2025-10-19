@@ -27,10 +27,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                 return;
             }
 
-            // /campaign/[id]/... case
-            const hasValidID = !isNaN(Number(parts[1]));
-
-            if (campaignID || hasValidID) {
+            if (parts.length > 2) {
                 setNavState("full");
             }
             return;

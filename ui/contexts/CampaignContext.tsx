@@ -3,14 +3,14 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface CampaignContextType {
-    campaignID: number | null;
-    setCampaignID: (id: number | null) => void;
+    campaignID: string | null;
+    setCampaignID: (id: string | null) => void;
 }
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
 
 export function CampaignProvider({ children }: { children: ReactNode }) {
-    const [campaignID, setCampaignID] = useState<number | null>(null);
+    const [campaignID, setCampaignID] = useState<string | null>(null);
 
     return (
         <CampaignContext.Provider value={{ campaignID, setCampaignID }}>
