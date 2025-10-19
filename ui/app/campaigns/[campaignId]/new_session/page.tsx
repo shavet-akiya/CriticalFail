@@ -15,10 +15,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRecording } from "@/contexts/RecordingContext";
 import Loading from "@/components/Loading";
+import { useParams } from "next/navigation";
 
 export default function NewSession() {
     const BASE_URL = "http://localhost:9000"; // FastAPI backend
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // inside the component
+    const { campaignId } = useParams();
 
     // Upload states
     const [isUploading, setIsUploading] = useState(false);
@@ -265,14 +269,16 @@ export default function NewSession() {
 
             if (statusData.status === "processing") {
                 setUploadStatus(
-                    `Processing audio... (${Math.floor((attempts * 3) / 60)}m ${(attempts * 3) % 60
+                    `Processing audio... (${Math.floor((attempts * 3) / 60)}m ${
+                        (attempts * 3) % 60
                     }s)`
                 );
             }
 
             if (statusData.status === "completed" && statusData.result) {
                 setUploadStatus(
-                    `✅ Processing complete! ${statusData.result.speaker_count || 0
+                    `✅ Processing complete! ${
+                        statusData.result.speaker_count || 0
                     } speakers identified.`
                 );
                 setCompletedTranscript(statusData.result.transcript || "");
@@ -301,11 +307,13 @@ export default function NewSession() {
             setIsUploading(true);
             setUploadError("");
 
-            // Step 1: Send transcript (get job_id back)
             const response = await fetch(`${BASE_URL}/sessions`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ transcript: completedTranscript }),
+                body: JSON.stringify({
+                    transcript: completedTranscript,
+                    campaign_id: campaignId, // make sure this is set
+                }),
             });
 
             const { job_id } = await response.json();
@@ -316,7 +324,7 @@ export default function NewSession() {
 
             // Step 2: Poll until job is completed
             let resultData = null;
-            for (; ;) {
+            for (;;) {
                 const statusRes = await fetch(
                     `${BASE_URL}/sessions/status/${job_id}`
                 );
@@ -364,10 +372,11 @@ export default function NewSession() {
                     </div>
                     <div className="flex items-center justify-center bg-red-50 rounded-lg px-4 py-2 inline-flex">
                         <div
-                            className={`w-3 h-3 rounded-full mr-3 ${isPaused
+                            className={`w-3 h-3 rounded-full mr-3 ${
+                                isPaused
                                     ? "bg-yellow-500"
                                     : "bg-red-500 animate-pulse"
-                                }`}
+                            }`}
                         />
                         <span className="text-sm font-medium text-gray-700">
                             {isPaused
@@ -443,10 +452,11 @@ export default function NewSession() {
             {/* Status Messages */}
             {uploadStatus && !completedTranscript && (
                 <div
-                    className={`flex items-center gap-3 p-4 rounded-lg shadow ${uploadStatus.includes("✅")
+                    className={`flex items-center gap-3 p-4 rounded-lg shadow ${
+                        uploadStatus.includes("✅")
                             ? "bg-green-50 border-l-4 border-green-500"
                             : "bg-blue-50 border-l-4 border-blue-500"
-                        }`}
+                    }`}
                 >
                     {uploadStatus.includes("✅") ? (
                         <CheckCircle className="text-green-600" size={20} />

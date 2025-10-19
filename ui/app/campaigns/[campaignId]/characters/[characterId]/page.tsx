@@ -4,8 +4,9 @@ import { useParams } from "next/navigation";
 import type { Character } from "@/types/types";
 
 export default function CharacterDetail() {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     const { characterId } = useParams<{ characterId: string }>();
-    const baseUrl = "/localhost:9000/";
+
     const [form, setForm] = useState<Character | null>(null);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);

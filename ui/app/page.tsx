@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CampaignCard from "@/components/CampaignCard";
 import Loading from "@/components/Loading";
-import Link from "next/link";
 
 interface Campaign {
     campaign_id: string;
@@ -27,7 +26,7 @@ function App() {
                 const res = await fetch(`${baseUrl}/campaigns`);
                 if (!res.ok) throw new Error(`Failed to fetch campaigns`);
                 const data = await res.json();
-                setCampaigns(data);
+                setCampaigns(data); // Expecting an array of campaigns
             } catch (err: unknown) {
                 setError(err instanceof Error ? err.message : String(err));
             } finally {
@@ -62,31 +61,25 @@ function App() {
                     >
                         Select Campaign
                     </a>
-                    <button className="btn btn-primary">
-                        <Link href={`/new_campaign`}> New Campaign
-                        </Link>
-                    </button>
+                    <Link href="/new_campaign" className="btn btn-primary">
+                        New Campaign
+                    </Link>
                 </div>
             </section>
 
-            {/* Section 2 - Select campaign */}
+            {/* Campaign Selection Section */}
             <section
                 id="campaign_selection"
-                className="
-          min-h-screen flex flex-col items-center justify-center 
-          bg-[#e0d6cb] purple-colour snap-start select-none
-        "
+                className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
             >
+                <h2 className="text-4xl font-bold mb-4 pt-16">
+                    Campaign Selection
+                </h2>
+
                 {loading && <Loading />}
-
-                {!loading && campaigns.length === 0 && (
-                    <>
-                        <h2 className="text-4xl font-bold mb-8">Campaign Selection</h2>
-                        <p className="text-lg italic text-gray-600">No campaigns found.</p>
-                        <button className="btn btn-primary"><Link href={`/new_campaign`}> New Campaign
-                        </Link></button>
-
-                    </>
+                {error && <p className="text-red-500">{error}</p>}
+                {!loading && !error && campaigns.length === 0 && (
+                    <p>No campaigns available.</p>
                 )}
 
                 {!loading &&

@@ -90,9 +90,26 @@ async def delete_event(event_id: str):
 @router.get("/campaigns/{campaign_id}/events")
 async def list_campaign_events(campaign_id: str):
     try:
-        results = session_collection.get(
-            where={"type": "event", "campaign_id": campaign_id}
+        # 1️⃣ Get all sessions for this campaign
+        session_results = session_collection.get(
+            where={"type": "session", "campaign_id": campaign_id}
         )
-        return {"events": results["metadatas"]}
+        sessions = session_results.get("metadatas", [])
+        session_ids = [s["session_id"] for s in sessions]
+
+        if not session_ids:
+            return {"events": []}
+
+        # 2️⃣ Get all events whose session_id is in the list
+        events = []
+        for sid in session_ids:
+            ev_results = session_collection.get(
+                where={"type": "event", "session_id": sid}
+            )
+            evs = ev_results.get("metadatas", [])
+            events.extend(evs)
+
+        return {"events": events}
+
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

@@ -1,6 +1,10 @@
 "use client";
+
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 type Event = {
     event_id: string;
     session_id: string;
@@ -14,26 +18,38 @@ type Event = {
 };
 
 export default function Timeline() {
+    const { campaignId } = useParams();
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        if (!campaignId) return;
+
         const fetchEvents = async () => {
             try {
-                const res = await fetch(`/${baseUrl}/events`);
+                const res = await fetch(
+                    `${baseUrl}/campaigns/${campaignId}/events`
+                );
+                if (!res.ok)
+                    throw new Error(`Failed to fetch events: ${res.status}`);
                 const data = await res.json();
                 setEvents(data.events || []);
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Failed to fetch events:", err);
+                setError(err.message);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchEvents();
-    }, []);
+    }, [campaignId]);
 
     if (loading) return <div>Loading timeline…</div>;
+    if (error) return <div className="text-red-500">Error: {error}</div>;
+    if (events.length === 0)
+        return <div>No events found for this campaign.</div>;
 
     // Group events by session_id
     const sessionsMap: Record<string, Event[]> = {};

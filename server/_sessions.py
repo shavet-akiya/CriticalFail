@@ -14,18 +14,23 @@ recent_sessions = []
 
 class TranscriptInput(BaseModel):
     transcript: str
+    campaign_id: str
 
 
-async def process_and_save_session(job_id: str, transcript: str):
+async def process_and_save_session(job_id: str, transcript: str, campaign_id: str):
     try:
         llm_jobs[job_id] = {"status": "processing"}
+
         structured_json = await dnd_ai.extract_session_data(transcript)
+
+        # Assign campaign ID to the session
+        structured_json["campaign_id"] = campaign_id
+        # Save to Chroma
         chroma_id = await asyncio.to_thread(save_session_to_chroma, structured_json)
         structured_json["chroma_id"] = chroma_id
+
         llm_jobs[job_id] = {"status": "completed", "result": structured_json}
-        recent_sessions.insert(0, structured_json)
-        if len(recent_sessions) > MAX_SESSIONS:
-            recent_sessions.pop()
+
     except Exception as e:
         llm_jobs[job_id] = {"status": "error", "error": str(e)}
 
@@ -35,8 +40,13 @@ async def create_session(
     input_data: TranscriptInput, background_tasks: BackgroundTasks
 ):
     job_id = str(uuid.uuid4())
-    # Start background processing
-    background_tasks.add_task(process_and_save_session, job_id, input_data.transcript)
+    # Start background processing with campaign_id
+    background_tasks.add_task(
+        process_and_save_session,
+        job_id,
+        input_data.transcript,
+        input_data.campaign_id,  # <-- add this
+    )
     # Return immediately
     return {"status": "processing", "job_id": job_id}
 
@@ -58,22 +68,6 @@ async def get_session_status(job_id: str):
     if not job:
         return JSONResponse(status_code=404, content={"error": "Job not found"})
     return job
-
-
-# Background task
-async def process_and_save_session(job_id: str, transcript: str):
-    try:
-        llm_jobs[job_id] = {"status": "processing"}
-        # Run LLM
-        structured_json = await dnd_ai.extract_session_data(transcript)
-        # Save to Chroma in a thread (blocking code)
-        chroma_id = await asyncio.to_thread(save_session_to_chroma, structured_json)
-        structured_json["chroma_id"] = chroma_id
-
-        # Store result
-        llm_jobs[job_id] = {"status": "completed", "result": structured_json}
-    except Exception as e:
-        llm_jobs[job_id] = {"status": "error", "error": str(e)}
 
 
 @router.get("/")
