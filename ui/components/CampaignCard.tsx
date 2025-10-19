@@ -20,29 +20,30 @@ export default function CampaignCard({
     const { setCampaignID } = useCampaign();
 
     return (
-        <div className="card lg:card-side shadow-sm">
-            <figure>
-                <img
-                    src={imageUrl || "/default-placeholder.png"}
-                    alt="Campaign"
-                />
-            </figure>
-            <div className="card-body">
-                <h2 className="card-title">{campaignName}</h2>
-                <p>Sessions: {sessionCount}</p>
-                <div className="card-actions justify-end">
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => {
-                            setCampaignID(campaignID);
-                            router.push(`/campaign/${campaignID}/summary`)
-                        }
-                        }
-                    >
-                        Go to campaign
-                    </button>
+        <>
+            <div className="card w-96 shadow-sm">
+                <div className="card-body">
+                    <h2 className="card-title text-2xl">{campaignName}</h2>
+                    <p>Sessions thus far: {sessionCount}</p>
+                    <figure>
+                        <img
+                            src={imageUrl || "/default-placeholder.png"}
+                            alt="Campaign Image"
+                        />
+                    </figure>
+                    <div className="card-actions justify-end">
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => {
+                                setCampaignID(campaignID);
+                                router.push(`/campaign/${campaignID}/summary`)
+                            }
+                            }
+                        >
+                            Continue the story
+                        </button>                    </div>
                 </div>
             </div>
-        </div >
+        </>
     );
 }

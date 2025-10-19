@@ -9,7 +9,7 @@ interface Campaign {
     campaign_id: string;
     campaign_name: string;
     session_ids: string[];
-    campaign_image_url?: string; // ✅ add this
+    campaign_image_url?: string;
 }
 
 function App() {
@@ -70,7 +70,7 @@ function App() {
             {/* Campaign Selection Section */}
             <section
                 id="campaign_selection"
-                className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start min-h-screen"
+                className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start min-h-screen select-none"
             >
                 <h2 className="text-4xl font-bold mb-4 pt-16">
                     Campaign Selection
