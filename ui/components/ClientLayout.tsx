@@ -9,7 +9,7 @@ import { CampaignProvider } from "@/contexts/CampaignContext";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const isMainPage = pathname === "/" || "/new_session";
+    const isMainPage = (pathname === "/" || pathname === "/new_session");
 
     return (
         <CampaignProvider>
