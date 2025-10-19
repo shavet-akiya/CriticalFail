@@ -70,20 +70,23 @@ function App() {
             {/* Campaign Selection Section */}
             <section
                 id="campaign_selection"
-                className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start min-h-screen select-none"
+                className="flex flex-col items-center justify-start bg-[#e0d6cb] text-[#3c1642] snap-start min-h-screen select-none gap-16"
             >
-                <h2 className="text-4xl font-bold mb-4 pt-16">
-                    Campaign Selection
-                </h2>
-
                 {loading && <Loading />}
+
+                {!loading && (
+                    <h2 className="text-4xl font-bold mb-4 pt-8">
+                        Campaign Selection
+                    </h2>
+                )}
+
                 {error && <p className="text-red-500">{error}</p>}
                 {!loading && !error && campaigns.length === 0 && (
                     <p>No campaigns available.</p>
                 )}
 
-                {!loading &&
-                    campaigns.map((c) => (
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {campaigns.map((c) => (
                         <CampaignCard
                             key={c.campaign_id}
                             campaignID={c.campaign_id}
@@ -92,7 +95,9 @@ function App() {
                             imageUrl={c.campaign_image_url}
                         />
                     ))}
+                </div>
             </section>
+
         </div>
     );
 }
