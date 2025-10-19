@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const { campaignID } = useCampaign();
+    const { selectedCampaign } = useCampaign();
     const [navState, setNavState] = useState<"none" | "blank" | "full">("none");
 
     useEffect(() => {
@@ -34,7 +34,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         }
 
         setNavState("blank");
-    }, [pathname, campaignID]);
+    }, [pathname, selectedCampaign?.campaign_id]);
 
     return (
         <>

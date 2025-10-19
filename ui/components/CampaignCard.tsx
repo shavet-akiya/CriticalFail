@@ -9,6 +9,7 @@ interface CampaignCardProps {
     sessionCount: number;
     imageUrl?: string;
     onClick?: () => void;
+    extend?: boolean;
 }
 
 export default function CampaignCard({
@@ -16,7 +17,8 @@ export default function CampaignCard({
     campaignName,
     sessionCount,
     imageUrl,
-    onClick
+    onClick,
+    extend = false,
 }: CampaignCardProps) {
     const router = useRouter();
     const { selectedCampaign, setSelectedCampaign } = useCampaign();

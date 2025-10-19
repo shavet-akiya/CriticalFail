@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import CampaignCard from "@/components/CampaignCard";
 import Loading from "@/components/Loading";
 import { useCampaign } from "@/contexts/CampaignContext";
@@ -47,20 +48,42 @@ function App() {
       "
         >
             {/* Hero Section */}
+            import Image from "next/image";
+
             <section
                 className="
-          min-h-screen flex flex-col items-center justify-center 
-          bg-white-colour purple-colour snap-start relative gap-32
-        "
+    min-h-screen flex flex-col items-center justify-center 
+    bg-white-colour purple-colour snap-start relative sm:gap-16 lg:gap-32 overflow-hidden
+  "
             >
-                <h1 className="text-9xl font-bold select-none font-metal-mania red-colour text-center text-shadow-lg text-shadow-gray-300">
+                {/* Decorative dice images */}
+                <Image
+                    src="/images/homepage-dice.png"
+                    alt="Dice top left"
+                    width={400}
+                    height={400}
+                    className="
+      absolute top-[-120px] left-[-120px] rotate-[-20deg] opacity-90 
+      pointer-events-none select-none z-0
+    "
+                />
+                <Image
+                    src="/images/homepage-dice.png"
+                    alt="Dice bottom right"
+                    width={400}
+                    height={400}
+                    className="
+      absolute bottom-[-140px] right-[-140px] rotate-[25deg] opacity-90 
+      pointer-events-none select-none z-0
+    "
+                />
+
+                {/* Content (kept above dice) */}
+                <h1 className="text-9xl font-bold select-none font-metal-mania red-colour text-center text-shadow-lg text-shadow-gray-300 z-10">
                     Dungeon Scribe
                 </h1>
-                <div className="bottom-20 text-center flex flex-row gap-8">
-                    <a
-                        href="#campaign_selection"
-                        className="btn btn-primary scroll-smooth"
-                    >
+                <div className="bottom-20 text-center flex flex-row gap-8 z-10">
+                    <a href="#campaign_selection" className="btn btn-primary scroll-smooth">
                         Select Campaign
                     </a>
                     <Link href="/new_campaign" className="btn btn-primary">
@@ -68,6 +91,7 @@ function App() {
                     </Link>
                 </div>
             </section>
+
 
             {/* Campaign Selection Section */}
             <section
