@@ -41,10 +41,10 @@ export default function NewCampaign() {
     };
 
     return (
-        <div className="relative">
+        <div className="relative bg-white-colour">
             {toast && <Toast type={toast.type} message={toast.message} />}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-8 bg-[#eff1ed] p-8 max-w-lg mx-auto">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-8 bg-white-colour p-8 max-w-lg mx-auto">
                 <h1 className="obsidian-colour text-4xl pb-4 text-center">
                     Create a Campaign
                 </h1>

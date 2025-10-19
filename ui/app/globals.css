@@ -36,6 +36,11 @@
   color: var(--obsidian-colour);
 }
 
+.bg-white-colour {
+  background-color: var(--white-colour);
+}
+
+
 
 
 

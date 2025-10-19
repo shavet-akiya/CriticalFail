@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import CampaignCard from "@/components/CampaignCard";
 import Loading from "@/components/Loading";
+import Link from "next/link";
 
 interface Campaign {
     campaign_id: string;
@@ -24,7 +25,7 @@ function App() {
                 const res = await fetch(`${baseUrl}/campaigns`);
                 if (!res.ok) throw new Error(`Failed to fetch campaigns`);
                 const data = await res.json();
-                setCampaigns(data); // Assuming your backend returns an array of campaign metadata
+                setCampaigns(data);
             } catch (err: unknown) {
                 setError(err instanceof Error ? err.message : String(err));
             } finally {
@@ -36,13 +37,22 @@ function App() {
     }, [baseUrl]);
 
     return (
-        <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+        <div
+            className="
+        h-screen w-full overflow-y-scroll 
+        snap-y snap-mandatory scroll-smooth
+      "
+        >
             {/* Hero Section */}
-            <section className="h-screen flex flex-col items-center justify-center bg-[#eff1ed] text-[#3c1642] snap-start relative gap-32">
+            <section
+                className="
+          min-h-screen flex flex-col items-center justify-center 
+          bg-white-colour purple-colour snap-start relative gap-32
+        "
+            >
                 <h1 className="text-9xl font-bold select-none font-metal-mania red-colour text-center text-shadow-lg text-shadow-gray-300">
                     Dungeon Scribe
                 </h1>
-
                 <div className="bottom-20 text-center flex flex-row gap-8">
                     <a
                         href="#campaign_selection"
@@ -50,33 +60,42 @@ function App() {
                     >
                         Select Campaign
                     </a>
-                    <button className="btn btn-primary">New Campaign</button>
+                    <button className="btn btn-primary">
+                        <Link href={`/new_campaign`}> New Campaign
+                        </Link>
+                    </button>
                 </div>
             </section>
 
-                        <button className="btn btn-primary">
-                            <Link href={`/new_campaign`}>New Campaign</Link>
-                        </button>
-                    </div>
-                </section>
+            {/* Section 2 - Select campaign */}
+            <section
+                id="campaign_selection"
+                className="
+          min-h-screen flex flex-col items-center justify-center 
+          bg-[#e0d6cb] purple-colour snap-start select-none
+        "
+            >
+                {loading && <Loading />}
 
-                {/* Section 2 Select campaign */}
-                <section
-                    id="campaign_selection"
-                    className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start"
-                >
-                    <h2 className="text-4xl font-bold mb-4 pt-16">Campaign Selection</h2>
+                {!loading && campaigns.length === 0 && (
+                    <>
+                        <h2 className="text-4xl font-bold mb-8">Campaign Selection</h2>
+                        <p className="text-lg italic text-gray-600">No campaigns found.</p>
+                        <button className="btn btn-primary"><Link href={`/new_campaign`}> New Campaign
+                        </Link></button>
 
-                    {!loading &&
-                        campaigns.map((c) => (
-                            <CampaignCard
-                                key={c.campaign_id}
-                                campaignID={c.campaign_id}
-                                campaignName={c.campaign_name}
-                                sessionCount={c.session_ids.length}
-                            />
-                        ))}
-                </div>
+                    </>
+                )}
+
+                {!loading &&
+                    campaigns.map((c) => (
+                        <CampaignCard
+                            key={c.campaign_id}
+                            campaignID={c.campaign_id}
+                            campaignName={c.campaign_name}
+                            sessionCount={c.session_ids.length}
+                        />
+                    ))}
             </section>
         </div>
     );

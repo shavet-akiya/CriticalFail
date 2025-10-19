@@ -4,27 +4,63 @@ import { usePathname } from "next/navigation";
 import NavBar from "@/components/navbar";
 import { RecordingProvider } from "@/contexts/RecordingContext";
 import RecordingPopup from "@/components/RecordingPopup";
-import { CampaignProvider } from "@/contexts/CampaignContext";
+import { CampaignProvider, useCampaign } from "@/contexts/CampaignContext";
+import { useEffect, useState } from "react";
 
+function LayoutContent({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
+    const { campaignID } = useCampaign();
+    const [navState, setNavState] = useState<"none" | "blank" | "full">("none");
+
+    useEffect(() => {
+        if (pathname === "/" || pathname === "/new_campaign") {
+            setNavState("none");
+            return;
+        }
+
+        if (pathname.startsWith("/campaign")) {
+            const parts = pathname.split("/").filter(Boolean); // e.g. ["campaign", "0", "summary"]
+
+            // /campaign/ or /campaign/id/
+            if (parts.length === 1 || parts.length === 2) {
+                setNavState("blank");
+                return;
+            }
+
+            // /campaign/[id]/... case
+            const hasValidID = !isNaN(Number(parts[1]));
+
+            if (campaignID || hasValidID) {
+                setNavState("full");
+            }
+            return;
+        }
+
+        setNavState("blank");
+    }, [pathname, campaignID]);
+
+    return (
+        <>
+            {navState === "full" && <NavBar found />}
+            {navState === "blank" && <NavBar found={false} />}
+
+            <main
+                className={`flex-1 flex flex-col items-center justify-center w-screen ${navState === "none" ? "" : "pt-16"
+                    } bg-white-colour overflow-hidden`}
+            >
+                {children}
+            </main>
+
+            <RecordingPopup />
+        </>
+    );
+}
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname();
-    const isMainPage = (pathname === "/" || pathname === "/new_session");
-
     return (
         <CampaignProvider>
             <RecordingProvider>
-                {/* does not show navbar on main page */}
-                {!isMainPage && <NavBar />}
-
-                <main
-                    className={`flex-1 flex flex-col items-center justify-center w-screen ${isMainPage ? "" : "pt-16"
-                        } bg-[#eff1ed] overflow-hidden`}
-                >
-                    {children}
-                </main>
-
-                <RecordingPopup />
+                <LayoutContent>{children}</LayoutContent>
             </RecordingProvider>
         </CampaignProvider>
     );
