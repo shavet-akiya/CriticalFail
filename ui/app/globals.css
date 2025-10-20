@@ -40,6 +40,10 @@
   background-color: var(--white-colour);
 }
 
+.border-purple {
+  border-color: var(--purple-colour);
+}
+
 .btn-primary {
   @apply relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold 
          rounded-lg shadow-lg border transition-all duration-300 ease-in-out;

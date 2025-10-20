@@ -21,7 +21,7 @@ export default function CampaignCard({
     extend = false,
 }: CampaignCardProps) {
     const router = useRouter();
-    const { selectedCampaign, setSelectedCampaign } = useCampaign();
+    const { selectedCampaign, sessions, loading, error } = useCampaign();
 
     return (
         <div

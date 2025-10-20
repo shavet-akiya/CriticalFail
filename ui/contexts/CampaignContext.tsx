@@ -25,7 +25,7 @@ export function CampaignProvider({ children }: { children: ReactNode }) {
     const [sessions, setSessions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { campaignId } = useParams(); // Works for routes like /campaign/[campaignId]/summary
+    const { campaignId } = useParams();
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -59,6 +59,8 @@ export function CampaignProvider({ children }: { children: ReactNode }) {
                         return res.json();
                     })
                 );
+
+                console.log(sessionData); // logging here
 
                 setSessions(sessionData);
             } catch (e: any) {

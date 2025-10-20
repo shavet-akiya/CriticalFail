@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { formatSessionDate } from "@/utils/helper";
+import Link from "next/link";
 
 interface Campaign {
     campaign_id: string;
@@ -116,26 +118,39 @@ export default function CampaignSummaryPage() {
     if (!campaign) return <div className="p-6">Campaign not found.</div>;
 
     return (
-        <div className="p-6 flex flex-col items-center bg-gray-900 text-white min-h-screen w-full">
-            <h1 className="text-4xl font-bold mb-4">
-                {campaign.campaign_name}
-            </h1>
-            <p className="mb-2">Campaign ID: {campaign.campaign_id}</p>
-            <p className="mb-4">Sessions: {sessions.length}</p>
+        <div className="p-6 flex flex-col items-center obsidian-colour min-h-screen w-full select-none">
+
+            <div className="border-2 border-purple rounded-xl w-full flex flex-col justify-center items-center p-4">
+                <h1 className="text-4xl font-bold mb-4">
+                    {campaign.campaign_name}
+                </h1>
+                <p className="mb-2">Campaign ID: {campaign.campaign_id}</p>
+            </div>
 
             {sessions.length === 0 ? (
-                <p className="text-gray-400">No sessions yet.</p>
+                <div className="flex flex-col justify-center items-center gap-8">
+                    <p className="text-xl obsidian-colour pt-16">No sessions yet! Start your story.</p>
+                    <button className="btn btn-primary">
+                        <Link href={`/campaign/${campaignId}/new_session`}>
+                            Create a new Session
+                        </Link>
+                    </button>
+                </div>
             ) : (
+
+
+
+
                 <ul className="space-y-6 w-full max-w-4xl">
                     {sessions.map((session) => (
                         <li
                             key={session.session_id}
-                            className="bg-gray-800 p-4 rounded shadow-sm"
+                            className="bg-[#e0d6cb] p-4 rounded shadow-sm"
                         >
                             <p className="font-bold mb-1">
-                                Session ID: {session.session_id}
+                                {formatSessionDate(session.session_id)} Session
                             </p>
-                            <p className="text-gray-300 mb-2">
+                            <p className="mb-2">
                                 Processed at: {session.processed_at || "N/A"}
                             </p>
 
