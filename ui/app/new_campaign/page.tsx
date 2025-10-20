@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/Toast";
+import { useCampaign } from "@/contexts/CampaignContext";
 
 export default function NewCampaign() {
     const router = useRouter();
@@ -14,6 +15,7 @@ export default function NewCampaign() {
         message: string;
     } | null>(null);
     const [loading, setLoading] = useState(false);
+
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     useEffect(() => {
@@ -59,9 +61,10 @@ export default function NewCampaign() {
                 setImage(null);
                 setPreview(null);
 
+
                 // Delay navigation to allow toast to show
                 setTimeout(
-                    () => router.push(`${baseUrl}/campaign/${data.campaign_id}/summary`),
+                    () => router.push(`/#campaign_selection`),
                     500
                 );
             }

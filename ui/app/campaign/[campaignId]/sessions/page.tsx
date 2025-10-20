@@ -32,12 +32,10 @@ interface Session {
 }
 
 export default function SessionList() {
-    const [transcript, setTranscript] = useState("");
     const [sessions, setSessions] = useState<Session[]>([]);
-    const [posting, setPosting] = useState(false);
     const [fetching, setFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [latestSession, setLatestSession] = useState<any>(null);
+    const [latestSession] = useState<any>(null);
 
     const params = useParams();
     const campaignId = params?.campaignId;
@@ -176,32 +174,31 @@ export default function SessionList() {
                                     <strong>Characters:</strong>{" "}
                                     {s.metadata?.characters?.length
                                         ? s.metadata.characters
-                                              .map((c) => c.name)
-                                              .join(", ")
+                                            .map((c) => c.name)
+                                            .join(", ")
                                         : "None"}
                                 </p>
                                 <p>
                                     <strong>Locations:</strong>{" "}
                                     {s.metadata?.locations?.length
                                         ? s.metadata.locations
-                                              .map(
-                                                  (l) =>
-                                                      l.location_name || l.name
-                                              )
-                                              .join(", ")
+                                            .map(
+                                                (l) =>
+                                                    l.location_name || l.name
+                                            )
+                                            .join(", ")
                                         : "None"}
                                 </p>
                                 <p>
                                     <strong>Events:</strong>{" "}
                                     {s.metadata?.events?.length
                                         ? s.metadata.events
-                                              .map(
-                                                  (e) =>
-                                                      `${e.event} — ${
-                                                          e.event_summary ?? ""
-                                                      }`
-                                              )
-                                              .join("; ")
+                                            .map(
+                                                (e) =>
+                                                    `${e.event} — ${e.event_summary ?? ""
+                                                    }`
+                                            )
+                                            .join("; ")
                                         : "None"}
                                 </p>
                                 <p className="mt-2">

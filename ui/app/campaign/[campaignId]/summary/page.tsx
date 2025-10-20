@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { formatSessionDate } from "@/utils/helper";
 import SessionCard from "@/components/SessionCard";
 import Link from "next/link";
 
@@ -57,19 +56,69 @@ interface Session {
     campaign_id: string;
 }
 
+// Format session ID a readable format (e.g., "20/10/2025")
+function formatSessionDate(sessionId: string): string {
+    const year = sessionId.substring(0, 4);
+    const month = sessionId.substring(4, 6);
+    const day = sessionId.substring(6, 8);
+
+    return `${day}/${month}/${year}`;
+}
+
 export default function CampaignSummaryPage() {
     const { campaignId } = useParams();
     const [campaign, setCampaign] = useState<Campaign | null>(null);
     const [sessions, setSessions] = useState<Session[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [fetching, setFetching] = useState(false);
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+
+    // DO NOT USE
+    async function resetDatabase() {
+        try {
+            const res = await fetch(`${baseUrl}/sessions`, {
+                method: "DELETE",
+            });
+            if (!res.ok) throw new Error(`RESET failed: ${res.status}`);
+            await fetchSessions();
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : String(e));
+        }
+    }
+
+    async function fetchSessions() {
+        setFetching(true);
+        setError(null);
+        try {
+            // Add campaignId as query param
+            const url = campaignId
+                ? `${baseUrl}/sessions?campaign_id=${campaignId}`
+                : `${baseUrl}/sessions`;
+
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) throw new Error(`GET failed: ${res.status}`);
+            const data = await res.json();
+
+            const mapped = data.documents.map((doc: string, i: number) => ({
+                id: data.ids[i],
+                document: doc,
+                metadata: data.metadatas[i],
+            }));
+
+            setSessions(mapped);
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : String(e));
+        } finally {
+            setFetching(false);
+        }
+    }
 
     useEffect(() => {
         async function fetchCampaignAndSessions() {
             try {
-                // 1️⃣ Fetch the campaign
                 const resCampaign = await fetch(
                     `${baseUrl}/campaign/${campaignId}`
                 );
@@ -94,7 +143,6 @@ export default function CampaignSummaryPage() {
                 }
                 setCampaign({ ...data, session_ids: sessionIds });
 
-                // 2️⃣ Fetch all session details in parallel
                 const sessionPromises = sessionIds.map(async (id) => {
                     const res = await fetch(`${baseUrl}/sessions/${id}`);
                     if (!res.ok) throw new Error(`Session ${id} not found`);
@@ -138,15 +186,23 @@ export default function CampaignSummaryPage() {
                     </button>
                 </div>
             ) : (
-                <div className="flex flex-col gap-6 w-full max-w-4xl">
-                    {sessions.map((session) => (
-                        <SessionCard
-                            key={session.session_id}
-                            session={session}
-                            formatSessionDate={formatSessionDate}
-                        />
-                    ))}
-                </div>
+                <>
+                    <button
+                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                        onClick={resetDatabase}
+                    >
+                        Delete All Sessions
+                    </button>
+                    <div className="flex flex-col gap-6 w-full max-w-4xl">
+                        {sessions.map((session) => (
+                            <SessionCard
+                                key={session.session_id}
+                                session={session}
+                                formatSessionDate={formatSessionDate}
+                            />
+                        ))}
+                    </div>
+                </>
             )}
         </div>
     );
