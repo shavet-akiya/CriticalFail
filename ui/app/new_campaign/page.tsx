@@ -61,7 +61,7 @@ export default function NewCampaign() {
 
                 // Delay navigation to allow toast to show
                 setTimeout(
-                    () => router.push(`${baseUrl}/campaign/${data.campaign_id}`),
+                    () => router.push(`${baseUrl}/campaign/${data.campaign_id}/summary`),
                     500
                 );
             }
@@ -100,7 +100,7 @@ export default function NewCampaign() {
                 </fieldset>
 
                 <fieldset className="fieldset">
-                    <legend className="fieldset-legend font-semibold">
+                    <legend className="fieldset-legend font-semibold obsidian-colour">
                         Campaign Image
                     </legend>
                     <input

@@ -2,20 +2,23 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import CampaignCard from "@/components/CampaignCard";
 import Loading from "@/components/Loading";
+import { useCampaign } from "@/contexts/CampaignContext";
 
 interface Campaign {
     campaign_id: string;
     campaign_name: string;
     session_ids: string[];
-    campaign_image_url?: string; // ✅ add this
+    campaign_image_url?: string;
 }
 
 function App() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { setSelectedCampaign } = useCampaign();
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -45,20 +48,42 @@ function App() {
       "
         >
             {/* Hero Section */}
+            import Image from "next/image";
+
             <section
                 className="
-          min-h-screen flex flex-col items-center justify-center 
-          bg-white-colour purple-colour snap-start relative gap-32
-        "
+    min-h-screen flex flex-col items-center justify-center 
+    bg-white-colour purple-colour snap-start relative sm:gap-16 lg:gap-32 overflow-hidden
+  "
             >
-                <h1 className="text-9xl font-bold select-none font-metal-mania red-colour text-center text-shadow-lg text-shadow-gray-300">
+                {/* Decorative dice images */}
+                <Image
+                    src="/images/homepage-dice.png"
+                    alt="Dice top left"
+                    width={400}
+                    height={400}
+                    className="
+      absolute top-[-120px] left-[-120px] rotate-[-20deg] opacity-90 
+      pointer-events-none select-none z-0
+    "
+                />
+                <Image
+                    src="/images/homepage-dice.png"
+                    alt="Dice bottom right"
+                    width={400}
+                    height={400}
+                    className="
+      absolute bottom-[-140px] right-[-140px] rotate-[25deg] opacity-90 
+      pointer-events-none select-none z-0
+    "
+                />
+
+                {/* Content (kept above dice) */}
+                <h1 className="text-9xl font-bold select-none font-metal-mania red-colour text-center text-shadow-lg text-shadow-gray-300 z-10">
                     Dungeon Scribe
                 </h1>
-                <div className="bottom-20 text-center flex flex-row gap-8">
-                    <a
-                        href="#campaign_selection"
-                        className="btn btn-primary scroll-smooth"
-                    >
+                <div className="bottom-20 text-center flex flex-row gap-8 z-10">
+                    <a href="#campaign_selection" className="btn btn-primary scroll-smooth">
                         Select Campaign
                     </a>
                     <Link href="/new_campaign" className="btn btn-primary">
@@ -67,32 +92,39 @@ function App() {
                 </div>
             </section>
 
+
             {/* Campaign Selection Section */}
             <section
                 id="campaign_selection"
-                className="flex flex-col items-center justify-center bg-[#e0d6cb] text-[#3c1642] snap-start min-h-screen"
+                className="flex flex-col items-center justify-start bg-[#e0d6cb] text-[#3c1642] snap-start min-h-screen select-none gap-16"
             >
-                <h2 className="text-4xl font-bold mb-4 pt-16">
-                    Campaign Selection
-                </h2>
-
                 {loading && <Loading />}
+
+                {!loading && (
+                    <h2 className="text-4xl font-bold mb-4 pt-8">
+                        Campaign Selection
+                    </h2>
+                )}
+
                 {error && <p className="text-red-500">{error}</p>}
                 {!loading && !error && campaigns.length === 0 && (
                     <p>No campaigns available.</p>
                 )}
 
-                {!loading &&
-                    campaigns.map((c) => (
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {campaigns.map((c) => (
                         <CampaignCard
                             key={c.campaign_id}
                             campaignID={c.campaign_id}
                             campaignName={c.campaign_name}
                             sessionCount={c.session_ids.length}
                             imageUrl={c.campaign_image_url}
+                            onClick={() => setSelectedCampaign(c)} // this is the key line
                         />
                     ))}
+                </div>
             </section>
+
         </div>
     );
 }

@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const { campaignID } = useCampaign();
+    const { selectedCampaign } = useCampaign();
     const [navState, setNavState] = useState<"none" | "blank" | "full">("none");
 
     useEffect(() => {
@@ -27,17 +27,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                 return;
             }
 
-            // /campaign/[id]/... case
-            const hasValidID = !isNaN(Number(parts[1]));
-
-            if (campaignID || hasValidID) {
+            if (parts.length > 2) {
                 setNavState("full");
             }
             return;
         }
 
         setNavState("blank");
-    }, [pathname, campaignID]);
+    }, [pathname, selectedCampaign?.campaign_id]);
 
     return (
         <>

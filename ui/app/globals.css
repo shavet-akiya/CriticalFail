@@ -40,6 +40,43 @@
   background-color: var(--white-colour);
 }
 
+.border-purple {
+  border-color: var(--purple-colour);
+}
+
+.btn-primary {
+  @apply relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold 
+         rounded-lg shadow-lg border transition-all duration-300 ease-in-out;
+
+  background-color: #3c1642; /* base purple */
+  border: 2px solid #4a2f6f; /* darker purple border */
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3); /* subtle depth */
+  user-select: none;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  colour: #eff1ed;
+  select: none;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), 0 0 8px rgba(75, 47, 111, 0.5); 
+  transform: translateY(-1px);
+  border-color: #3e2660; /* slightly darker border on hover */
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.4);
+  border-color: #3e2660;
+}
+
+.btn-primary:focus {
+  outline: 3px solid rgba(75, 47, 111, 0.4);
+  outline-offset: 2px;
+}
+
+
 
 
 
