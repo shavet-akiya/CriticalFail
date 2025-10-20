@@ -52,7 +52,7 @@ services:
     ports:
       - "8000:8000"  
     volumes:
-      - ./chroma/chroma_data:/chroma/chroma_data
+      - ./chroma/chroma_data:/data
 
 
   ollama:
