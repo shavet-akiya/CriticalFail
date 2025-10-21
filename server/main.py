@@ -34,8 +34,14 @@ app.include_router(locations_router, prefix="/locations")
 app.include_router(events_router, prefix="/events")
 app.include_router(campaigns_router, prefix="/campaign")
 app.include_router(database_router, prefix="/database")
+
 os.makedirs("uploads/campaign_images", exist_ok=True)
-app.mount("/static", StaticFiles(directory="uploads"), name="static")
+app.mount(
+    "/campaign_images",
+    StaticFiles(directory="server/images/campaign_images"),
+    name="campaign_images",
+)
+
 # Ensure folder exists
 
 

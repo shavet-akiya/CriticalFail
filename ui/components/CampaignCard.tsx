@@ -22,6 +22,7 @@ export default function CampaignCard({
 }: CampaignCardProps) {
     const router = useRouter();
     const { selectedCampaign, sessions, loading, error } = useCampaign();
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     return (
         <div
@@ -33,25 +34,33 @@ export default function CampaignCard({
                     <h2 className="card-title text-2xl">{campaignName}</h2>
                     <p>Sessions thus far: {sessionCount}</p>
                     <figure>
-                        <img
-                            src={imageUrl || "/default-placeholder.png"}
-                            alt="Campaign Image"
-                        />
+                        {imageUrl ? (
+                            // Use the full URL to FastAPI
+                            <img
+                                src={`${baseUrl}${imageUrl}`}
+                                alt="Campaign Image"
+                                className="rounded-lg max-h-64 object-contain"
+                            />
+                        ) : (
+                            <img
+                                src="images/campaign-placeholder.jpg" // fallback image in public folder
+                                alt="Default Campaign Image"
+                                className="rounded-lg max-h-64 object-contain"
+                            />
+                        )}
                     </figure>
                     <div className="card-actions justify-end">
                         <button
                             className="btn btn-primary"
                             onClick={() => {
-                                router.push(`/campaign/${campaignID}/summary`)
-                            }
-                            }
+                                router.push(`/campaign/${campaignID}/summary`);
+                            }}
                         >
                             Continue the story
-                        </button>                    </div>
+                        </button>
+                    </div>
                 </div>
             </div>
-
         </div>
-
     );
 }

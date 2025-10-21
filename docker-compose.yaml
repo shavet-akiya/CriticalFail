@@ -31,6 +31,7 @@ services:
     volumes:
       - ./server/src/recordings:/app/recordings
       - ./server/src/transcripts:/app/transcripts
+      - ./server/images/campaign_images:/app/server/images/campaign_images
       - ./models:/app/models
 
 
@@ -52,7 +53,7 @@ services:
     ports:
       - "8000:8000"  
     volumes:
-      - ./chroma/chroma_data:/chroma/chroma_data
+      - ./chroma/chroma_data:/data
 
 
   ollama:

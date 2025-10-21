@@ -24,18 +24,21 @@ class CreateCampaignRequest(BaseModel):
     session_ids: list[str] = []  # Optional – can be empty
 
 
-UPLOAD_DIR = "../app/public/images"  # relative to your FastAPI backend folder
+# ✅ New folder for campaign images
+UPLOAD_DIR = "server/images/campaign_images"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("/")
 async def create_campaign(
-    campaign_name: str = Form(...), campaign_image: UploadFile | None = File(None)
+    campaign_name: str = Form(...),
+    campaign_image: UploadFile | None = File(None),
 ):
     campaign_id = str(uuid.uuid4())[:6]
     filename = None
     image_url = None
 
+    # ✅ Save uploaded image
     if campaign_image:
         file_ext = os.path.splitext(campaign_image.filename)[1]
         filename = f"{campaign_id}{file_ext}"
@@ -43,15 +46,16 @@ async def create_campaign(
         with open(file_path, "wb") as f:
             f.write(await campaign_image.read())
 
-        # Public URL for Next.js frontend
-        image_url = f"/images/{filename}"
-        # ✅ Store only string-safe metadata
+        # Public URL for frontend
+        image_url = f"/campaign_images/{filename}"
+
+    # Store campaign metadata
     metadata = {
         "type": "campaign",
         "campaign_id": campaign_id,
         "campaign_name": campaign_name,
         "session_ids": json.dumps([]),
-        "campaign_image_url": image_url or "",  # Always a string, never None
+        "campaign_image_url": image_url or "",  # always string
         "created_at": str(datetime.datetime.utcnow()),
     }
 
@@ -239,6 +243,50 @@ async def get_campaign(campaign_id: str):
         if not campaign or not campaign.get("ids"):
             raise HTTPException(status_code=404, detail="Campaign not found")
         return campaign["metadatas"][0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.delete("/{campaign_id}")
+async def delete_campaign(campaign_id: str):
+    """
+    Delete a campaign and all sessions associated with it.
+    """
+    try:
+        # Find the campaign by ID
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+        )
+
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        campaign_meta = campaign["metadatas"][0]
+        campaign_chroma_id = campaign["ids"][0]
+
+        # Delete associated sessions
+        sessions = session_collection.get(
+            where={"$and": [{"type": "session"}, {"campaign_id": campaign_id}]}
+        )
+
+        deleted_sessions = []
+        if sessions and sessions.get("ids"):
+            session_ids_to_delete = sessions["ids"]
+            session_collection.delete(ids=session_ids_to_delete)
+            deleted_sessions = [m["session_id"] for m in sessions["metadatas"]]
+
+        # Delete the campaign itself
+        session_collection.delete(ids=[campaign_chroma_id])
+
+        return {
+            "status": "deleted",
+            "campaign_id": campaign_id,
+            "deleted_sessions": deleted_sessions,
+            "message": f"Campaign {campaign_id} and {len(deleted_sessions)} associated sessions deleted.",
+        }
+
     except HTTPException:
         raise
     except Exception as e:

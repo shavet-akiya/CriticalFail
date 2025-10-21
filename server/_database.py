@@ -2,6 +2,7 @@ import os
 import uuid
 import datetime
 from chromadb import HttpClient
+from chromadb.config import Settings
 from fastapi import APIRouter
 
 CHROMA_HOST = os.getenv("CHROMA_HOST", "chroma")
