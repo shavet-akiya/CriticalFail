@@ -67,7 +67,7 @@ export default function NewCampaign() {
 
             // Navigate to campaign summary after short delay
             setTimeout(() => {
-                router.push(`/campaign/${data.campaign_id}/summary`);
+                router.push(`/#campaign_selection`);
             }, 500);
         } catch (err: any) {
             setToast({

@@ -269,16 +269,14 @@ export default function NewSession() {
 
             if (statusData.status === "processing") {
                 setUploadStatus(
-                    `Processing audio... (${Math.floor((attempts * 3) / 60)}m ${
-                        (attempts * 3) % 60
+                    `Processing audio... (${Math.floor((attempts * 3) / 60)}m ${(attempts * 3) % 60
                     }s)`
                 );
             }
 
             if (statusData.status === "completed" && statusData.result) {
                 setUploadStatus(
-                    `✅ Processing complete! ${
-                        statusData.result.speaker_count || 0
+                    `✅ Processing complete! ${statusData.result.speaker_count || 0
                     } speakers identified.`
                 );
                 setCompletedTranscript(statusData.result.transcript || "");
@@ -324,7 +322,7 @@ export default function NewSession() {
 
             // Step 2: Poll until job is completed
             let resultData = null;
-            for (;;) {
+            for (; ;) {
                 const statusRes = await fetch(
                     `${BASE_URL}/sessions/status/${job_id}`
                 );
@@ -353,7 +351,7 @@ export default function NewSession() {
     const isProcessing = isUploading || isRecording;
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] gap-8 p-8">
+        <div className="flex flex-col items-center justify-center min-h-[80vh] gap-8 p-8 select-none">
             {/* Header */}
             <div className="text-center">
                 <h1 className="text-5xl font-bold text-gray-800 mb-4">
@@ -372,11 +370,10 @@ export default function NewSession() {
                     </div>
                     <div className="flex items-center justify-center bg-red-50 rounded-lg px-4 py-2 inline-flex">
                         <div
-                            className={`w-3 h-3 rounded-full mr-3 ${
-                                isPaused
+                            className={`w-3 h-3 rounded-full mr-3 ${isPaused
                                     ? "bg-yellow-500"
                                     : "bg-red-500 animate-pulse"
-                            }`}
+                                }`}
                         />
                         <span className="text-sm font-medium text-gray-700">
                             {isPaused
@@ -452,11 +449,10 @@ export default function NewSession() {
             {/* Status Messages */}
             {uploadStatus && !completedTranscript && (
                 <div
-                    className={`flex items-center gap-3 p-4 rounded-lg shadow ${
-                        uploadStatus.includes("✅")
+                    className={`flex items-center gap-3 p-4 rounded-lg shadow ${uploadStatus.includes("✅")
                             ? "bg-green-50 border-l-4 border-green-500"
                             : "bg-blue-50 border-l-4 border-blue-500"
-                    }`}
+                        }`}
                 >
                     {uploadStatus.includes("✅") ? (
                         <CheckCircle className="text-green-600" size={20} />
