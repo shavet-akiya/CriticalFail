@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/Toast";
+import { useCampaign } from "@/contexts/CampaignContext";
 
 export default function NewCampaign() {
     const router = useRouter();
