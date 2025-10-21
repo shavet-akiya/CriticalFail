@@ -1,35 +1,35 @@
-FROM python:3.11-slim
+FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV CUDA_HOME=/usr/local/cuda
+ENV PATH=${CUDA_HOME}/bin:${PATH}
+ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
 
-WORKDIR /app
-
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
     ffmpeg \
     git \
-    gcc \
-    g++ \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PyTorch 2.3.1 WITHOUT torchvision (not needed for audio)
-RUN pip install --no-cache-dir \
-    torch==2.3.1 \
-    torchaudio==2.3.1 \
-    --index-url https://download.pytorch.org/whl/cpu
+WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir git+https://github.com/m-bain/whisperx.git
 
-RUN mkdir -p models/whisperx models/whisperx_align models/speechbrain transcripts recordings
+# Install PyTorch with CUDA 12.1 support
+RUN pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 && \
+    pip3 install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN mkdir -p recordings transcripts temp_chunks
+
 EXPOSE 8001
 
-CMD ["python", "-m", "uvicorn", "speech_server:app", "--host", "0.0.0.0", "--port", "8001"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python3 -c "import requests; requests.get('http://localhost:8001/health')" || exit 1
+
+CMD ["python3", "speech_server.py"]

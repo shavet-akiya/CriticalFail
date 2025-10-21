@@ -30,7 +30,7 @@ if ffmpeg_dirs:
 class SpeechToText:
     """Main class for audio transcription with speaker diarization"""
 
-    def __init__(self, model_size="base", save_folder="transcripts"):
+    def __init__(self, model_size="large", save_folder="transcripts"):
         """
         Initialize the Speech to Text service
 
@@ -44,18 +44,41 @@ class SpeechToText:
         
         self.model_size = model_size
         self.save_folder = save_folder
+<<<<<<< Updated upstream
         
         # Force CPU - we have CPU-only PyTorch installed
+=======
+
+
+        # GPU Setup with detailed logging
+>>>>>>> Stashed changes
         self.device = "cpu"
-        self.compute_type = "int8"
+        if torch.cuda.is_available():
+            self.device = "cuda"
+            self.compute_type = "float16"
+            print(f"\n🚀 GPU DETECTED AND ENABLED!")
+            print(f"   Device: {torch.cuda.get_device_name(0)}")
+            print(f"   Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB")
+            print(f"   CUDA Version: {torch.version.cuda}")
+            print(f"   PyTorch Version: {torch.__version__}\n")
+        else:
+            self.compute_type = "int8"
+            print("\n⚠️  No GPU detected - using CPU (will be slower)")
+            print("   Make sure:")
+            print("   1. NVIDIA drivers are installed on host")
+            print("   2. nvidia-container-toolkit is installed")
+            print("   3. Docker compose has GPU configuration\n")
 
         print(f"✓ Model size: {model_size}")
         print(f"✓ Device: {self.device}")
+<<<<<<< Updated upstream
         if self.device == "cuda":
             print(f"✓ GPU Name: {torch.cuda.get_device_name(0)}")
             print(f"✓ GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
         else:
             print("⚠️  No NVIDIA GPU detected - using CPU (slower)")
+=======
+>>>>>>> Stashed changes
         print(f"✓ Compute type: {self.compute_type}")
         print(f"✓ Save folder: {save_folder}")
 
@@ -509,6 +532,7 @@ class SpeechToText:
             print(f"       Embeddings array shape: {embeddings.shape}")
 
             print("    → Clustering speakers...")
+<<<<<<< Updated upstream
             
             # Use min/max speakers from settings
             min_speakers = 2
@@ -520,24 +544,62 @@ class SpeechToText:
             print(f"       Testing {min_clusters} to {max_clusters} clusters...")
             
             best_n = min_clusters
-            best_score = -1
+=======
 
-            for n in range(min_clusters, max_clusters + 1):
+            # Automatically detect optimal number of speakers (2-15 range)
+            max_possible_clusters = min(15, len(embeddings) // 3)  # At least 3 segments per speaker
+            print(f"       Testing 2 to {max_possible_clusters} speakers...")
+
+            best_n = 2
+>>>>>>> Stashed changes
+            best_score = -1
+            scores = []
+
+            for n in range(2, max_possible_clusters + 1):
                 try:
                     clusterer = AgglomerativeClustering(n_clusters=n)
                     labels = clusterer.fit_predict(embeddings)
                     
+<<<<<<< Updated upstream
                     if n > 1:
                         score = silhouette_score(embeddings, labels)
                         if score > best_score:
                             best_score = score
                             best_n = n
+=======
+                    score = silhouette_score(embeddings, labels)
+                    scores.append((n, score))
+                    
+                    # Look for "elbow" - when adding more speakers stops improving significantly
+                    if len(scores) >= 3:
+                        # Check if improvement is plateauing
+                        recent_improvements = [scores[i][1] - scores[i-1][1] for i in range(-2, 0)]
+                        avg_improvement = sum(recent_improvements) / len(recent_improvements)
+                        
+                        # If improvement drops below 5% of max score, we've found enough speakers
+                        if avg_improvement < 0.05 * max(s[1] for s in scores):
+                            best_n = n - 1  # Use previous n (before plateau)
+                            best_score = scores[-2][1]
+                            print(f"       Detected plateau at {n} speakers, using {best_n}")
+                            break
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_n = n
+                        
+>>>>>>> Stashed changes
                 except Exception as e:
-                    print(f"       Error with {n} clusters: {e}")
-                    continue
+                    print(f"       Error with {n} speakers: {e}")
+                    break
 
+<<<<<<< Updated upstream
             print(f"    ✓ Selected {best_n} speakers (score: {best_score:.3f})")
             
+=======
+            print(f"    ✓ Auto-detected {best_n} speakers (silhouette score: {best_score:.3f})")
+            print(f"       Tested configurations: {[(n, f'{s:.3f}') for n, s in scores[:best_n]]}")
+
+>>>>>>> Stashed changes
             clusterer = AgglomerativeClustering(n_clusters=best_n)
             speaker_labels = clusterer.fit_predict(embeddings)
 

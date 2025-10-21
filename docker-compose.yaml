@@ -26,14 +26,20 @@ services:
     build:
       context: ./speech
       dockerfile: Dockerfile
-    # Remove the entire deploy section
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     ports:
       - "8001:8001"
     environment:
       - PYTHONUNBUFFERED=1
       - HF_HUB_CACHE=/app/models
       - HF_HUB_DISABLE_SYMLINKS_WARNING=1
-      # Remove NVIDIA environment variables
+      - NVIDIA_VISIBLE_DEVICES=all
     volumes:
       - ./server/src/recordings:/app/recordings
       - ./server/src/transcripts:/app/transcripts
@@ -57,7 +63,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
+<<<<<<< Updated upstream
       - ./chroma/chroma_data:/chroma/chroma_data
+=======
+      - ./chroma/chroma_data:/data
+>>>>>>> Stashed changes
 
   ollama:
     container_name: ollama

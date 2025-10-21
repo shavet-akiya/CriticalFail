@@ -1,7 +1,6 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
-from typing import Optional, Dict
-import tempfile
+from typing import Dict
 import shutil
 from pathlib import Path
 from datetime import datetime
@@ -11,7 +10,6 @@ import signal
 import sys
 import uuid
 import threading
-import time
 
 warnings.filterwarnings("ignore", category=UserWarning)
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
@@ -144,11 +142,7 @@ async def root():
 
 
 @app.post("/process")
-async def process_audio(
-    file: UploadFile = File(...),
-    min_speakers: Optional[int] = Form(2),
-    max_speakers: Optional[int] = Form(8),
-):
+async def process_audio(file: UploadFile = File(...)):
     """Submit audio for processing - returns job_id immediately"""
     print("\n" + "=" * 80)
     print("NEW JOB SUBMISSION")
@@ -198,15 +192,20 @@ async def process_audio(
             "saved_path": str(saved_path),
             "file_size_mb": file_size_mb,
             "created_at": datetime.now().isoformat(),
-            "min_speakers": min_speakers,
-            "max_speakers": max_speakers,
         }
         
         print(f"✓ Created job: {job_id}")
         print(f"✓ File saved: {saved_path} ({file_size_mb:.2f} MB)")
         
         # Start processing in background thread
+<<<<<<< Updated upstream
         thread = threading.Thread(target=process_audio_job, args=(job_id, str(saved_path)))
+=======
+        thread = threading.Thread(
+            target=process_audio_job, 
+            args=(job_id, str(saved_path))
+        )
+>>>>>>> Stashed changes
         thread.daemon = True
         thread.start()
         
@@ -271,5 +270,15 @@ async def list_jobs():
                 "created_at": job["created_at"],
             }
             for job_id, job in jobs.items()
+<<<<<<< Updated upstream
         ]
     }
+=======
+        ],
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    print("\n🚀 Starting Uvicorn server on port 8001...")
+    uvicorn.run(app, host="0.0.0.0", port=8001)
+>>>>>>> Stashed changes
