@@ -269,14 +269,16 @@ export default function NewSession() {
 
             if (statusData.status === "processing") {
                 setUploadStatus(
-                    `Processing audio... (${Math.floor((attempts * 3) / 60)}m ${(attempts * 3) % 60
+                    `Processing audio... (${Math.floor((attempts * 3) / 60)}m ${
+                        (attempts * 3) % 60
                     }s)`
                 );
             }
 
             if (statusData.status === "completed" && statusData.result) {
                 setUploadStatus(
-                    `✅ Processing complete! ${statusData.result.speaker_count || 0
+                    `✅ Processing complete! ${
+                        statusData.result.speaker_count || 0
                     } speakers identified.`
                 );
                 setCompletedTranscript(statusData.result.transcript || "");
@@ -305,12 +307,13 @@ export default function NewSession() {
             setIsUploading(true);
             setUploadError("");
 
+            // 1️⃣ Send transcript for LLM processing
             const response = await fetch(`${BASE_URL}/sessions`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     transcript: completedTranscript,
-                    campaign_id: campaignId, // make sure this is set
+                    campaign_id: campaignId,
                 }),
             });
 
@@ -320,9 +323,9 @@ export default function NewSession() {
 
             setUploadStatus("AI is analyzing the session...");
 
-            // Step 2: Poll until job is completed
+            // 2️⃣ Poll until job is completed
             let resultData = null;
-            for (; ;) {
+            while (true) {
                 const statusRes = await fetch(
                     `${BASE_URL}/sessions/status/${job_id}`
                 );
@@ -335,12 +338,84 @@ export default function NewSession() {
                     throw new Error(job.error || "LLM processing failed");
                 }
 
-                await new Promise((r) => setTimeout(r, 3000)); // poll every 3s
+                await new Promise((r) => setTimeout(r, 3000));
             }
 
             console.log("LLM processed session:", resultData);
-            setUploadStatus("Session saved to database!");
+
+            // 3️⃣ Merge new characters into the campaign
+            if (resultData?.characters?.length) {
+                // Fetch existing campaign data
+                const campaignRes = await fetch(
+                    `${BASE_URL}/campaigns/${campaignId}`
+                );
+                if (!campaignRes.ok)
+                    throw new Error("Failed to fetch campaign data");
+                const campaignData = await campaignRes.json();
+
+                const existingChars = campaignData.characters || [];
+                const newChars = resultData.characters;
+
+                // Merge characters by name
+                const mergedChars = [...existingChars];
+
+                newChars.forEach((char: any) => {
+                    const existingChar = mergedChars.find(
+                        (c) => c.name.toLowerCase() === char.name.toLowerCase()
+                    );
+                    if (existingChar) {
+                        // Append new session_id if not already included
+                        if (
+                            !existingChar.session_ids.includes(
+                                resultData.session_id
+                            )
+                        ) {
+                            existingChar.session_ids.push(
+                                resultData.session_id
+                            );
+                        }
+                    } else {
+                        // Add entirely new character
+                        mergedChars.push({
+                            ...char,
+                            session_ids: [resultData.session_id],
+                        });
+                    }
+                });
+
+                // Send PATCH request with updated characters
+                try {
+                    const patchRes = await fetch(
+                        `${BASE_URL}/campaigns/${campaignId}`,
+                        {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                characters: mergedChars,
+                                session_ids: [resultData.session_id],
+                            }),
+                        }
+                    );
+
+                    if (!patchRes.ok) {
+                        const errText = await patchRes.text();
+                        console.error("Failed to update campaign:", errText);
+                        setUploadError("Failed to update campaign characters.");
+                    } else {
+                        setUploadStatus(
+                            "Session saved and campaign characters updated successfully!"
+                        );
+                    }
+                } catch (patchErr: any) {
+                    console.error("Error patching campaign:", patchErr);
+                    setUploadError(
+                        patchErr.message || "Failed to update campaign"
+                    );
+                }
+            }
+
             setIsUploading(false);
+            setTimeout(() => setUploadStatus(""), 3000);
         } catch (err: any) {
             console.error(err);
             setUploadError(err.message || "Failed to process session");
@@ -370,10 +445,11 @@ export default function NewSession() {
                     </div>
                     <div className="flex items-center justify-center bg-red-50 rounded-lg px-4 py-2 inline-flex">
                         <div
-                            className={`w-3 h-3 rounded-full mr-3 ${isPaused
+                            className={`w-3 h-3 rounded-full mr-3 ${
+                                isPaused
                                     ? "bg-yellow-500"
                                     : "bg-red-500 animate-pulse"
-                                }`}
+                            }`}
                         />
                         <span className="text-sm font-medium text-gray-700">
                             {isPaused
@@ -449,10 +525,11 @@ export default function NewSession() {
             {/* Status Messages */}
             {uploadStatus && !completedTranscript && (
                 <div
-                    className={`flex items-center gap-3 p-4 rounded-lg shadow ${uploadStatus.includes("✅")
+                    className={`flex items-center gap-3 p-4 rounded-lg shadow ${
+                        uploadStatus.includes("✅")
                             ? "bg-green-50 border-l-4 border-green-500"
                             : "bg-blue-50 border-l-4 border-blue-500"
-                        }`}
+                    }`}
                 >
                     {uploadStatus.includes("✅") ? (
                         <CheckCircle className="text-green-600" size={20} />

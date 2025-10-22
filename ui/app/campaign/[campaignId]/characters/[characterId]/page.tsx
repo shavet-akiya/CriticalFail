@@ -22,9 +22,9 @@ export default function CharacterDetail() {
         if (!characterId || !campaignId) return;
 
         fetch(
-            `${baseUrl}/sessions/${encodeURIComponent(
+            `${baseUrl}/characters/${encodeURIComponent(
                 campaignId
-            )}/characters/${encodeURIComponent(characterId)}`
+            )}/${encodeURIComponent(characterId)}`
         )
             .then((res) => res.json())
             .then((data) => {
@@ -65,9 +65,9 @@ export default function CharacterDetail() {
 
         try {
             const res = await fetch(
-                `${baseUrl}/sessions/${encodeURIComponent(
+                `${baseUrl}/characters/${encodeURIComponent(
                     campaignId
-                )}/characters/${encodeURIComponent(form.characterId)}`,
+                )}/${encodeURIComponent(form.characterId)}`,
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
@@ -111,9 +111,9 @@ export default function CharacterDetail() {
 
         try {
             const res = await fetch(
-                `${baseUrl}/sessions/${encodeURIComponent(
+                `${baseUrl}/characters/${encodeURIComponent(
                     campaignId
-                )}/characters/${encodeURIComponent(form.characterId)}`,
+                )}/${encodeURIComponent(form.characterId)}`,
                 { method: "DELETE" }
             );
 

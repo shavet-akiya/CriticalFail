@@ -24,6 +24,65 @@ class CreateCampaignRequest(BaseModel):
     session_ids: list[str] = []  # Optional – can be empty
 
 
+class UpdateCharactersRequest(BaseModel):
+    campaign_id: str
+    characters: list[dict]  # list of character objects to patch
+
+
+@router.patch("/{campaign_id}/characters")
+async def patch_campaign_characters(campaign_id: str, req: UpdateCharactersRequest):
+    """
+    Patch character info into a campaign.
+    Existing characters with the same name will be updated.
+    New characters will be appended.
+    """
+    try:
+        # Fetch campaign
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+        )
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        campaign_meta = campaign["metadatas"][0]
+
+        # Load existing characters
+        existing_chars = campaign_meta.get("characters", "[]")
+        if isinstance(existing_chars, str):
+            try:
+                existing_chars = json.loads(existing_chars)
+            except:
+                existing_chars = []
+
+        # Create a lookup by name for easy patching
+        existing_lookup = {c["name"]: c for c in existing_chars}
+
+        # Merge/update incoming characters
+        for char in req.characters:
+            name = char.get("name")
+            if name in existing_lookup:
+                # Update existing character fields
+                existing_lookup[name].update(char)
+            else:
+                # Add new character
+                existing_lookup[name] = char
+
+        # Save back as JSON string
+        campaign_meta["characters"] = json.dumps(list(existing_lookup.values()))
+
+        # Update in ChromaDB
+        session_collection.update(ids=[campaign["ids"][0]], metadatas=[campaign_meta])
+
+        return {
+            "status": "updated",
+            "campaign_id": campaign_id,
+            "characters": list(existing_lookup.values()),
+        }
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
 # ✅ New folder for campaign images
 UPLOAD_DIR = "server/images/campaign_images"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -54,6 +113,8 @@ async def create_campaign(
         "type": "campaign",
         "campaign_id": campaign_id,
         "campaign_name": campaign_name,
+        "characters": json.dumps([]),
+        "locations": json.dumps([]),
         "session_ids": json.dumps([]),
         "campaign_image_url": image_url or "",  # always string
         "created_at": str(datetime.datetime.utcnow()),
@@ -72,6 +133,8 @@ async def create_campaign(
         "status": "created",
         "campaign_id": campaign_id,
         "campaign_name": campaign_name,
+        "characters": json.dumps([]),
+        "locations": json.dumps([]),
         "image_url": image_url,
         "session_count": 0,
     }
@@ -111,22 +174,32 @@ async def list_campaigns():
             return []
 
         campaigns = results.get("metadatas", [])
-        # Ensure campaigns is always a list
         if not isinstance(campaigns, list):
             campaigns = [campaigns]
 
-        # Optional: normalize fields
-        normalized = [
-            {
-                "campaign_id": c.get("campaign_id"),
-                "campaign_name": c.get("campaign_name"),
-                "session_ids": json.loads(c.get("session_ids", "[]")),  # ✅ decode JSON
-                "campaign_image_url": c.get("campaign_image_url", ""),
-            }
-            for c in campaigns
-        ]
+        normalized = []
+        for c in campaigns:
+            session_ids = json.loads(c.get("session_ids", "[]"))
+            characters = json.loads(
+                c.get("characters", "[]")
+            )  # start empty if not present
+            locations = json.loads(
+                c.get("locations", "[]")
+            )  # start empty if not present
+
+            normalized.append(
+                {
+                    "campaign_id": c.get("campaign_id"),
+                    "campaign_name": c.get("campaign_name"),
+                    "session_ids": session_ids,
+                    "characters": characters,
+                    "locations": locations,
+                    "campaign_image_url": c.get("campaign_image_url", ""),
+                }
+            )
 
         return normalized
+
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -177,6 +250,52 @@ def update_session_campaign(
         )
 
     return {"message": f"Session {session_id} updated to campaign {new_campaign_id}."}
+
+
+@router.get("/{campaign_id}/sessions")
+async def get_campaign_sessions(campaign_id: str):
+    """
+    Get all sessions associated with a specific campaign.
+    Includes their characters, locations, and events.
+    """
+    try:
+        # Fetch all sessions tied to this campaign
+        results = session_collection.get(
+            where={"$and": [{"type": "session"}, {"campaign_id": campaign_id}]}
+        )
+
+        if not results or not results.get("metadatas"):
+            return JSONResponse(
+                status_code=404,
+                content={"error": f"No sessions found for campaign {campaign_id}"},
+            )
+
+        sessions = []
+        for i, session_meta in enumerate(results["metadatas"]):
+            session_id = session_meta.get("session_id")
+
+            # Fetch associated records
+            chars = session_collection.get(
+                where={"$and": [{"type": "character"}, {"session_id": session_id}]}
+            )
+            locs = session_collection.get(
+                where={"$and": [{"type": "location"}, {"session_id": session_id}]}
+            )
+            evs = session_collection.get(
+                where={"$and": [{"type": "event"}, {"session_id": session_id}]}
+            )
+
+            session_meta["characters"] = chars.get("metadatas", [])
+            session_meta["locations"] = locs.get("metadatas", [])
+            session_meta["events"] = evs.get("metadatas", [])
+            session_meta["document"] = results["documents"][i]
+
+            sessions.append(session_meta)
+
+        return {"campaign_id": campaign_id, "sessions": sessions}
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @router.post("/{campaign_id}/sessions", status_code=201)
@@ -291,3 +410,65 @@ async def delete_campaign(campaign_id: str):
         raise
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.get("/")
+async def get_campaigns_full():
+    """
+    Return all campaigns, including aggregated characters and locations
+    across all sessions.
+    """
+    try:
+        # Fetch all campaigns
+        campaigns = session_collection.get(where={"type": "campaign"})
+        if not campaigns or not campaigns.get("metadatas"):
+            return []
+
+        full_list = []
+
+        for i, cmeta in enumerate(campaigns["metadatas"]):
+            campaign_id = cmeta.get("campaign_id")
+            session_ids = json.loads(cmeta.get("session_ids", "[]"))
+
+            # Aggregate characters and locations from all sessions
+            all_chars = []
+            all_locs = []
+
+            for sid in session_ids:
+                chars = session_collection.get(
+                    where={"$and": [{"type": "character"}, {"session_id": sid}]}
+                )
+                locs = session_collection.get(
+                    where={"$and": [{"type": "location"}, {"session_id": sid}]}
+                )
+                if chars.get("metadatas"):
+                    all_chars.extend(chars["metadatas"])
+                if locs.get("metadatas"):
+                    all_locs.extend(locs["metadatas"])
+
+            # Deduplicate by id or name
+            unique_chars = {
+                char.get("character_id") or char.get("name"): char for char in all_chars
+            }.values()
+            unique_locs = {
+                loc.get("location_id") or loc.get("location_name"): loc
+                for loc in all_locs
+            }.values()
+
+            full_list.append(
+                {
+                    "campaign_id": campaign_id,
+                    "campaign_name": cmeta.get("campaign_name"),
+                    "session_ids": session_ids,
+                    "campaign_image_url": cmeta.get("campaign_image_url", ""),
+                    "characters": list(unique_chars),
+                    "locations": list(unique_locs),
+                }
+            )
+
+        return full_list
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
