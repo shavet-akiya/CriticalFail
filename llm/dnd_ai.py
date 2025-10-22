@@ -1,15 +1,13 @@
-import subprocess
 import os
 import json
 import datetime
 import re
 from typing import Optional
 import uuid
+import requests
 
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3")
-
-import requests
 
 
 def run_ollama(prompt: str, model: str = OLLAMA_MODEL) -> str:
@@ -52,9 +50,9 @@ Instructions:
    - Include only story events - this may include important conversations between characters, battles, or quests.  
    - Ignore any non-game or non-D&D story related discussion.
   "characters": [
-      {{"name": "Name or alias of the character", "race": "if known or unknown", "class":"if known or unknown", "npc": true or false}}
+      {{"name": "Name or alias of unique character's in the session", "class": "if  or unknown", "race": "if known or unknown", "npc": true or false}}
   ],
-  "locations": [{{"location_name": "any location referenced in the session, such as a named place or a notable location (e.g., tavern)"}}],
+  "locations": [{{"location_name": "any location referenced in the session, such as a named place or a notable location (e.g., tavern)", "location_description": "a description or definition of the location"}}],
   "events": [
       {{
           "event": "A title for the event.",
@@ -75,7 +73,6 @@ Instructions:
 """
     # Call your LLM
     response = run_ollama(prompt)
-    # 🔹 DEBUG: print the raw response
 
     # Clean up response: strip code fences
     response = re.sub(r"```(?:json)?", "", response).strip()
@@ -104,34 +101,22 @@ Instructions:
         .isoformat(timespec="seconds")
         .replace("+00:00", "Z"),
     }
-    # 🔥 Initialise stats for each character
-    default_stats = {
-        "AC": 0,
-        "HP": 0,
-        "STR": 0,
-        "DEX": 0,
-        "CON": 0,
-        "INT": 0,
-        "WIS": 0,
-        "CHA": 0,
-    }
 
-    for char in session_data["summary"]["characters"]:
-        # ensure a unique character_id
-        char.setdefault("character_id", str(uuid.uuid4())[:6])
-        # merge defaults without overwriting existing keys
-        for stat, val in default_stats.items():
-            char.setdefault(stat, val)
-
-    # assign UUIDs to locations
+    # assign UUIDs and ensure location_name and location_description
     for i, loc in enumerate(session_data["summary"]["locations"]):
         if isinstance(loc, dict):
             loc.setdefault("location_id", str(uuid.uuid4())[:6])
+            loc.setdefault("location_name", loc.get("location_name", f"Location {i+1}"))
+            loc.setdefault(
+                "location_description",
+                loc.get("location_description", "No description provided"),
+            )
         else:
             # if locations are just strings, wrap them
             session_data["summary"]["locations"][i] = {
                 "location_id": str(uuid.uuid4())[:6],
-                "location_name": loc,
+                "location_name": str(loc),
+                "location_description": "No description provided",
             }
 
     # assign UUIDs and default fields to events
@@ -155,7 +140,52 @@ Instructions:
                 "event_tags": ["miscellaneous"],
             }
 
-    return session_data
+            # Prepare full character objects for campaign storage
+    campaign_chars = []
+    default_stats = {
+        "AC": 0,
+        "HP": 0,
+        "STR": 0,
+        "DEX": 0,
+        "CON": 0,
+        "INT": 0,
+        "WIS": 0,
+        "CHA": 0,
+    }
+
+    for char in structured.get("characters", []):
+        # Ensure char is a dict
+        if isinstance(char, str):
+            char = {"name": char}
+
+        full_char = {
+            "character_id": str(uuid.uuid4())[:6],
+            "name": char.get("name"),
+            "race": char.get("race", "Unknown"),
+            "class": char.get("class", "Unknown"),
+            "npc": char.get("npc", False),
+            "session_ids": [session_data["session_id"]],
+            **{k: char.get(k, v) for k, v in default_stats.items()},
+        }
+        campaign_chars.append(full_char)
+
+    # Prepare full location objects for campaign storage
+    campaign_locs = []
+    for loc in structured.get("locations", []):
+        if isinstance(loc, str):
+            loc = {"location_name": loc}
+
+        full_loc = {
+            "location_id": str(uuid.uuid4())[:6],
+            "location_name": loc.get("location_name", f"Location {i+1}"),
+            "location_description": loc.get(
+                "location_description", "No description provided"
+            ),
+            "session_ids": [session_data["session_id"]],
+        }
+        campaign_locs.append(full_loc)
+
+    return session_data, campaign_chars, campaign_locs
 
 
 def delete_from_json(data: dict, key: str, match: Optional[str] = None):
@@ -217,12 +247,9 @@ DM: You discover that the shrine was dedicated to an ancient forest deity. A fai
     # Extract structured data
     result = extract_session_data(sample_transcript)
 
-    # 🔹 Filter out only the events (if present)
-    events = result.get("summary", {}).get("events", [])
-
     # Print just the events for inspection
     print("=== Extracted Events ===")
-    print(json.dumps(result, indent=2))
+    print(result)
 
 
 if __name__ == "__main__":
