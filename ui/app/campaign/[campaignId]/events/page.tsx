@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import EventCard, { Event } from "@/components/eventCard";
 import FilterSidebar from "@/components/FilterSidebar";
-import Loading from "@/components/Loading"
+import Loading from "@/components/Loading";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -96,8 +96,8 @@ export default function CampaignEventsPage() {
     if (error) return <div className="text-red-500">Error: {error}</div>;
 
     return (
-        <div className="flex flex-col sm:flex-row max-w-6xl mx-auto gap-6 p-4">
-            <div className="sm:w-64 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row max-w-6xl mx-auto gap-6 p-4 items-start">
+            <div className="sm:w-64 flex-shrink-0 sm:sticky sm:top-4 self-start">
                 <FilterSidebar
                     events={events}
                     filters={filters}
@@ -105,7 +105,7 @@ export default function CampaignEventsPage() {
                 />
             </div>
 
-            <div className="flex-1 space-y-4 obsidian-colour">
+            <div className="flex-1 space-y-4 text-black">
                 <input
                     type="text"
                     value={searchTerm}
@@ -120,9 +120,9 @@ export default function CampaignEventsPage() {
                     Object.entries(sessionsMap).map(([sessionId, sessionEvents]) => (
                         <div
                             key={sessionId}
-                            className="border p-4 rounded shadow-sm text-black"
+                            className="border p-4 rounded shadow-sm bg-white"
                         >
-                            <h2 className="text-xl font-bold mb-4 text-black">
+                            <h2 className="text-xl font-bold mb-4">
                                 Session {sessionId}
                             </h2>
                             <div className="space-y-4">

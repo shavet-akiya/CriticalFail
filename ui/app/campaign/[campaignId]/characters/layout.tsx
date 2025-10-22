@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FilterProvider, useFilter } from "@/contexts/FilterContext";
+import { FilterProvider, useFilter } from "@/contexts/CharacterFilterContext";
 import { CharacterProvider } from "@/contexts/CharacterContext";
 
 

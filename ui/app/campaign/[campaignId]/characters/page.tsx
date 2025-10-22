@@ -1,7 +1,7 @@
 "use client";
 
 import CharacterCard from "@/components/characterCard";
-import { useFilter } from "@/contexts/FilterContext";
+import { useFilter } from "@/contexts/CharacterFilterContext";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import type { Character } from "@/types/types";
