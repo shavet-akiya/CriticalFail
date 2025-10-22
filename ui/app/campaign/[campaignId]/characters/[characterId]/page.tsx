@@ -6,9 +6,9 @@ import type { Character } from "@/types/types";
 
 export default function CharacterDetail() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const { campaignId, characterId } = useParams<{
-        campaignId: string;
-        characterId: string;
+    const { campaign_id, character_id } = useParams<{
+        campaign_id: string;
+        character_id: string;
     }>();
     const router = useRouter();
 
@@ -19,19 +19,19 @@ export default function CharacterDetail() {
 
     // Fetch character
     useEffect(() => {
-        if (!characterId || !campaignId) return;
+        if (!character_id || !campaign_id) return;
 
         fetch(
             `${baseUrl}/characters/${encodeURIComponent(
-                campaignId
-            )}/${encodeURIComponent(characterId)}`
+                campaign_id
+            )}/${encodeURIComponent(character_id)}`
         )
             .then((res) => res.json())
             .then((data) => {
                 if (!data.character) throw new Error("Character not found");
                 const c = data.character;
                 setForm({
-                    characterId: c.character_id,
+                    character_id: c.character_id,
                     name: c.name,
                     race: c.race,
                     class: c.class,
@@ -50,7 +50,7 @@ export default function CharacterDetail() {
                 console.error(e);
                 setError(e instanceof Error ? e.message : String(e));
             });
-    }, [characterId, campaignId]);
+    }, [character_id, campaign_id]);
 
     // Handle changes
     function onChange<K extends keyof Character>(k: K, v: any) {
@@ -67,7 +67,7 @@ export default function CharacterDetail() {
         try {
             const res = await fetch(
                 `${baseUrl}/characters/${encodeURIComponent(
-                    campaignId
+                    campaign_id
                 )}/${encodeURIComponent(form.characterId)}`,
                 {
                     method: "PATCH",
@@ -113,13 +113,13 @@ export default function CharacterDetail() {
         try {
             const res = await fetch(
                 `${baseUrl}/characters/${encodeURIComponent(
-                    campaignId
-                )}/${encodeURIComponent(form.characterId)}`,
+                    campaign_id
+                )}/${encodeURIComponent(form.character_id)}`,
                 { method: "DELETE" }
             );
 
             if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
-            router.push(`/campaign/${campaignId}/characters`);
+            router.push(`/campaign/${campaign_id}/characters`);
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {

@@ -68,8 +68,7 @@ export default function Characters() {
             const res = await fetch(
                 `${baseUrl}/campaign/${campaignId}/sessions`
             );
-            if (!res.ok)
-                throw new Error(`GET /api/sessions failed: ${res.status}`);
+            if (!res.ok) throw new Error(``);
             const data = await res.json();
             setSessions(data.sessions ?? []);
         } catch (e) {

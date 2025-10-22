@@ -201,18 +201,19 @@ export default function CampaignSummaryPage() {
         <div className="p-6 flex flex-col items-center obsidian-colour min-h-screen w-full select-none gap-8">
             <div className="border-2 border-purple rounded-xl w-full max-w-4xl flex flex-col justify-center items-center p-4">
                 {/* Image above title */}
-                {campaign.campaign_image_url && (
-                    <img
-                        src={
-                            campaign.campaign_image_url.startsWith("http") ||
-                            campaign.campaign_image_url.startsWith("data:")
+                {/* Image above title with fallback */}
+                <img
+                    src={
+                        campaign.campaign_image_url
+                            ? campaign.campaign_image_url.startsWith("http") ||
+                              campaign.campaign_image_url.startsWith("data:")
                                 ? campaign.campaign_image_url
                                 : `${baseUrl}${campaign.campaign_image_url}`
-                        }
-                        alt={campaign.campaign_name}
-                        className="w-48 h-48 object-cover rounded mb-4"
-                    />
-                )}
+                            : "images/campaign-placeholder.jpg" // fallback image
+                    }
+                    alt={campaign.campaign_name || "Campaign Image"}
+                    className="w-48 h-48 object-cover rounded mb-4 border border-gray-300 shadow-md"
+                />
 
                 {/* Title + description */}
                 <h1 className="text-4xl font-bold text-center mb-2">
