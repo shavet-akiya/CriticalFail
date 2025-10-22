@@ -2,12 +2,12 @@
 
 import { useCharacter } from "@/contexts/CharacterContext";
 import Link from "next/link";
-import { useParams } from "next/navigation"; // ✅ import useParams
+import { useParams } from "next/navigation";
 import { Character } from "@/helpers/types";
 
 export default function CharacterCard({ character }: { character: Character }) {
     const { setCurrentCharacter } = useCharacter();
-    const { campaignId } = useParams<{ campaignId: string }>(); // ✅ get campaignId from route
+    const { campaignId } = useParams<{ campaignId: string }>();
 
     return (
         <Link

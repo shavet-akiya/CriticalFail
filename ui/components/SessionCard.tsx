@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { Character, Location, Session, SessionCardProps } from "@/helpers/types";
+import { SessionCardProps } from "@/helpers/types";
 
 
 export default function SessionCard({ session, formatSessionDate }: SessionCardProps) {
