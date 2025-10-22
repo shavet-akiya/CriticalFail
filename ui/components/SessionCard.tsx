@@ -15,6 +15,19 @@ interface Character {
     INT: number;
     WIS: number;
     CHA: number;
+    npc?: boolean;
+    session_id: string;
+    campaign_id: string;
+    imageURL?: string;
+}
+
+interface Session {
+    session_id: string;
+    processed_at?: string;
+    characters?: Character[];
+    locations?: Location[];
+    events?: Event[];
+    campaign_id: string;
 }
 
 interface Location {
@@ -30,14 +43,6 @@ interface Event {
     participants?: string;
     location?: string;
     event_tags?: string;
-}
-
-interface Session {
-    session_id: string;
-    processed_at?: string;
-    characters?: Character[];
-    locations?: Location[];
-    events?: Event[];
 }
 
 interface SessionCardProps {

@@ -1,9 +1,9 @@
 // need to be able to edit this.
 export type Character = {
-  character_id: string // uuid
+  characterId: string // uuid
   name: string;
   race?: string;
-  char_class?: string;
+  class?: string;
   npc?: boolean;
 
   // new stats

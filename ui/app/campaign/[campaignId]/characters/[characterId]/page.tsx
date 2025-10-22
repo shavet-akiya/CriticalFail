@@ -6,9 +6,9 @@ import type { Character } from "@/types/types";
 
 export default function CharacterDetail() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const { campaign_id, character_id } = useParams<{
-        campaign_id: string;
-        character_id: string;
+    const { campaignId, characterId } = useParams<{
+        campaignId: string;
+        characterId: string;
     }>();
     const router = useRouter();
 
@@ -19,38 +19,37 @@ export default function CharacterDetail() {
 
     // Fetch character
     useEffect(() => {
-        if (!character_id || !campaign_id) return;
+        if (!characterId || !campaignId) return;
 
         fetch(
             `${baseUrl}/characters/${encodeURIComponent(
-                campaign_id
-            )}/${encodeURIComponent(character_id)}`
+                campaignId
+            )}/${encodeURIComponent(characterId)}`
         )
             .then((res) => res.json())
             .then((data) => {
                 if (!data.character) throw new Error("Character not found");
-                const c = data.character;
                 setForm({
-                    character_id: c.character_id,
-                    name: c.name,
-                    race: c.race,
-                    class: c.class,
-                    npc: c.npc ?? false,
-                    AC: c.AC ?? 0,
-                    HP: c.HP ?? 0,
-                    STR: c.STR ?? 0,
-                    DEX: c.DEX ?? 0,
-                    CON: c.CON ?? 0,
-                    INT: c.INT ?? 0,
-                    WIS: c.WIS ?? 0,
-                    CHA: c.CHA ?? 0,
+                    characterId: data.character.character_id,
+                    name: data.character.name,
+                    race: data.character.race,
+                    class: data.character.class,
+                    npc: data.character.npc ?? false,
+                    AC: data.character.AC ?? 0,
+                    HP: data.character.HP ?? 0,
+                    STR: data.character.STR ?? 0,
+                    DEX: data.character.DEX ?? 0,
+                    CON: data.character.CON ?? 0,
+                    INT: data.character.INT ?? 0,
+                    WIS: data.character.WIS ?? 0,
+                    CHA: data.character.CHA ?? 0,
                 });
             })
             .catch((e) => {
                 console.error(e);
                 setError(e instanceof Error ? e.message : String(e));
             });
-    }, [character_id, campaign_id]);
+    }, [characterId, campaignId]);
 
     // Handle changes
     function onChange<K extends keyof Character>(k: K, v: any) {
@@ -67,7 +66,7 @@ export default function CharacterDetail() {
         try {
             const res = await fetch(
                 `${baseUrl}/characters/${encodeURIComponent(
-                    campaign_id
+                    campaignId
                 )}/${encodeURIComponent(form.characterId)}`,
                 {
                     method: "PATCH",
@@ -113,13 +112,14 @@ export default function CharacterDetail() {
         try {
             const res = await fetch(
                 `${baseUrl}/characters/${encodeURIComponent(
-                    campaign_id
-                )}/${encodeURIComponent(form.character_id)}`,
+                    campaignId
+                )}/${encodeURIComponent(form.characterId)}`,
                 { method: "DELETE" }
             );
 
             if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
-            router.push(`/campaign/${campaign_id}/characters`);
+            // Redirect back to characters list after deletion
+            router.push(`/campaign/${campaignId}/characters`);
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {

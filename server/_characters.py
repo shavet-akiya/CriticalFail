@@ -175,38 +175,35 @@ async def edit_character(campaign_id: str, character_id: str, update: dict = Bod
 @router.delete("/{campaign_id}/{character_id}")
 async def delete_character(campaign_id: str, character_id: str):
     """
-    Delete a specific character by ID from a given campaign.
+    Delete a specific character from a campaign.
     Works even if the campaign has no sessions.
     """
     try:
-        # --- Try campaign-level delete first ---
-        campaign_result = session_collection.get(
-            where={
-                "$and": [
-                    {"type": "character"},
-                    {"campaign_id": campaign_id},
-                    {"character_id": character_id},
-                ]
-            }
+        # --- Load campaign ---
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
         )
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
 
-        if campaign_result.get("ids"):
-            session_collection.delete(ids=campaign_result["ids"])
-            return {
-                "status": "deleted (campaign-level)",
-                "character_id": character_id,
-            }
+        campaign_meta = campaign["metadatas"][0]
+        characters = json.loads(campaign_meta.get("characters", "[]"))
 
-        # --- Fallback: try deleting from session-based characters ---
-        session_ids = get_session_ids_for_campaign(campaign_id)
-        if not session_ids:
-            return JSONResponse(
-                status_code=404,
-                content={"error": "Character not found in campaign or sessions"},
+        # --- Remove the character from the campaign ---
+        updated_chars = [c for c in characters if c.get("character_id") != character_id]
+
+        if len(updated_chars) == len(characters):
+            raise HTTPException(
+                status_code=404, detail="Character not found in campaign"
             )
 
-        found = False
-        for sid in session_ids:
+        # --- Save updated character list ---
+        campaign_meta["characters"] = json.dumps(updated_chars)
+        session_collection.update(ids=[campaign["ids"][0]], metadatas=[campaign_meta])
+
+        # --- Optionally delete session-level versions too ---
+        session_ids = get_session_ids_for_campaign(campaign_id)
+        for sid in session_ids or []:
             char_results = session_collection.get(
                 where={
                     "$and": [
@@ -218,17 +215,11 @@ async def delete_character(campaign_id: str, character_id: str):
             )
             if char_results.get("ids"):
                 session_collection.delete(ids=char_results["ids"])
-                found = True
-                break
-
-        if not found:
-            return JSONResponse(
-                status_code=404,
-                content={"error": "Character not found in this campaign"},
-            )
 
         return {"status": "deleted", "character_id": character_id}
 
+    except HTTPException:
+        raise
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
