@@ -11,7 +11,7 @@ export default function CharacterCard({ character }: { character: Character }) {
 
     return (
         <Link
-            href={`/campaign/${campaignId}/characters/${character.characterId}`}
+            href={`/campaign/${campaignId}/characters/${character.character_id}`}
             onClick={() => setCurrentCharacter(character)}
             className="block"
         >

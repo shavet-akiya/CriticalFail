@@ -6,13 +6,7 @@ import Image from "next/image";
 import CampaignCard from "@/components/CampaignCard";
 import Loading from "@/components/Loading";
 import { useCampaign } from "@/contexts/CampaignContext";
-
-interface Campaign {
-    campaign_id: string;
-    campaign_name: string;
-    session_ids: string[];
-    campaign_image_url?: string;
-}
+import { Campaign } from "@/helpers/types";
 
 function App() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -48,14 +42,12 @@ function App() {
         snap-y snap-mandatory scroll-smooth
       "
         >
-            {/* Hero Section */}
             <section
                 className="
           min-h-screen flex flex-col items-center justify-center 
           bg-white-colour purple-colour snap-start relative sm:gap-16 lg:gap-32 overflow-hidden
         "
             >
-                {/* Decorative dice images */}
                 <Image
                     src="/images/homepage-dice.png"
                     alt="Dice top left"

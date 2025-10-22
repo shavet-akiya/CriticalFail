@@ -30,7 +30,7 @@ export default function CharacterDetail() {
             .then((data) => {
                 if (!data.character) throw new Error("Character not found");
                 setForm({
-                    characterId: data.character.character_id,
+                    character_id: data.character.character_id,
                     name: data.character.name,
                     race: data.character.race,
                     class: data.character.class,
@@ -67,7 +67,7 @@ export default function CharacterDetail() {
             const res = await fetch(
                 `${baseUrl}/characters/${encodeURIComponent(
                     campaignId
-                )}/${encodeURIComponent(form.characterId)}`,
+                )}/${encodeURIComponent(form.character_id)}`,
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
@@ -80,7 +80,7 @@ export default function CharacterDetail() {
             const c = data.character;
 
             setForm({
-                characterId: c.character_id,
+                character_id: c.character_id,
                 name: c.name,
                 race: c.race,
                 class: c.class,
@@ -113,7 +113,7 @@ export default function CharacterDetail() {
             const res = await fetch(
                 `${baseUrl}/characters/${encodeURIComponent(
                     campaignId
-                )}/${encodeURIComponent(form.characterId)}`,
+                )}/${encodeURIComponent(form.character_id)}`,
                 { method: "DELETE" }
             );
 

@@ -180,7 +180,7 @@ export default function Characters() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16">
                 {filteredCharacters.map((character) => (
-                    <div key={character.characterId}>
+                    <div key={character.character_id}>
                         <CharacterCard character={character} />
                     </div>
                 ))}

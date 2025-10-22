@@ -38,6 +38,7 @@ export interface Character {
     race?: string;
     HP: number;
     AC: number;
+    npc?: boolean;
     STR: number;
     DEX: number;
     CON: number;
@@ -72,4 +73,11 @@ export interface Session {
 export interface SessionCardProps {
     session: Session;
     formatSessionDate: (id: string) => string;
+}
+
+export interface Campaign {
+    campaign_id: string;
+    campaign_name: string;
+    session_ids: string[];
+    campaign_image_url?: string;
 }

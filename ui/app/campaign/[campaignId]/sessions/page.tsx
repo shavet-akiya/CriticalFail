@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation"; // for app directory
 import Loading from "@/components/Loading";
 import AltSessionCard from "@/components/AltSessionCard";
-import { SessionCharacter, SessionLocation } from "@/helpers/types";
+
+interface Character {
+    name: string;
+}
+
+interface Location {
+    name?: string;
+    location_name?: string;
+}
 
 interface Event {
     event: string;
@@ -14,8 +22,8 @@ interface Event {
 interface SessionMetadata {
     session_id: string;
     campaign_id?: string;
-    characters?: SessionCharacter[];
-    locations?: SessionLocation[];
+    characters?: Character[];
+    locations?: Location[];
     events?: Event[];
 }
 
