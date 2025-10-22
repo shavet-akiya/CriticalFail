@@ -15,6 +15,16 @@ const nextConfig: NextConfig = {
   serverRuntimeConfig: {
     httpServerTimeout: 0, // 0 = no timeout
   },
+    images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "9000",
+        pathname: "/campaign_images/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

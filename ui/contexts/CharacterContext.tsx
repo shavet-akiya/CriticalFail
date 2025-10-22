@@ -7,12 +7,18 @@ interface CharacterContextType {
     setCurrentCharacter: (c: Character) => void;
 }
 
-const CharacterContext = createContext<CharacterContextType | undefined>(undefined);
+const CharacterContext = createContext<CharacterContextType | undefined>(
+    undefined
+);
 
 export function CharacterProvider({ children }: { children: ReactNode }) {
-    const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
+    const [currentCharacter, setCurrentCharacter] = useState<Character | null>(
+        null
+    );
     return (
-        <CharacterContext.Provider value={{ currentCharacter, setCurrentCharacter }}>
+        <CharacterContext.Provider
+            value={{ currentCharacter, setCurrentCharacter }}
+        >
             {children}
         </CharacterContext.Provider>
     );
@@ -20,6 +26,7 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
 export function useCharacter() {
     const context = useContext(CharacterContext);
-    if (!context) throw new Error("useCharacter must be used within CharacterProvider");
+    if (!context)
+        throw new Error("useCharacter must be used within CharacterProvider");
     return context;
 }

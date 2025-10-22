@@ -3,16 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/Toast";
-import { useCampaign } from "@/contexts/CampaignContext";
 
 export default function NewCampaign() {
     const router = useRouter();
     const [campaignName, setCampaignName] = useState("");
+    const [campaignDescription, setCampaignDescription] = useState("");
     const [image, setImage] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
-    const [savedImageUrl, setSavedImageUrl] = useState<string | null>(null);
     const [toast, setToast] = useState<{
-        type: "success" | "error" | "info";
+        type: "success" | "error";
         message: string;
     } | null>(null);
     const [loading, setLoading] = useState(false);
@@ -27,19 +26,29 @@ export default function NewCampaign() {
         }
     }, [toast]);
 
+    // Show preview before upload
+    const handleImageChange = (file: File) => {
+        setImage(file);
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result as string);
+        reader.readAsDataURL(file);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!campaignName.trim()) {
-            setToast({ type: "error", message: "Campaign name is required." });
+        if (!campaignName.trim() || !campaignDescription.trim()) {
+            setToast({
+                type: "error",
+                message: "Name and description are required.",
+            });
             return;
         }
 
         setLoading(true);
-
         try {
             const formData = new FormData();
             formData.append("campaign_name", campaignName);
+            formData.append("campaign_description", campaignDescription);
             if (image) formData.append("campaign_image", image);
 
             const res = await fetch(`${baseUrl}/campaign/`, {
@@ -48,7 +57,6 @@ export default function NewCampaign() {
             });
 
             const data = await res.json();
-
             if (!res.ok)
                 throw new Error(data.error || "Failed to create campaign");
 
@@ -57,18 +65,14 @@ export default function NewCampaign() {
                 message: `Campaign "${campaignName}" created!`,
             });
 
-            // ✅ Show the saved image from the server
-            setSavedImageUrl(`http://localhost:8000${data.image_url}`);
-
-            // Reset form fields
+            // Reset form
             setCampaignName("");
+            setCampaignDescription("");
             setImage(null);
             setPreview(null);
 
-            // Navigate to campaign summary after short delay
-            setTimeout(() => {
-                router.push(`/#campaign_selection`);
-            }, 500);
+            // Navigate to campaign selection
+            setTimeout(() => router.push("/#campaign_selection"), 500);
         } catch (err: any) {
             setToast({
                 type: "error",
@@ -85,65 +89,43 @@ export default function NewCampaign() {
 
             <form
                 onSubmit={handleSubmit}
-                className="flex flex-col gap-8 bg-white-colour p-8 max-w-lg mx-auto"
+                className="flex flex-col gap-4 p-8 max-w-lg mx-auto"
             >
-                <h1 className="obsidian-colour text-4xl pb-4 text-center">
-                    Create a Campaign
-                </h1>
+                <h1 className="text-4xl text-center pb-4">Create a Campaign</h1>
 
-                {/* Campaign Name */}
-                <fieldset className="fieldset">
-                    <legend className="fieldset-legend obsidian-colour font-semibold">
-                        Campaign Name
-                    </legend>
-                    <input
-                        type="text"
-                        className="input input-neutral w-full"
-                        placeholder="e.g. The Wild Beyond the Witchlight"
-                        value={campaignName}
-                        onChange={(e) => setCampaignName(e.target.value)}
-                        required
-                    />
-                    <p className="label text-sm text-gray-500">Required</p>
-                </fieldset>
+                <input
+                    type="text"
+                    placeholder="Campaign Name"
+                    className="input input-neutral w-full"
+                    value={campaignName}
+                    onChange={(e) => setCampaignName(e.target.value)}
+                    required
+                />
 
-                {/* Campaign Image */}
-                <fieldset className="fieldset">
-                    <legend className="fieldset-legend font-semibold obsidian-colour">
-                        Campaign Image
-                    </legend>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        className="file-input w-full"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            setImage(file);
-                            setPreview(URL.createObjectURL(file));
-                            setSavedImageUrl(null); // remove saved image while editing
-                        }}
-                    />
-                    <label className="label text-sm text-gray-500">
-                        Max size 2MB
-                    </label>
-                </fieldset>
+                <textarea
+                    placeholder="Campaign Description"
+                    className="textarea textarea-neutral w-full"
+                    value={campaignDescription}
+                    onChange={(e) => setCampaignDescription(e.target.value)}
+                    required
+                />
 
-                {/* Preview Section */}
+                <input
+                    type="file"
+                    accept="image/*"
+                    className="file-input w-full"
+                    onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        handleImageChange(file);
+                    }}
+                />
+
                 {preview && (
                     <img
                         src={preview}
-                        alt="Campaign Preview"
-                        className="rounded-xl shadow-lg max-h-64 object-contain border border-gray-300 mx-auto"
-                    />
-                )}
-
-                {/* Display saved image from server */}
-                {savedImageUrl && !preview && (
-                    <img
-                        src={savedImageUrl}
-                        alt="Saved Campaign Image"
-                        className="rounded-xl shadow-lg max-h-64 object-contain border border-gray-300 mx-auto"
+                        alt="Preview"
+                        className="rounded-xl max-h-64 object-contain mx-auto border border-gray-300"
                     />
                 )}
 

@@ -15,26 +15,23 @@ export default function Characters() {
     const [sessions, setSessions] = useState<
         { session_id: string; name: string }[]
     >([]);
-    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
 
     const [newCharacter, setNewCharacter] = useState({
-        campaign_id: campaignId ?? "9d31fe",
-        character_id: "0375a9",
-        name: "Alice",
-        race: "Unknown",
-        class: "Unknown",
+        name: "",
+        race: "Human",
+        class: "Fighter",
         npc: false,
-        AC: 0,
-        HP: 0,
-        STR: 0,
-        DEX: 0,
-        CON: 0,
-        INT: 0,
-        WIS: 0,
-        CHA: 0,
-        session_id: "",
+        AC: 10,
+        HP: 10,
+        STR: 10,
+        DEX: 10,
+        CON: 10,
+        INT: 10,
+        WIS: 10,
+        CHA: 10,
     });
 
     // --- Fetch all characters ---
@@ -64,7 +61,7 @@ export default function Characters() {
         }));
     };
 
-    // --- Fetch sessions ---
+    // --- Fetch sessions for dropdown ---
     const fetchSessions = async () => {
         if (!campaignId) return;
         try {
@@ -87,15 +84,6 @@ export default function Characters() {
         fetchSessions();
     }, [campaignId]);
 
-    // Automatically assign most recent session
-    useEffect(() => {
-        if (sessions.length > 0) {
-            const mostRecent = sessions[sessions.length - 1].session_id;
-            setSessionId(mostRecent);
-            setNewCharacter((prev) => ({ ...prev, session_id: mostRecent }));
-        }
-    }, [sessions]);
-
     const filteredCharacters = characters.filter((character) => {
         if (filter === "all") return true;
         if (filter === "players") return !character.npc;
@@ -105,25 +93,13 @@ export default function Characters() {
 
     const handleCreateCharacter = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!campaignId || !sessionId) {
-            setError("No session assigned. Please create a session first.");
-            return;
-        }
-
-        // Required fields
-        const requiredFields = ["name", "race", "class"];
-        for (const field of requiredFields) {
-            if (!(newCharacter as any)[field]) {
-                setError(`Please fill in the ${field} field.`);
-                return;
-            }
-        }
+        if (!campaignId) return;
 
         try {
             const payload = {
                 ...newCharacter,
+                session_ids: [],
                 campaign_id: campaignId,
-                session_id: sessionId,
             };
 
             const res = await fetch(`${baseUrl}/characters/${campaignId}`, {
@@ -139,26 +115,28 @@ export default function Characters() {
             const updatedCharacters = await fetchCharacters();
             setCharacters(updatedCharacters);
 
-            // Reset form
+            // Close modal & reset form
             setShowModal(false);
             setNewCharacter({
-                campaign_id: campaignId,
-                character_id: "0375a9",
-                name: "Alice",
-                race: "Unknown",
-                class: "Unknown",
+                name: "",
+                race: "Human",
+                class: "Fighter",
                 npc: false,
-                AC: 0,
-                HP: 0,
-                STR: 0,
-                DEX: 0,
-                CON: 0,
-                INT: 0,
-                WIS: 0,
-                CHA: 0,
-                session_id: sessionId,
+                AC: 10,
+                HP: 10,
+                STR: 10,
+                DEX: 10,
+                CON: 10,
+                INT: 10,
+                WIS: 10,
+                CHA: 10,
             });
+            setSelectedSessions([]);
             setError(null);
+
+            // Scroll to character grid
+            const grid = document.querySelector(".grid.grid-cols-1");
+            grid?.scrollIntoView({ behavior: "smooth" });
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
         }
@@ -168,6 +146,7 @@ export default function Characters() {
         <div className="pl-16 pr-16 pt-16 text-black">
             {error && <div className="text-red-500 mb-4">{error}</div>}
 
+            {/* --- Header + Add Button --- */}
             <div className="mb-8 flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Characters</h1>
                 <button
@@ -178,6 +157,7 @@ export default function Characters() {
                 </button>
             </div>
 
+            {/* --- Character Grid --- */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16">
                 {filteredCharacters.map((character) => (
                     <div key={character.characterId}>
@@ -186,6 +166,7 @@ export default function Characters() {
                 ))}
             </div>
 
+            {/* --- Modal for Character Creation --- */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white text-black rounded-2xl shadow-xl p-8 w-full max-w-lg">
@@ -197,6 +178,7 @@ export default function Characters() {
                             onSubmit={handleCreateCharacter}
                             className="space-y-4"
                         >
+                            {/* --- Name / Race / Class --- */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-1">
@@ -229,7 +211,6 @@ export default function Characters() {
                                             })
                                         }
                                         className="w-full border rounded-lg px-3 py-2"
-                                        required
                                     />
                                 </div>
                                 <div>
@@ -246,7 +227,6 @@ export default function Characters() {
                                             })
                                         }
                                         className="w-full border rounded-lg px-3 py-2"
-                                        required
                                     />
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -266,6 +246,46 @@ export default function Characters() {
                                 </div>
                             </div>
 
+                            {/* --- Session Selector --- */}
+                            <div>
+                                <label className="block text-sm font-semibold mb-1">
+                                    Assign to Session(s)
+                                </label>
+                                <select
+                                    multiple
+                                    required
+                                    value={selectedSessions}
+                                    onChange={(e) =>
+                                        setSelectedSessions(
+                                            Array.from(
+                                                e.target.selectedOptions,
+                                                (opt) => opt.value
+                                            )
+                                        )
+                                    }
+                                    className="w-full border rounded-lg px-3 py-2"
+                                >
+                                    {sessions.length > 0 ? (
+                                        sessions.map((s) => (
+                                            <option
+                                                key={s.session_id}
+                                                value={s.session_id}
+                                            >
+                                                {s.name}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option disabled>
+                                            No sessions available
+                                        </option>
+                                    )}
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Hold Ctrl/Cmd to select multiple sessions.
+                                </p>
+                            </div>
+
+                            {/* --- Stats Section --- */}
                             <div className="grid grid-cols-3 gap-3">
                                 {[
                                     "AC",
@@ -293,12 +313,12 @@ export default function Characters() {
                                                 })
                                             }
                                             className="w-full border rounded-lg px-2 py-1"
-                                            required
                                         />
                                     </div>
                                 ))}
                             </div>
 
+                            {/* --- Buttons --- */}
                             <div className="flex justify-end gap-4 pt-4">
                                 <button
                                     type="button"

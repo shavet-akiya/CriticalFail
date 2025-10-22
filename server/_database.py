@@ -73,7 +73,7 @@ def save_session_to_chroma(session_data: dict) -> str:
     from ._events import save_events
 
     save_characters(session_collection, summary, session_data, campaign_id)
-    save_locations(session_collection, summary, session_data)
+    save_locations(session_collection, summary, session_data, campaign_id)
     save_events(session_collection, summary, session_data)
 
     return chroma_id

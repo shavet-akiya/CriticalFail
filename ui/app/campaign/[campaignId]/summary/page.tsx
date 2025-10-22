@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import SessionCard from "@/components/SessionCard";
 import Link from "next/link";
 
@@ -28,6 +28,7 @@ interface Character {
     npc?: boolean;
     session_id: string;
     campaign_id: string;
+    imageURL?: string;
 }
 
 interface Location {
@@ -61,64 +62,30 @@ function formatSessionDate(sessionId: string): string {
     const year = sessionId.substring(0, 4);
     const month = sessionId.substring(4, 6);
     const day = sessionId.substring(6, 8);
-
     return `${day}/${month}/${year}`;
 }
 
 export default function CampaignSummaryPage() {
     const { campaignId } = useParams();
+    const router = useRouter();
     const [campaign, setCampaign] = useState<Campaign | null>(null);
     const [sessions, setSessions] = useState<Session[]>([]);
+    const [characters, setCharacters] = useState<Character[]>([]);
+    const [locations, setLocations] = useState<Location[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    const [fetching, setFetching] = useState(false);
+
+    const [editing, setEditing] = useState(false);
+    const [newName, setNewName] = useState("");
+    const [newImageUrl, setNewImageUrl] = useState("");
+    const [saving, setSaving] = useState(false);
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-
-    // DO NOT USE
-    async function resetDatabase() {
-        try {
-            const res = await fetch(`${baseUrl}/sessions`, {
-                method: "DELETE",
-            });
-            if (!res.ok) throw new Error(`RESET failed: ${res.status}`);
-            await fetchSessions();
-        } catch (e: unknown) {
-            setError(e instanceof Error ? e.message : String(e));
-        }
-    }
-
-    async function fetchSessions() {
-        setFetching(true);
-        setError(null);
-        try {
-            // Add campaignId as query param
-            const url = campaignId
-                ? `${baseUrl}/sessions?campaign_id=${campaignId}`
-                : `${baseUrl}/sessions`;
-
-            const res = await fetch(url, { cache: "no-store" });
-            if (!res.ok) throw new Error(`GET failed: ${res.status}`);
-            const data = await res.json();
-
-            const mapped = data.documents.map((doc: string, i: number) => ({
-                id: data.ids[i],
-                document: doc,
-                metadata: data.metadatas[i],
-            }));
-
-            setSessions(mapped);
-        } catch (e: unknown) {
-            setError(e instanceof Error ? e.message : String(e));
-        } finally {
-            setFetching(false);
-        }
-    }
-
     useEffect(() => {
-        async function fetchCampaignAndSessions() {
+        async function fetchData() {
             try {
+                // Fetch campaign
                 const resCampaign = await fetch(
                     `${baseUrl}/campaign/${campaignId}`
                 );
@@ -126,31 +93,50 @@ export default function CampaignSummaryPage() {
                     throw new Error(
                         `Campaign not found: ${resCampaign.status}`
                     );
+                const rawCampaign = await resCampaign.json();
+                const data: Campaign = Array.isArray(rawCampaign)
+                    ? rawCampaign[0]
+                    : rawCampaign;
+                setCampaign(data);
+                setNewName(data.campaign_name || "");
+                setNewImageUrl(data.campaign_image_url || "");
 
-                const raw = await resCampaign.json();
-                const data: Campaign = Array.isArray(raw) ? raw[0] : raw;
+                // Fetch sessions
+                let sessionData: Session[] = [];
+                if (data.session_ids && data.session_ids.length > 0) {
+                    const sessionPromises = data.session_ids.map(async (id) => {
+                        const res = await fetch(`${baseUrl}/sessions/${id}`);
+                        if (!res.ok) throw new Error(`Session ${id} not found`);
+                        return res.json() as Promise<Session>;
+                    });
+                    sessionData = await Promise.all(sessionPromises);
 
-                // Normalize session_ids
-                let sessionIds: string[] = [];
-                if (Array.isArray(data.session_ids))
-                    sessionIds = data.session_ids;
-                else if (typeof data.session_ids === "string") {
-                    try {
-                        sessionIds = JSON.parse(data.session_ids);
-                    } catch {
-                        sessionIds = [];
+                    sessionData.sort((a, b) => {
+                        const dateA = a.processed_at
+                            ? new Date(a.processed_at).getTime()
+                            : 0;
+                        const dateB = b.processed_at
+                            ? new Date(b.processed_at).getTime()
+                            : 0;
+                        return dateA - dateB;
+                    });
+
+                    const mostRecent = sessionData.pop();
+                    if (mostRecent) {
+                        setSessions([mostRecent]);
+                        setLocations(mostRecent.locations || []);
                     }
                 }
-                setCampaign({ ...data, session_ids: sessionIds });
 
-                const sessionPromises = sessionIds.map(async (id) => {
-                    const res = await fetch(`${baseUrl}/sessions/${id}`);
-                    if (!res.ok) throw new Error(`Session ${id} not found`);
-                    return res.json() as Promise<Session>;
-                });
-
-                const sessionData = await Promise.all(sessionPromises);
-                setSessions(sessionData);
+                // Fetch characters
+                const resChars = await fetch(
+                    `${baseUrl}/characters/${campaignId}`
+                );
+                if (!resChars.ok)
+                    throw new Error(`Characters not found: ${resChars.status}`);
+                const charJson = await resChars.json();
+                const charData: Character[] = charJson.characters || [];
+                setCharacters(charData);
             } catch (e: any) {
                 setError(e.message);
             } finally {
@@ -158,8 +144,55 @@ export default function CampaignSummaryPage() {
             }
         }
 
-        if (campaignId) fetchCampaignAndSessions();
+        if (campaignId) fetchData();
     }, [campaignId, baseUrl]);
+
+    async function handleSave() {
+        if (!campaign) return;
+        setSaving(true);
+        try {
+            const res = await fetch(`${baseUrl}/campaign/${campaignId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    campaign_id: campaign.campaign_id,
+                    campaign_name: newName,
+                    campaign_image_url: newImageUrl,
+                }),
+            });
+            if (!res.ok) throw new Error(`Failed to update: ${res.status}`);
+            const updated = await res.json();
+            setCampaign({ ...campaign, ...updated });
+            setEditing(false);
+        } catch (e: any) {
+            alert(e.message);
+        } finally {
+            setSaving(false);
+        }
+    }
+
+    async function handleDelete() {
+        if (!campaign) return;
+        if (
+            !confirm(
+                `Are you sure you want to delete "${campaign.campaign_name}"? This cannot be undone.`
+            )
+        )
+            return;
+
+        try {
+            const res = await fetch(
+                `${baseUrl}/campaign/${campaign.campaign_id}`,
+                {
+                    method: "DELETE",
+                }
+            );
+            if (!res.ok) throw new Error(`Failed to delete: ${res.status}`);
+            router.push("/");
+        } catch (e: any) {
+            alert(e.message);
+        }
+    }
 
     if (loading)
         return <div className="p-6">Loading campaign and sessions...</div>;
@@ -168,39 +201,145 @@ export default function CampaignSummaryPage() {
 
     return (
         <div className="p-6 flex flex-col items-center obsidian-colour min-h-screen w-full select-none gap-8">
-
             <div className="border-2 border-purple rounded-xl w-full max-w-4xl flex flex-col justify-center items-center p-4">
-                <h1 className="text-4xl font-bold mb-4">
-                    {campaign.campaign_name}
-                </h1>
-                <p className="mb-2">Campaign ID: {campaign.campaign_id}</p>
+                {/* Flex row: image + title */}
+                <div className="flex items-center gap-4 mb-4">
+                    {campaign.campaign_image_url && (
+                        <img
+                            src={
+                                campaign.campaign_image_url.startsWith(
+                                    "http"
+                                ) ||
+                                campaign.campaign_image_url.startsWith("data:")
+                                    ? campaign.campaign_image_url
+                                    : `${baseUrl}${campaign.campaign_image_url}`
+                            }
+                            alt={campaign.campaign_name}
+                            className="w-24 h-24 object-cover rounded"
+                        />
+                    )}
+                    <h1 className="text-4xl font-bold">
+                        {campaign.campaign_name}
+                    </h1>
+                </div>
+
+                {/* Edit / Delete buttons */}
+                <div className="flex gap-4 mt-4">
+                    {editing ? (
+                        <>
+                            <input
+                                type="text"
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                                className="border p-1 rounded"
+                                placeholder="Campaign Name"
+                            />
+                            <input
+                                type="text"
+                                value={newImageUrl}
+                                onChange={(e) => setNewImageUrl(e.target.value)}
+                                className="border p-1 rounded"
+                                placeholder="Image URL"
+                            />
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="btn btn-primary"
+                            >
+                                {saving ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                                onClick={() => setEditing(false)}
+                                className="btn btn-secondary"
+                            >
+                                Cancel
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                onClick={() => setEditing(true)}
+                                className="btn btn-primary"
+                            >
+                                Edit Campaign
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="btn btn-danger"
+                            >
+                                Delete Campaign
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
 
             {sessions.length === 0 ? (
-                <div className="flex flex-col justify-center items-center gap-8">
-                    <p className="text-xl obsidian-colour pt-16">No sessions yet! Start your story.</p>
-                    <button className="btn btn-primary">
+                <div className="flex flex-col justify-center items-center gap-8 pt-16">
+                    <p className="text-xl obsidian-colour text-center">
+                        No recent sessions! Press New Session to start your
+                        session.
+                    </p>
+                    <button className="btn btn-primary mt-4">
                         <Link href={`/campaign/${campaignId}/new_session`}>
-                            Create a new Session
+                            New Session
                         </Link>
                     </button>
                 </div>
             ) : (
                 <>
-                    <button
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                        onClick={resetDatabase}
-                    >
-                        Delete All Sessions
-                    </button>
-                    <div className="flex flex-col gap-6 w-full max-w-4xl">
-                        {sessions.map((session) => (
-                            <SessionCard
-                                key={session.session_id}
-                                session={session}
-                                formatSessionDate={formatSessionDate}
-                            />
-                        ))}
+                    <div className="flex flex-col gap-6 w-full max-w-4xl mt-8">
+                        <h2 className="text-2xl font-bold mb-4">
+                            Most Recent Session
+                        </h2>
+                        <SessionCard
+                            session={sessions[0]}
+                            formatSessionDate={formatSessionDate}
+                        />
+                    </div>
+
+                    <div className="mt-8 w-full max-w-4xl">
+                        <h2 className="text-2xl font-bold mb-4">Characters</h2>
+                        {characters.length === 0 ? (
+                            <p>No characters found.</p>
+                        ) : (
+                            <ul className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {characters.map((c) => (
+                                    <li
+                                        key={c.character_id}
+                                        className="border p-2 rounded"
+                                    >
+                                        <p className="font-semibold">
+                                            {c.name}
+                                        </p>
+                                        <p>
+                                            {c.race} {c.class}
+                                        </p>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+
+                        <h2 className="text-2xl font-bold mt-8 mb-4">
+                            Locations
+                        </h2>
+                        {locations.length === 0 ? (
+                            <p>No locations found.</p>
+                        ) : (
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {locations.map((l) => (
+                                    <li
+                                        key={l.location_id}
+                                        className="border p-2 rounded"
+                                    >
+                                        <p className="font-semibold">
+                                            {l.location_name}
+                                        </p>
+                                        <p>{l.description}</p>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                 </>
             )}

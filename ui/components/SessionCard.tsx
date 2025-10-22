@@ -45,7 +45,10 @@ interface SessionCardProps {
     formatSessionDate: (id: string) => string;
 }
 
-export default function SessionCard({ session, formatSessionDate }: SessionCardProps) {
+export default function SessionCard({
+    session,
+    formatSessionDate,
+}: SessionCardProps) {
     return (
         <div
             key={session.session_id}
@@ -64,8 +67,7 @@ export default function SessionCard({ session, formatSessionDate }: SessionCardP
                     <ul className="list-disc list-inside text-sm mt-1 space-y-1">
                         {session.characters.map((c) => (
                             <li key={c.character_id}>
-                                {c.name} ({c.class}, {c.race || "unknown"}) – HP:{c.HP}, AC:{c.AC},{" "}
-                                STR:{c.STR}, DEX:{c.DEX}, CON:{c.CON}, INT:{c.INT}, WIS:{c.WIS}, CHA:{c.CHA}
+                                {c.name} ({c.class}, {c.race || "unknown"})
                             </li>
                         ))}
                     </ul>
@@ -92,16 +94,30 @@ export default function SessionCard({ session, formatSessionDate }: SessionCardP
             <div>
                 <h3 className="font-semibold text-lg">Events</h3>
                 {session.events?.length ? (
-                    <ul className="list-disc list-inside text-sm mt-1 space-y-1">
+                    <ol className="list-none mt-1 space-y-4">
                         {session.events.map((e) => (
-                            <li key={e.event_id}>
-                                <strong>{e.event}</strong> – {e.event_summary}
-                                {e.participants && <> (Participants: {e.participants})</>}
-                                {e.location && <> @ {e.location}</>}
-                                {e.event_tags && <> [{e.event_tags}]</>}
+                            <li key={e.event_id} className="border-b pb-2">
+                                {/* Event Title */}
+                                <h4 className="font-semibold text-sm">
+                                    {e.event}
+                                </h4>
+
+                                {/* Event Summary */}
+                                <p className="text-sm text-gray-700">
+                                    {e.event_summary}
+                                </p>
+
+                                {/* Additional Details */}
+                                <div className="text-xs text-gray-500 mt-1 space-x-2">
+                                    {e.participants && (
+                                        <p>Participants: {e.participants}</p>
+                                    )}
+                                    {e.location && <p>@ {e.location}</p>}
+                                    {e.event_tags && <p>[{e.event_tags}]</p>}
+                                </div>
                             </li>
                         ))}
-                    </ul>
+                    </ol>
                 ) : (
                     <p className="text-gray-500 text-sm">No events.</p>
                 )}

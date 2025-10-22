@@ -2,7 +2,8 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-interface Event {
+
+export interface Event {
     event_id: string;
     session_id: string;
     campaign_id?: string;
@@ -15,76 +16,62 @@ interface Event {
     type?: string;
 }
 
-export default function EventCard({ event }: { event: Event }) {
+interface EventCardProps {
+    event: Event;
+    showEdit?: boolean;
+}
+
+export default function EventCard({ event, showEdit = false }: EventCardProps) {
     const { campaignId } = useParams<{ campaignId: string }>();
 
+    const participants = Array.isArray(event.participants)
+        ? event.participants
+        : [];
+    const tags = Array.isArray(event.event_tags) ? event.event_tags : [];
+
     return (
-        <Link
-            href={`/campaign/${campaignId}/events/${event.event_id}`}
-            className="block"
-        >
-            <div className="card bg-base-100 w-full max-w-sm shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer group relative">
-                {/* Edit button */}
-                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                    <button className="btn btn-primary rounded-full w-auto flex items-center gap-1">
-                        <img
-                            src="/svg/edit.svg"
-                            alt="Edit"
-                            className="w-4 h-4"
-                        />
-                        Edit
-                    </button>
-                </div>
+        <div className="relative w-full max-w-sm">
+            {/* Edit button */}
+            {showEdit && (
+                <Link
+                    href={`/campaign/${campaignId}/events/${event.event_id}`}
+                    className="absolute top-2 right-2 btn btn-sm btn-primary z-10"
+                    onClick={(e) => e.stopPropagation()} // Prevent card link navigation
+                >
+                    Edit
+                </Link>
+            )}
 
-                {/* Event header */}
-                <div className="card-body text-white">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h2 className="text-xl font-bold">
-                                {event.timeline_order}.{" "}
-                                {event.event || "Unnamed Event"}
-                            </h2>
-                            <p className="text-sm">
-                                {event.event_summary || ""}
-                            </p>
-                        </div>
-                    </div>
+            {/* Card link */}
+            <Link
+                href={`/campaign/${campaignId}/events/${event.event_id}`}
+                className="block"
+            >
+                <div className="card bg-base-100 shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer group p-4">
+                    <h2 className="text-xl font-bold">
+                        {event.timeline_order || "?"}.{" "}
+                        {event.event || "Unnamed Event"}
+                    </h2>
+                    <p className="text-sm">{event.event_summary || ""}</p>
 
-                    {/* Event details */}
-                    <div className="mt-2 text-sm">
-                        {event.participants &&
-                            event.participants.length > 0 && (
-                                <p className="mt-2">
-                                    <strong>Participants:</strong>{" "}
-                                    {(Array.isArray(event.participants)
-                                        ? event.participants
-                                        : []
-                                    ).join(", ")}
-                                </p>
-                            )}
-                        {event.location && (
-                            <p>
-                                <strong>Location:</strong> {event.location}
-                            </p>
-                        )}
-                        {event.event_tags && event.event_tags.length > 0 && (
-                            <div className="flex gap-2 mt-2 flex-wrap">
-                                {(Array.isArray(event.event_tags)
-                                    ? event.event_tags
-                                    : []
-                                ).map((tag, i) => (
-                                    <span
-                                        key={i}
-                                        className="badge badge-outline"
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    {participants.length > 0 && (
+                        <p className="mt-2">
+                            <strong>Participants:</strong>{" "}
+                            {participants.join(", ")}
+                        </p>
+                    )}
+                    {tags.length > 0 && (
+                        <p className="mt-1">
+                            <strong>Tags:</strong> {tags.join(", ")}
+                        </p>
+                    )}
+                    {event.location && (
+                        <p className="mt-1">
+                            <strong>Location:</strong> {event.location}
+                        </p>
+                    )}
                 </div>
-            </div>
-        </Link>
+            </Link>
+        </div>
     );
 }

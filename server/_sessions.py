@@ -8,6 +8,10 @@ from llm import dnd_ai
 from ._database import session_collection
 import json
 from datetime import datetime
+import json
+import uuid
+import asyncio
+
 
 router = APIRouter()
 MAX_SESSIONS = 1000
@@ -19,109 +23,110 @@ class TranscriptInput(BaseModel):
     campaign_id: str
 
 
-import httpx
-import json
-import uuid
-import asyncio
-from fastapi.responses import JSONResponse
-
-
 async def process_and_save_session(job_id: str, transcript: str, campaign_id: str):
     try:
         llm_jobs[job_id] = {"status": "processing"}
 
-        # --- Extract structured session data from transcript ---
-        structured_json, chars, locs = await dnd_ai.extract_session_data(transcript)
-        structured_json["campaign_id"] = campaign_id
-        session_id = structured_json.get("session_id") or str(uuid.uuid4())[:12]
-        structured_json["session_id"] = session_id
-
-        # --- Save session to Chroma ---
-        chroma_id = await asyncio.to_thread(save_session_to_chroma, structured_json)
-        structured_json["chroma_id"] = chroma_id
-
-        # --- Fetch campaign metadata ---
+        # --- Fetch existing campaign metadata first ---
         campaign = session_collection.get(
             where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
         )
         if campaign and campaign.get("ids"):
             campaign_meta = dict(campaign["metadatas"][0])
 
-            # -------------------
-            # --- CHARACTERS ----
-            # -------------------
             try:
                 existing_chars = json.loads(campaign_meta.get("characters", "[]"))
             except:
                 existing_chars = []
-            char_lookup = {c["name"]: c for c in existing_chars if "name" in c}
 
-            for char in chars:
-                name = char.get("name", "Unknown")
-                if name in char_lookup:
-                    # Merge existing character
-                    existing_char = char_lookup[name]
-                    merged_char = {**existing_char, **char}
-                    merged_char["character_id"] = existing_char["character_id"]
-                    merged_char["session_ids"] = list(
-                        set(existing_char.get("session_ids", []) + [session_id])
-                    )
-                    char_lookup[name] = merged_char
-                else:
-                    # New character
-                    char["character_id"] = str(uuid.uuid4())[:6]
-                    char["session_ids"] = [session_id]
-                    char_lookup[name] = char
-
-            campaign_meta["characters"] = json.dumps(list(char_lookup.values()))
-
-            # -------------------
-            # --- LOCATIONS -----
-            # -------------------
             try:
                 existing_locs = json.loads(campaign_meta.get("locations", "[]"))
             except:
                 existing_locs = []
-            loc_lookup = {
-                l["location_name"]: l for l in existing_locs if "location_name" in l
-            }
+        else:
+            campaign_meta = {"campaign_id": campaign_id}
+            existing_chars = []
+            existing_locs = []
 
-            for i, loc in enumerate(locs):
-                loc_name = loc.get("location_name", f"Location {i+1}")
-                if loc_name in loc_lookup:
-                    existing_loc = loc_lookup[loc_name]
-                    merged_loc = {**existing_loc, **loc}
-                    merged_loc["location_id"] = existing_loc["location_id"]
-                    merged_loc["session_ids"] = list(
-                        set(existing_loc.get("session_ids", []) + [session_id])
-                    )
-                    loc_lookup[loc_name] = merged_loc
-                else:
-                    # New location
-                    loc["location_id"] = str(uuid.uuid4())[:6]
-                    loc["location_name"] = loc_name
-                    loc.setdefault("location_description", "No description provided")
-                    loc["session_ids"] = [session_id]
-                    loc_lookup[loc_name] = loc
+        # --- Extract structured session data from transcript ---
+        structured_json, new_chars, new_locs = await dnd_ai.extract_session_data(
+            transcript,
+            existing_chars=existing_chars,
+            existing_locs=existing_locs,
+            campaign_id=campaign_id,
+        )
+        structured_json["campaign_id"] = campaign_id
+        session_id = structured_json.get("session_id")
+        structured_json["session_id"] = session_id
 
-            campaign_meta["locations"] = json.dumps(list(loc_lookup.values()))
+        # --- Save session to Chroma ---
+        chroma_id = await asyncio.to_thread(save_session_to_chroma, structured_json)
+        structured_json["chroma_id"] = chroma_id
 
-            # -------------------
-            # --- SESSIONS -----
-            # -------------------
-            try:
-                existing_session_ids = json.loads(
-                    campaign_meta.get("session_ids", "[]")
+        # --- Merge characters back into campaign ---
+        char_lookup = {
+            c["name"].strip().lower(): c for c in existing_chars if "name" in c
+        }
+        for char in new_chars:
+            name = char.get("name", "Unknown").strip()
+            key = name.lower()
+            if key in char_lookup:
+                existing_char = char_lookup[key]
+                merged_char = {**existing_char, **char}
+                merged_char["character_id"] = existing_char["character_id"]
+                merged_char["session_ids"] = list(
+                    set(existing_char.get("session_ids", []) + [session_id])
                 )
-            except:
-                existing_session_ids = []
-            if session_id not in existing_session_ids:
-                existing_session_ids.append(session_id)
-            campaign_meta["session_ids"] = json.dumps(existing_session_ids)
+                char_lookup[key] = merged_char
+            else:
+                char["character_id"] = str(uuid.uuid4())[:6]
+                char["session_ids"] = [session_id]
+                char_lookup[key] = char
+        campaign_meta["characters"] = json.dumps(list(char_lookup.values()))
 
-            # --- Save updated campaign metadata ---
+        # --- Merge locations back into campaign ---
+        loc_lookup = {
+            l["location_name"].strip().lower(): l
+            for l in existing_locs
+            if "location_name" in l
+        }
+        for loc in new_locs:
+            loc_name = loc.get("location_name", "Unknown").strip()
+            key = loc_name.lower()
+            if key in loc_lookup:
+                existing_loc = loc_lookup[key]
+                merged_loc = {**existing_loc, **loc}
+                merged_loc["location_id"] = existing_loc["location_id"]
+                merged_loc["session_ids"] = list(
+                    set(existing_loc.get("session_ids", []) + [session_id])
+                )
+                loc_lookup[key] = merged_loc
+            else:
+                loc["location_id"] = str(uuid.uuid4())[:6]
+                loc["location_name"] = loc_name
+                loc.setdefault("location_description", "No description provided")
+                loc["session_ids"] = [session_id]
+                loc_lookup[key] = loc
+        campaign_meta["locations"] = json.dumps(list(loc_lookup.values()))
+
+        # --- Merge session IDs ---
+        try:
+            existing_session_ids = json.loads(campaign_meta.get("session_ids", "[]"))
+        except:
+            existing_session_ids = []
+        if session_id not in existing_session_ids:
+            existing_session_ids.append(session_id)
+        campaign_meta["session_ids"] = json.dumps(existing_session_ids)
+
+        # --- Save updated campaign metadata ---
+        if campaign and campaign.get("ids"):
             session_collection.update(
                 ids=[campaign["ids"][0]], metadatas=[campaign_meta]
+            )
+        else:
+            # If campaign doesn't exist yet, create it
+            session_collection.add(
+                documents=[""], ids=[campaign_id], metadatas=[campaign_meta]
             )
 
         # --- Done ---
@@ -326,283 +331,5 @@ def get_session_ids_for_campaign(campaign_id: str):
         where={"$and": [{"type": "session"}, {"campaign_id": campaign_id}]}
     ).get("metadatas", [])
     return [s["session_id"] for s in sessions]
+ 
 
-
-# EVENTS
-@router.get("/{campaign_id}/events")
-async def get_campaign_events(campaign_id: str):
-    """
-    Return all events for a campaign, flattened across sessions.
-    """
-    try:
-        session_ids = get_session_ids_for_campaign(campaign_id)
-        events = []
-
-        for sid in session_ids:
-            ev_results = session_collection.get(
-                where={"$and": [{"type": "event"}, {"session_id": sid}]}
-            )
-            events.extend(ev_results.get("metadatas", []))
-
-        # Optional: sort events by timeline_order per session
-        events.sort(key=lambda e: (e.get("session_id", ""), e.get("timeline_order", 0)))
-
-        return {"events": events}
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-@router.patch("/{campaign_id}/events/{event_id}")
-async def patch_event(event_id: str, update: dict = Body(...)):
-    """
-    Partially update an event by ID within a campaign.
-    Only fields provided in `update` will be merged into existing metadata.
-    """
-    try:
-        # Fetch the event by ID
-        results = session_collection.get(ids=[event_id])
-        if not results["ids"]:
-            return JSONResponse(status_code=404, content={"error": "Event not found"})
-
-        old_metadata = results["metadatas"][0]
-        old_document = results["documents"][0]
-
-        # Merge only the fields provided (non-None)
-        merged = {**old_metadata, **{k: v for k, v in update.items() if v is not None}}
-
-        # If "name" exists in the merged metadata, use it as the new document; otherwise, preserve old
-        new_document = merged.get("name", old_document)
-
-        # Remove old entry and save the updated one
-        session_collection.delete(ids=[event_id])
-        session_collection.add(
-            documents=[new_document],
-            ids=[event_id],
-            metadatas=[merged],
-        )
-
-        return {"status": "updated", "event": merged}
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-# Fetch a single event by ID within a campaign
-@router.get("/{campaign_id}/events/{event_id}")
-async def get_campaign_event(campaign_id: str, event_id: str):
-    """
-    Fetch a single event by event_id within a given campaign.
-    """
-    try:
-        # Get all session IDs for the campaign
-        session_ids = get_session_ids_for_campaign(campaign_id)
-        if not session_ids:
-            raise HTTPException(
-                status_code=404, detail="Campaign not found or has no sessions"
-            )
-
-        # Search for the event across all sessions
-        for sid in session_ids:
-            event_results = session_collection.get(
-                where={
-                    "$and": [
-                        {"type": "event"},
-                        {"session_id": sid},
-                        {"event_id": event_id},
-                    ]
-                }
-            )
-            events = event_results.get("metadatas", [])
-            if events:
-                return {"event": events[0]}
-
-        # If we reach here, event was not found
-        raise HTTPException(status_code=404, detail="Event not found in this campaign")
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-@router.delete("/{campaign_id}/events/{event_id}")
-async def delete_event(campaign_id: str, event_id: str):
-    """
-    Delete a specific event by ID from a given campaign.
-    """
-    try:
-        # Get all session IDs for the campaign
-        session_ids = get_session_ids_for_campaign(campaign_id)
-        if not session_ids:
-            return JSONResponse(
-                status_code=404,
-                content={"error": "Campaign not found or has no sessions"},
-            )
-
-        # Search for the event across all sessions
-        found = False
-        for sid in session_ids:
-            event_results = session_collection.get(
-                where={
-                    "$and": [
-                        {"type": "event"},
-                        {"session_id": sid},
-                        {"event_id": event_id},
-                    ]
-                }
-            )
-            if event_results.get("ids"):
-                # Delete the event
-                session_collection.delete(ids=event_results["ids"])
-                found = True
-                break
-
-        if not found:
-            return JSONResponse(
-                status_code=404,
-                content={"error": "Event not found in this campaign"},
-            )
-
-        return {"status": "deleted", "event_id": event_id}
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-# Locations
-
-
-@router.get("/{campaign_id}/locations")
-async def get_campaign_locations(campaign_id: str):
-    """
-    Return all locations for a campaign, flattened across sessions.
-    """
-    try:
-        session_ids = get_session_ids_for_campaign(campaign_id)
-        locations = []
-
-        for sid in session_ids:
-            loc_results = session_collection.get(
-                where={"$and": [{"type": "location"}, {"session_id": sid}]}
-            )
-            locations.extend(loc_results.get("metadatas", []))
-
-        return {"locations": locations}
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-@router.get("/{campaign_id}/locations/{location_id}")
-async def get_campaign_location(campaign_id: str, location_id: str):
-    """
-    Fetch a single location by location_id within a given campaign.
-    """
-    try:
-        # Get all session IDs for the campaign
-        session_ids = get_session_ids_for_campaign(campaign_id)
-        if not session_ids:
-            raise HTTPException(
-                status_code=404, detail="Campaign not found or has no sessions"
-            )
-
-        # Search for the location across all sessions in the campaign
-        for sid in session_ids:
-            loc_results = session_collection.get(
-                where={
-                    "$and": [
-                        {"type": "location"},
-                        {"session_id": sid},
-                        {"location_id": location_id},
-                    ]
-                }
-            )
-            locs = loc_results.get("metadatas", [])
-            if locs:
-                return {"location": locs[0]}
-
-        # If we reach here, location was not found
-        raise HTTPException(
-            status_code=404, detail="Location not found in this campaign"
-        )
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-@router.patch("/{campaign_id}/locations/{location_id}")
-async def patch_location(location_id: str, update: dict = Body(...)):
-    """
-    Partially update a location by ID.
-    Only fields provided in `update` will be merged into existing metadata.
-    """
-    try:
-        results = session_collection.get(ids=[location_id])
-        if not results["ids"]:
-            return JSONResponse(
-                status_code=404, content={"error": "Location not found"}
-            )
-
-        old_metadata = results["metadatas"][0]
-        old_document = results["documents"][0]
-
-        # Merge only provided fields (non-null)
-        merged = {**old_metadata, **{k: v for k, v in update.items() if v is not None}}
-
-        # Use name as the document title if provided
-        new_document = merged.get("name", old_document)
-
-        # Replace old entry with updated one
-        session_collection.delete(ids=[location_id])
-        session_collection.add(
-            documents=[new_document],
-            ids=[location_id],
-            metadatas=[merged],
-        )
-
-        return {"status": "updated", "location": merged}
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-@router.delete("/{campaign_id}/locations/{location_id}")
-async def delete_location(campaign_id: str, location_id: str):
-    """
-    Delete a specific location by ID from a given campaign.
-    """
-    try:
-        # Get all session IDs for this campaign
-        session_ids = get_session_ids_for_campaign(campaign_id)
-        if not session_ids:
-            return JSONResponse(
-                status_code=404,
-                content={"error": "Campaign not found or has no sessions"},
-            )
-
-        # Search and delete location
-        found = False
-        for sid in session_ids:
-            loc_results = session_collection.get(
-                where={
-                    "$and": [
-                        {"type": "location"},
-                        {"session_id": sid},
-                        {"location_id": location_id},
-                    ]
-                }
-            )
-            if loc_results.get("ids"):
-                session_collection.delete(ids=loc_results["ids"])
-                found = True
-                break
-
-        if not found:
-            return JSONResponse(
-                status_code=404,
-                content={"error": "Location not found in this campaign"},
-            )
-
-        return {"status": "deleted", "location_id": location_id}
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})

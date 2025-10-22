@@ -2,25 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import EventCard from "@/components/eventCard"; // import the EventCard component
+import EventCard, { Event } from "@/components/eventCard";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-type Event = {
-    event_id: string;
-    session_id: string;
-    campaign_id: string;
-    timeline_order: number;
-    event: string;
-    event_summary: string;
-    participants?: string[];
-    location?: string;
-    event_tags?: string[];
-    type: string;
-};
-
-export default function Timeline() {
-    const { campaignId } = useParams();
+export default function CampaignEventsPage() {
+    const { campaignId } = useParams<{ campaignId: string }>();
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -30,22 +17,43 @@ export default function Timeline() {
 
         const fetchEvents = async () => {
             try {
-                const res = await fetch(
-                    `${baseUrl}/sessions/${campaignId}/events`,
-                    { cache: "no-store" }
-                );
+                const res = await fetch(`${baseUrl}/events/${campaignId}/`, {
+                    cache: "no-store",
+                });
                 if (!res.ok)
                     throw new Error(`Failed to fetch events: ${res.status}`);
                 const data = await res.json();
 
-                const allEvents: Event[] = data.events || [];
+                // Transform participants and tags into arrays
+                const allEvents: Event[] = (data.events || []).map(
+                    (ev: any) => ({
+                        ...ev,
+                        participants: ev.participants
+                            ? ev.participants
+                                  .split(",")
+                                  .map((p: string) => p.trim())
+                            : [],
+                        event_tags: ev.event_tags
+                            ? ev.event_tags
+                                  .split(",")
+                                  .map((t: string) => t.trim())
+                            : [],
+                    })
+                );
 
-                // Sort events globally
-                allEvents.sort((a, b) => a.timeline_order - b.timeline_order);
+                // Sort by session_id, then timeline_order
+                allEvents.sort((a, b) => {
+                    if (a.session_id === b.session_id) {
+                        return (
+                            (a.timeline_order || 0) - (b.timeline_order || 0)
+                        );
+                    }
+                    return a.session_id.localeCompare(b.session_id);
+                });
 
                 setEvents(allEvents);
             } catch (err: any) {
-                console.error("Failed to fetch events:", err);
+                console.error(err);
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -55,22 +63,17 @@ export default function Timeline() {
         fetchEvents();
     }, [campaignId]);
 
-    if (loading) return <div>Loading timeline…</div>;
+    if (loading) return <div>Loading events…</div>;
     if (error) return <div className="text-red-500">Error: {error}</div>;
     if (events.length === 0)
         return <div>No events found for this campaign.</div>;
 
-    // Group events by session_id
+    // Group by session_id
     const sessionsMap: Record<string, Event[]> = {};
     events.forEach((ev) => {
         if (!sessionsMap[ev.session_id]) sessionsMap[ev.session_id] = [];
         sessionsMap[ev.session_id].push(ev);
     });
-
-    // Sort events within each session
-    Object.values(sessionsMap).forEach((evList) =>
-        evList.sort((a, b) => a.timeline_order - b.timeline_order)
-    );
 
     return (
         <div className="max-w-4xl mx-auto p-4 space-y-8">

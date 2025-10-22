@@ -27,31 +27,46 @@ const TAG_OPTIONS = [
 ];
 
 export default function EventDetail() {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     const { campaignId, eventId } = useParams<{
         campaignId: string;
         eventId: string;
     }>();
     const router = useRouter();
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     const [form, setForm] = useState<Event | null>(null);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch event
     useEffect(() => {
         if (!eventId || !campaignId) return;
 
-        fetch(
-            `${baseUrl}/sessions/${encodeURIComponent(
-                campaignId
-            )}/events/${encodeURIComponent(eventId)}`
-        )
-            .then((res) => res.json())
-            .then((data) => {
+        const fetchEvent = async () => {
+            try {
+                const res = await fetch(
+                    `${baseUrl}/events/${encodeURIComponent(
+                        campaignId
+                    )}/${encodeURIComponent(eventId)}`
+                );
+                const data: { event?: any } = await res.json();
+
                 if (!data.event) throw new Error("Event not found");
+
                 const e = data.event;
+
+                // Normalize participants and tags into string arrays
+                const participants: string[] = Array.isArray(e.participants)
+                    ? e.participants
+                    : typeof e.participants === "string"
+                    ? e.participants.split(",").map((p: string) => p.trim())
+                    : [];
+
+                const event_tags: string[] = Array.isArray(e.event_tags)
+                    ? e.event_tags
+                    : typeof e.event_tags === "string"
+                    ? e.event_tags.split(",").map((t: string) => t.trim())
+                    : [];
 
                 setForm({
                     event_id: e.event_id,
@@ -60,153 +75,114 @@ export default function EventDetail() {
                     timeline_order: e.timeline_order ?? 0,
                     event: e.event ?? "",
                     event_summary: e.event_summary ?? "",
-                    participants: Array.isArray(e.participants)
-                        ? e.participants
-                        : typeof e.participants === "string"
-                        ? e.participants.split(",").map((p: string) => p.trim())
-                        : [],
+                    participants,
+                    event_tags,
                     location: e.location ?? "",
-                    event_tags:
-                        typeof e.event_tags === "string"
-                            ? e.event_tags
-                                  .split(",")
-                                  .map((t: string) => t.trim())
-                            : Array.isArray(e.event_tags)
-                            ? e.event_tags
-                            : [],
                     type: e.type ?? "event",
                 });
-            })
-            .catch((e) => {
-                console.error(e);
-                setError(e instanceof Error ? e.message : String(e));
-            });
-    }, [eventId, campaignId]);
+            } catch (err) {
+                console.error(err);
+                setError(err instanceof Error ? err.message : String(err));
+            }
+        };
 
-    // Form handlers
-    function onChange<K extends keyof Event>(key: K, value: any) {
-        if (!form) return;
+        fetchEvent();
+    }, [eventId, campaignId, baseUrl]);
+
+    if (!form) return <div>Loading…</div>;
+    if (error) return <div className="text-error">{error}</div>;
+
+    // Form helpers
+    const onChange = <K extends keyof Event>(key: K, value: any) => {
         setForm({ ...form, [key]: value });
-    }
+    };
 
-    // Participants
-    const addParticipant = () => {
-        if (!form) return;
+    const addParticipant = () =>
         setForm({ ...form, participants: [...(form.participants || []), ""] });
-    };
-
-    const updateParticipant = (index: number, value: string) => {
-        if (!form) return;
+    const updateParticipant = (i: number, val: string) => {
         const updated = [...(form.participants || [])];
-        updated[index] = value;
+        updated[i] = val;
+        setForm({ ...form, participants: updated });
+    };
+    const removeParticipant = (i: number) => {
+        const updated = [...(form.participants || [])];
+        updated.splice(i, 1);
         setForm({ ...form, participants: updated });
     };
 
-    const removeParticipant = (index: number) => {
-        if (!form) return;
-        const updated = [...(form.participants || [])];
-        updated.splice(index, 1);
-        setForm({ ...form, participants: updated });
-    };
-
-    // Tags
     const toggleTag = (tag: string) => {
-        if (!form) return;
         const updatedTags = form.event_tags ? [...form.event_tags] : [];
-        if (updatedTags.includes(tag)) {
+        if (updatedTags.includes(tag))
             updatedTags.splice(updatedTags.indexOf(tag), 1);
-        } else {
-            updatedTags.push(tag);
-        }
+        else updatedTags.push(tag);
         setForm({ ...form, event_tags: updatedTags });
     };
 
-    async function save() {
-        if (!form) return;
+    // Save event
+    const save = async () => {
         setSaving(true);
         setError(null);
-
         try {
             const payload = {
                 ...form,
-                // convert arrays to comma-separated strings
                 participants: (form.participants || []).join(", "),
                 event_tags: (form.event_tags || []).join(", "),
             };
-
             const res = await fetch(
-                `${baseUrl}/sessions/${encodeURIComponent(
+                `${baseUrl}/events/${encodeURIComponent(
                     campaignId
-                )}/events/${encodeURIComponent(form.event_id)}`,
+                )}/${encodeURIComponent(form.event_id)}`,
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload),
                 }
             );
-
             if (!res.ok) throw new Error(`Save failed: ${res.status}`);
             const data = await res.json();
-
-            // convert strings back to arrays for UI
             setForm({
                 ...data.event,
-                participants:
-                    typeof data.event.participants === "string"
-                        ? data.event.participants
-                              .split(",")
-                              .map((p: string) => p.trim())
-                              .filter(Boolean)
-                        : [],
-                event_tags:
-                    typeof data.event.event_tags === "string"
-                        ? data.event.event_tags
-                              .split(",")
-                              .map((t: string) => t.trim())
-                              .filter(Boolean)
-                        : [],
+                participants: (data.event.participants || "")
+                    .split(",")
+                    .map((p: string) => p.trim()),
+                event_tags: (data.event.event_tags || "")
+                    .split(",")
+                    .map((t: string) => t.trim()),
             });
-        } catch (e: unknown) {
-            setError(e instanceof Error ? e.message : String(e));
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : String(err));
         } finally {
             setSaving(false);
         }
-    }
+    };
 
     // Delete event
-    async function remove() {
-        if (!form) return;
-        if (!confirm(`Are you sure you want to delete this event?`)) return;
-
+    const remove = async () => {
+        if (!confirm("Are you sure?")) return;
         setDeleting(true);
         setError(null);
-
         try {
             const res = await fetch(
-                `${baseUrl}/sessions/${encodeURIComponent(
+                `${baseUrl}/events/${encodeURIComponent(
                     campaignId
-                )}/events/${encodeURIComponent(form.event_id)}`,
+                )}/${encodeURIComponent(form.event_id)}`,
                 { method: "DELETE" }
             );
             if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
             router.push(`/campaign/${campaignId}/events`);
-        } catch (e: unknown) {
-            setError(e instanceof Error ? e.message : String(e));
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : String(err));
         } finally {
             setDeleting(false);
         }
-    }
-
-    if (error) return <div className="text-error">{error}</div>;
-    if (!form) return <div>Loading…</div>;
+    };
 
     return (
         <div className="max-w-2xl space-y-4">
             <h1 className="text-2xl font-bold">{form.event}</h1>
 
-            {/* Event Name */}
             <div>
-                <label className="block">Event</label>
+                <label>Event</label>
                 <input
                     className="input input-bordered w-full"
                     value={form.event}
@@ -214,9 +190,8 @@ export default function EventDetail() {
                 />
             </div>
 
-            {/* Summary */}
             <div>
-                <label className="block">Summary</label>
+                <label>Summary</label>
                 <textarea
                     className="textarea textarea-bordered w-full"
                     value={form.event_summary}
@@ -224,13 +199,11 @@ export default function EventDetail() {
                 />
             </div>
 
-            {/* Participants */}
             <div>
-                <label className="block">Participants</label>
+                <label>Participants</label>
                 {form.participants?.map((p, i) => (
-                    <div key={i} className="flex gap-2 items-center my-1">
+                    <div key={i} className="flex gap-2 my-1">
                         <input
-                            type="text"
                             className="input input-bordered flex-1"
                             value={p}
                             onChange={(e) =>
@@ -238,7 +211,6 @@ export default function EventDetail() {
                             }
                         />
                         <button
-                            type="button"
                             className="btn btn-sm btn-error"
                             onClick={() => removeParticipant(i)}
                         >
@@ -247,7 +219,6 @@ export default function EventDetail() {
                     </div>
                 ))}
                 <button
-                    type="button"
                     className="btn btn-sm btn-primary mt-2"
                     onClick={addParticipant}
                 >
@@ -255,14 +226,12 @@ export default function EventDetail() {
                 </button>
             </div>
 
-            {/* Tags */}
             <div>
-                <label className="block mb-1">Tags</label>
+                <label>Tags</label>
                 <div className="flex flex-wrap gap-2">
                     {TAG_OPTIONS.map((tag) => (
                         <button
                             key={tag}
-                            type="button"
                             className={`btn btn-sm ${
                                 form.event_tags?.includes(tag)
                                     ? "btn-primary"
@@ -276,9 +245,8 @@ export default function EventDetail() {
                 </div>
             </div>
 
-            {/* Location */}
             <div>
-                <label className="block">Location</label>
+                <label>Location</label>
                 <input
                     className="input input-bordered w-full"
                     value={form.location || ""}
@@ -286,9 +254,8 @@ export default function EventDetail() {
                 />
             </div>
 
-            {/* Timeline Order */}
             <div>
-                <label className="block">Timeline Order</label>
+                <label>Timeline Order</label>
                 <input
                     type="number"
                     className="input input-bordered w-full"
@@ -301,15 +268,15 @@ export default function EventDetail() {
 
             <div className="flex gap-4">
                 <button
-                    onClick={save}
                     className="btn btn-primary"
+                    onClick={save}
                     disabled={saving}
                 >
                     {saving ? "Saving..." : "Save"}
                 </button>
                 <button
-                    onClick={remove}
                     className="btn btn-error"
+                    onClick={remove}
                     disabled={deleting}
                 >
                     {deleting ? "Deleting..." : "Delete"}

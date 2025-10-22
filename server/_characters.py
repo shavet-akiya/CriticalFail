@@ -298,3 +298,110 @@ async def create_character(campaign_id: str, req: CreateCharacterRequest):
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.patch("/{campaign_id}/{name}")
+async def patch_campaign_character_by_name(
+    campaign_id: str, name: str, update: dict = Body(...)
+):
+    """
+    Update a character across a campaign by name.
+    The updates propagate to all sessions the character appears in.
+    """
+    try:
+        # --- Fetch campaign ---
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+        )
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        campaign_meta = campaign["metadatas"][0]
+
+        # --- Fetch characters from campaign ---
+        characters = json.loads(campaign_meta.get("characters", "[]"))
+        char = next((c for c in characters if c.get("name") == name), None)
+        if not char:
+            raise HTTPException(status_code=404, detail="Character not found")
+
+        # --- Merge updates ---
+        for k, v in update.items():
+            if v is not None:
+                char[k] = v
+
+        session_ids = char.get("session_ids", [])
+        if not isinstance(session_ids, list):
+            session_ids = []
+
+        # --- Update all session-level characters by name ---
+        for sid in session_ids:
+            session_chars = session_collection.get(
+                where={"$and": [{"type": "character"}, {"session_id": sid}]}
+            )
+            for i, sc in enumerate(session_chars.get("metadatas", [])):
+                if sc.get("name") == name:
+                    merged = {
+                        **sc,
+                        **{k: v for k, v in update.items() if v is not None},
+                    }
+                    session_collection.update(
+                        ids=[session_chars["ids"][i]], metadatas=[merged]
+                    )
+
+        # --- Update campaign metadata ---
+        campaign_meta["characters"] = json.dumps(characters)
+        session_collection.update(ids=[campaign["ids"][0]], metadatas=[campaign_meta])
+
+        # Remove session_ids in response
+        char.pop("session_ids", None)
+        return {"status": "updated", "character": char}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.get("/{campaign_id}/{name}")
+async def get_campaign_character_instances(campaign_id: str, name: str):
+    """
+    Fetch all instances of a character by name across all sessions in a campaign.
+    """
+    try:
+        # --- Fetch campaign ---
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+        )
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        campaign_meta = campaign["metadatas"][0]
+
+        # --- Get session IDs for this campaign ---
+        session_ids = campaign_meta.get("session_ids", [])
+        if not isinstance(session_ids, list):
+            session_ids = []
+
+        all_instances = []
+
+        # --- Iterate sessions and fetch character instances by name ---
+        for sid in session_ids:
+            session_chars = session_collection.get(
+                where={"$and": [{"type": "character"}, {"session_id": sid}]}
+            )
+            for i, sc in enumerate(session_chars.get("metadatas", [])):
+                if sc.get("name") == name:
+                    # Optionally exclude session_id or keep it
+                    all_instances.append({k: v for k, v in sc.items()})
+
+        if not all_instances:
+            raise HTTPException(
+                status_code=404, detail="Character not found in any session"
+            )
+
+        return {"instances": all_instances}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})

@@ -34,7 +34,15 @@ def run_ollama(prompt: str, model: str = OLLAMA_MODEL) -> str:
     return output.strip()
 
 
-async def extract_session_data(transcript):
+async def extract_session_data(
+    transcript: str,
+    existing_chars: Optional[list[dict]] = None,
+    existing_locs: Optional[list[dict]] = None,
+    campaign_id: Optional[str] = None,
+):
+    existing_chars = existing_chars or []
+    existing_locs = existing_locs or []
+
     prompt = f"""
 You are a D&D session scribe. Analyze the transcript below carefully.
 
@@ -71,77 +79,37 @@ Instructions:
 - There are no limits to how many events may occur in a session, ensure to capture as many relevant story events as possible.
 - Do not make up information that is not available in the transcript.
 """
-    # Call your LLM
     response = run_ollama(prompt)
-
-    # Clean up response: strip code fences
     response = re.sub(r"```(?:json)?", "", response).strip()
 
     structured = {}
     try:
-        # extract the JSON portion (first { ... } block)
         match = re.search(r"\{.*\}", response, re.DOTALL)
         if match:
-            json_str = match.group(0)
-            structured = json.loads(json_str)
+            structured = json.loads(match.group(0))
     except Exception:
         structured = {}
 
-    # Wrap into the schema expected by save_session_to_chroma
+    session_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    processed_at = (
+        datetime.datetime.now(datetime.timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
+
     session_data = {
-        "session_id": datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
-        "campaign_id": 0,  # update if you have campaign context
+        "session_id": session_id,
+        "campaign_id": campaign_id or 0,
         "summary": {
             "session_summary": structured.get("session_summary", ""),
             "characters": structured.get("characters", []),
             "locations": structured.get("locations", []),
             "events": structured.get("events", []),
         },
-        "processed_at": datetime.datetime.now(datetime.timezone.utc)
-        .isoformat(timespec="seconds")
-        .replace("+00:00", "Z"),
+        "processed_at": processed_at,
     }
 
-    # assign UUIDs and ensure location_name and location_description
-    for i, loc in enumerate(session_data["summary"]["locations"]):
-        if isinstance(loc, dict):
-            loc.setdefault("location_id", str(uuid.uuid4())[:6])
-            loc.setdefault("location_name", loc.get("location_name", f"Location {i+1}"))
-            loc.setdefault(
-                "location_description",
-                loc.get("location_description", "No description provided"),
-            )
-        else:
-            # if locations are just strings, wrap them
-            session_data["summary"]["locations"][i] = {
-                "location_id": str(uuid.uuid4())[:6],
-                "location_name": str(loc),
-                "location_description": "No description provided",
-            }
-
-    # assign UUIDs and default fields to events
-    for i, ev in enumerate(session_data["summary"]["events"]):
-        if isinstance(ev, dict):
-            ev.setdefault("event_id", str(uuid.uuid4())[:6])
-            ev.setdefault("event_summary", "")
-            ev.setdefault("participants", [])
-            ev.setdefault("location", "")
-            ev.setdefault("timeline_order", i + 1)
-            ev.setdefault("event_tags", ["miscellaneous"])
-        else:
-            # if events are just strings, wrap them
-            session_data["summary"]["events"][i] = {
-                "event_id": str(uuid.uuid4())[:6],
-                "event": ev,
-                "event_summary": "",
-                "participants": [],
-                "location": "",
-                "timeline_order": i + 1,
-                "event_tags": ["miscellaneous"],
-            }
-
-            # Prepare full character objects for campaign storage
-    campaign_chars = []
+    # --- Characters ---
     default_stats = {
         "AC": 0,
         "HP": 0,
@@ -152,38 +120,95 @@ Instructions:
         "WIS": 0,
         "CHA": 0,
     }
+    campaign_chars = []
 
     for char in structured.get("characters", []):
-        # Ensure char is a dict
         if isinstance(char, str):
             char = {"name": char}
 
+        # reuse character_id if name exists
+        existing = next(
+            (c for c in existing_chars if c["name"] == char.get("name")), None
+        )
+        character_id = existing["character_id"] if existing else str(uuid.uuid4())[:6]
+
+        # Append session ID if already exists
+        session_ids = existing["session_ids"][:] if existing else []
+        session_ids.append(session_id)
+
         full_char = {
-            "character_id": str(uuid.uuid4())[:6],
+            "character_id": character_id,
             "name": char.get("name"),
             "race": char.get("race", "Unknown"),
             "class": char.get("class", "Unknown"),
             "npc": char.get("npc", False),
-            "session_ids": [session_data["session_id"]],
+            "session_ids": session_ids,
             **{k: char.get(k, v) for k, v in default_stats.items()},
         }
         campaign_chars.append(full_char)
 
-    # Prepare full location objects for campaign storage
+    # Update session summary with consistent IDs
+    for char in session_data["summary"]["characters"]:
+        existing = next((c for c in campaign_chars if c["name"] == char["name"]), None)
+        if existing:
+            char["character_id"] = existing["character_id"]
+
+    # --- Locations ---
     campaign_locs = []
-    for loc in structured.get("locations", []):
+    for i, loc in enumerate(structured.get("locations", [])):
         if isinstance(loc, str):
             loc = {"location_name": loc}
 
+        existing = next(
+            (
+                l
+                for l in existing_locs
+                if l["location_name"] == loc.get("location_name")
+            ),
+            None,
+        )
+        location_id = existing["location_id"] if existing else str(uuid.uuid4())[:6]
+        session_ids = existing["session_ids"][:] if existing else []
+        session_ids.append(session_id)
+
         full_loc = {
-            "location_id": str(uuid.uuid4())[:6],
+            "location_id": location_id,
             "location_name": loc.get("location_name", f"Location {i+1}"),
             "location_description": loc.get(
                 "location_description", "No description provided"
             ),
-            "session_ids": [session_data["session_id"]],
+            "session_ids": session_ids,
         }
         campaign_locs.append(full_loc)
+
+    # Update session summary locations with consistent IDs
+    for loc in session_data["summary"]["locations"]:
+        existing = next(
+            (l for l in campaign_locs if l["location_name"] == loc["location_name"]),
+            None,
+        )
+        if existing:
+            loc["location_id"] = existing["location_id"]
+
+    # --- Events ---
+    for i, ev in enumerate(session_data["summary"]["events"]):
+        if isinstance(ev, dict):
+            ev.setdefault("event_id", str(uuid.uuid4())[:6])
+            ev.setdefault("event_summary", "")
+            ev.setdefault("participants", [])
+            ev.setdefault("location", "")
+            ev.setdefault("timeline_order", i + 1)
+            ev.setdefault("event_tags", ["miscellaneous"])
+        else:
+            session_data["summary"]["events"][i] = {
+                "event_id": str(uuid.uuid4())[:6],
+                "event": ev,
+                "event_summary": "",
+                "participants": [],
+                "location": "",
+                "timeline_order": i + 1,
+                "event_tags": ["miscellaneous"],
+            }
 
     return session_data, campaign_chars, campaign_locs
 
@@ -244,12 +269,37 @@ DM: You discover that the shrine was dedicated to an ancient forest deity. A fai
 
     """
 
-    # Extract structured data
-    result = extract_session_data(sample_transcript)
+    # Mock existing campaign characters and locations
+    existing_chars = [
+        {"character_id": "char01", "name": "Alice", "session_ids": ["20251022020000"]},
+        {"character_id": "char02", "name": "Bob", "session_ids": ["20251022020000"]},
+    ]
+    existing_locs = [
+        {
+            "location_id": "loc01",
+            "location_name": "apothecary",
+            "session_ids": ["20251022020000"],
+        }
+    ]
 
-    # Print just the events for inspection
-    print("=== Extracted Events ===")
-    print(result)
+    # Extract structured data
+    session_data, campaign_chars, campaign_locs = extract_session_data(
+        sample_transcript,
+        existing_chars=existing_chars,
+        existing_locs=existing_locs,
+        campaign_id="camp01",
+    )
+
+    print("=== Session Data ===")
+    print(json.dumps(session_data, indent=2))
+
+    print("\n=== Campaign Characters ===")
+    for c in campaign_chars:
+        print(c)
+
+    print("\n=== Campaign Locations ===")
+    for l in campaign_locs:
+        print(l)
 
 
 if __name__ == "__main__":

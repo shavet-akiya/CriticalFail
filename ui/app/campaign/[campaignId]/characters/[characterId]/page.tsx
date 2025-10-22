@@ -29,20 +29,21 @@ export default function CharacterDetail() {
             .then((res) => res.json())
             .then((data) => {
                 if (!data.character) throw new Error("Character not found");
+                const c = data.character;
                 setForm({
-                    characterId: data.character.character_id,
-                    name: data.character.name,
-                    race: data.character.race,
-                    class: data.character.class,
-                    npc: data.character.npc ?? false,
-                    AC: data.character.AC ?? 0,
-                    HP: data.character.HP ?? 0,
-                    STR: data.character.STR ?? 0,
-                    DEX: data.character.DEX ?? 0,
-                    CON: data.character.CON ?? 0,
-                    INT: data.character.INT ?? 0,
-                    WIS: data.character.WIS ?? 0,
-                    CHA: data.character.CHA ?? 0,
+                    characterId: c.character_id,
+                    name: c.name,
+                    race: c.race,
+                    class: c.class,
+                    npc: c.npc ?? false,
+                    AC: c.AC ?? 0,
+                    HP: c.HP ?? 0,
+                    STR: c.STR ?? 0,
+                    DEX: c.DEX ?? 0,
+                    CON: c.CON ?? 0,
+                    INT: c.INT ?? 0,
+                    WIS: c.WIS ?? 0,
+                    CHA: c.CHA ?? 0,
                 });
             })
             .catch((e) => {
@@ -118,7 +119,6 @@ export default function CharacterDetail() {
             );
 
             if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
-            // Redirect back to characters list after deletion
             router.push(`/campaign/${campaignId}/characters`);
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
