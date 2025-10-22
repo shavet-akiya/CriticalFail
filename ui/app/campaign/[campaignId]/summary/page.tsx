@@ -8,6 +8,7 @@ import Link from "next/link";
 interface Campaign {
     campaign_id: string;
     campaign_name: string;
+    campaign_description?: string;
     session_ids: string[];
     campaign_image_url?: string;
 }
@@ -57,7 +58,6 @@ interface Session {
     campaign_id: string;
 }
 
-// Format session ID a readable format (e.g., "20/10/2025")
 function formatSessionDate(sessionId: string): string {
     const year = sessionId.substring(0, 4);
     const month = sessionId.substring(4, 6);
@@ -77,6 +77,7 @@ export default function CampaignSummaryPage() {
 
     const [editing, setEditing] = useState(false);
     const [newName, setNewName] = useState("");
+    const [newDescription, setNewDescription] = useState("");
     const [newImageUrl, setNewImageUrl] = useState("");
     const [saving, setSaving] = useState(false);
 
@@ -85,7 +86,6 @@ export default function CampaignSummaryPage() {
     useEffect(() => {
         async function fetchData() {
             try {
-                // Fetch campaign
                 const resCampaign = await fetch(
                     `${baseUrl}/campaign/${campaignId}`
                 );
@@ -99,6 +99,7 @@ export default function CampaignSummaryPage() {
                     : rawCampaign;
                 setCampaign(data);
                 setNewName(data.campaign_name || "");
+                setNewDescription(data.campaign_description || "");
                 setNewImageUrl(data.campaign_image_url || "");
 
                 // Fetch sessions
@@ -110,7 +111,6 @@ export default function CampaignSummaryPage() {
                         return res.json() as Promise<Session>;
                     });
                     sessionData = await Promise.all(sessionPromises);
-
                     sessionData.sort((a, b) => {
                         const dateA = a.processed_at
                             ? new Date(a.processed_at).getTime()
@@ -120,7 +120,6 @@ export default function CampaignSummaryPage() {
                             : 0;
                         return dateA - dateB;
                     });
-
                     const mostRecent = sessionData.pop();
                     if (mostRecent) {
                         setSessions([mostRecent]);
@@ -157,6 +156,7 @@ export default function CampaignSummaryPage() {
                 body: JSON.stringify({
                     campaign_id: campaign.campaign_id,
                     campaign_name: newName,
+                    campaign_description: newDescription,
                     campaign_image_url: newImageUrl,
                 }),
             });
@@ -183,9 +183,7 @@ export default function CampaignSummaryPage() {
         try {
             const res = await fetch(
                 `${baseUrl}/campaign/${campaign.campaign_id}`,
-                {
-                    method: "DELETE",
-                }
+                { method: "DELETE" }
             );
             if (!res.ok) throw new Error(`Failed to delete: ${res.status}`);
             router.push("/");
@@ -202,59 +200,72 @@ export default function CampaignSummaryPage() {
     return (
         <div className="p-6 flex flex-col items-center obsidian-colour min-h-screen w-full select-none gap-8">
             <div className="border-2 border-purple rounded-xl w-full max-w-4xl flex flex-col justify-center items-center p-4">
-                {/* Flex row: image + title */}
-                <div className="flex items-center gap-4 mb-4">
-                    {campaign.campaign_image_url && (
-                        <img
-                            src={
-                                campaign.campaign_image_url.startsWith(
-                                    "http"
-                                ) ||
-                                campaign.campaign_image_url.startsWith("data:")
-                                    ? campaign.campaign_image_url
-                                    : `${baseUrl}${campaign.campaign_image_url}`
-                            }
-                            alt={campaign.campaign_name}
-                            className="w-24 h-24 object-cover rounded"
-                        />
-                    )}
-                    <h1 className="text-4xl font-bold">
-                        {campaign.campaign_name}
-                    </h1>
-                </div>
+                {/* Image above title */}
+                {campaign.campaign_image_url && (
+                    <img
+                        src={
+                            campaign.campaign_image_url.startsWith("http") ||
+                            campaign.campaign_image_url.startsWith("data:")
+                                ? campaign.campaign_image_url
+                                : `${baseUrl}${campaign.campaign_image_url}`
+                        }
+                        alt={campaign.campaign_name}
+                        className="w-48 h-48 object-cover rounded mb-4"
+                    />
+                )}
 
-                {/* Edit / Delete buttons */}
-                <div className="flex gap-4 mt-4">
+                {/* Title + description */}
+                <h1 className="text-4xl font-bold text-center mb-2">
+                    {campaign.campaign_name}
+                </h1>
+                {campaign.campaign_description && (
+                    <p className="text-center text-gray-200 max-w-2xl mb-4 whitespace-pre-line">
+                        {campaign.campaign_description}
+                    </p>
+                )}
+
+                {/* Edit / Delete */}
+                <div className="flex gap-4 mt-2">
                     {editing ? (
-                        <>
+                        <div className="flex flex-col gap-2 items-center">
                             <input
                                 type="text"
                                 value={newName}
                                 onChange={(e) => setNewName(e.target.value)}
-                                className="border p-1 rounded"
+                                className="border p-1 rounded w-64"
                                 placeholder="Campaign Name"
+                            />
+                            <textarea
+                                value={newDescription}
+                                onChange={(e) =>
+                                    setNewDescription(e.target.value)
+                                }
+                                className="border p-1 rounded w-64 h-24"
+                                placeholder="Campaign Description"
                             />
                             <input
                                 type="text"
                                 value={newImageUrl}
                                 onChange={(e) => setNewImageUrl(e.target.value)}
-                                className="border p-1 rounded"
+                                className="border p-1 rounded w-64"
                                 placeholder="Image URL"
                             />
-                            <button
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="btn btn-primary"
-                            >
-                                {saving ? "Saving..." : "Save"}
-                            </button>
-                            <button
-                                onClick={() => setEditing(false)}
-                                className="btn btn-secondary"
-                            >
-                                Cancel
-                            </button>
-                        </>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className="btn btn-primary"
+                                >
+                                    {saving ? "Saving..." : "Save"}
+                                </button>
+                                <button
+                                    onClick={() => setEditing(false)}
+                                    className="btn btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
                     ) : (
                         <>
                             <button
@@ -274,6 +285,7 @@ export default function CampaignSummaryPage() {
                 </div>
             </div>
 
+            {/* Sessions, Characters, Locations (unchanged) */}
             {sessions.length === 0 ? (
                 <div className="flex flex-col justify-center items-center gap-8 pt-16">
                     <p className="text-xl obsidian-colour text-center">

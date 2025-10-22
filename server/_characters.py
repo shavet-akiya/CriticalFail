@@ -172,22 +172,39 @@ async def edit_character(campaign_id: str, character_id: str, update: dict = Bod
     return {"status": "updated", "character": character}
 
 
-# delete specific character
 @router.delete("/{campaign_id}/{character_id}")
 async def delete_character(campaign_id: str, character_id: str):
     """
     Delete a specific character by ID from a given campaign.
+    Works even if the campaign has no sessions.
     """
     try:
-        # Get all session IDs for the campaign
+        # --- Try campaign-level delete first ---
+        campaign_result = session_collection.get(
+            where={
+                "$and": [
+                    {"type": "character"},
+                    {"campaign_id": campaign_id},
+                    {"character_id": character_id},
+                ]
+            }
+        )
+
+        if campaign_result.get("ids"):
+            session_collection.delete(ids=campaign_result["ids"])
+            return {
+                "status": "deleted (campaign-level)",
+                "character_id": character_id,
+            }
+
+        # --- Fallback: try deleting from session-based characters ---
         session_ids = get_session_ids_for_campaign(campaign_id)
         if not session_ids:
             return JSONResponse(
                 status_code=404,
-                content={"error": "Campaign not found or has no sessions"},
+                content={"error": "Character not found in campaign or sessions"},
             )
 
-        # Search for the character across all sessions
         found = False
         for sid in session_ids:
             char_results = session_collection.get(
@@ -200,7 +217,6 @@ async def delete_character(campaign_id: str, character_id: str):
                 }
             )
             if char_results.get("ids"):
-                # Delete the character
                 session_collection.delete(ids=char_results["ids"])
                 found = True
                 break

@@ -98,7 +98,7 @@ export default function Characters() {
         try {
             const payload = {
                 ...newCharacter,
-                session_ids: [],
+                session_ids: selectedSessions, // leave empty if none selected
                 campaign_id: campaignId,
             };
 
@@ -111,11 +111,10 @@ export default function Characters() {
             if (!res.ok) throw new Error(`POST failed: ${res.status}`);
             await res.json();
 
-            // Refresh characters
             const updatedCharacters = await fetchCharacters();
             setCharacters(updatedCharacters);
 
-            // Close modal & reset form
+            // Reset modal
             setShowModal(false);
             setNewCharacter({
                 name: "",
@@ -133,10 +132,6 @@ export default function Characters() {
             });
             setSelectedSessions([]);
             setError(null);
-
-            // Scroll to character grid
-            const grid = document.querySelector(".grid.grid-cols-1");
-            grid?.scrollIntoView({ behavior: "smooth" });
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
         }
@@ -146,7 +141,6 @@ export default function Characters() {
         <div className="pl-16 pr-16 pt-16 text-black">
             {error && <div className="text-red-500 mb-4">{error}</div>}
 
-            {/* --- Header + Add Button --- */}
             <div className="mb-8 flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Characters</h1>
                 <button
@@ -157,16 +151,15 @@ export default function Characters() {
                 </button>
             </div>
 
-            {/* --- Character Grid --- */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16">
                 {filteredCharacters.map((character) => (
-                    <div key={character.characterId}>
-                        <CharacterCard character={character} />
-                    </div>
+                    <CharacterCard
+                        key={character.characterId}
+                        character={character}
+                    />
                 ))}
             </div>
 
-            {/* --- Modal for Character Creation --- */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white text-black rounded-2xl shadow-xl p-8 w-full max-w-lg">
@@ -178,7 +171,6 @@ export default function Characters() {
                             onSubmit={handleCreateCharacter}
                             className="space-y-4"
                         >
-                            {/* --- Name / Race / Class --- */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-1">
@@ -253,7 +245,6 @@ export default function Characters() {
                                 </label>
                                 <select
                                     multiple
-                                    required
                                     value={selectedSessions}
                                     onChange={(e) =>
                                         setSelectedSessions(
@@ -318,7 +309,6 @@ export default function Characters() {
                                 ))}
                             </div>
 
-                            {/* --- Buttons --- */}
                             <div className="flex justify-end gap-4 pt-4">
                                 <button
                                     type="button"

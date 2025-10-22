@@ -92,6 +92,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/")
 async def create_campaign(
     campaign_name: str = Form(...),
+    campaign_description: str = Form(""),
     campaign_image: UploadFile | None = File(None),
 ):
     campaign_id = str(uuid.uuid4())[:6]
@@ -114,6 +115,7 @@ async def create_campaign(
         "type": "campaign",
         "campaign_id": campaign_id,
         "campaign_name": campaign_name,
+        "campaign_description": campaign_description or "",
         "characters": json.dumps([]),
         "locations": json.dumps([]),
         "session_ids": json.dumps([]),
@@ -333,6 +335,7 @@ async def get_campaigns():
                 {
                     "campaign_id": campaign_id,
                     "campaign_name": cmeta.get("campaign_name"),
+                    "campaign_description": cmeta.get("campaign_description", ""),
                     "session_ids": session_ids,
                     "campaign_image_url": cmeta.get("campaign_image_url", ""),
                     "characters": list(unique_chars),
@@ -379,6 +382,7 @@ async def get_campaign(campaign_id: str):
         return {
             "campaign_id": meta.get("campaign_id"),
             "campaign_name": meta.get("campaign_name"),
+            "campaign_description": meta.get("campaign_description", ""),
             "campaign_image_url": meta.get("campaign_image_url", ""),
             "created_at": meta.get("created_at"),
             "characters": characters,
@@ -398,25 +402,31 @@ class UpdateCampaignRequest(BaseModel):
     campaign_image_url: str | None = None
 
 
-@router.patch("/${campaign_id}")
-async def update_campaign(req: UpdateCampaignRequest):
+@router.patch("/{campaign_id}")
+async def update_campaign(campaign_id: str, req: UpdateCampaignRequest):
     try:
         campaign = session_collection.get(
-            where={"$and": [{"type": "campaign"}, {"campaign_id": req.campaign_id}]}
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
         )
         if not campaign or not campaign.get("ids"):
             raise HTTPException(status_code=404, detail="Campaign not found")
 
         meta = campaign["metadatas"][0]
+
         if req.campaign_name is not None:
             meta["campaign_name"] = req.campaign_name
+        if req.campaign_description is not None:
+            meta["campaign_description"] = req.campaign_description
         if req.campaign_image_url is not None:
             meta["campaign_image_url"] = req.campaign_image_url
 
         session_collection.update(ids=[campaign["ids"][0]], metadatas=[meta])
+
         return {
-            "campaign_name": meta["campaign_name"],
+            "campaign_name": meta.get("campaign_name"),
+            "campaign_description": meta.get("campaign_description", ""),
             "campaign_image_url": meta.get("campaign_image_url", ""),
         }
+
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
