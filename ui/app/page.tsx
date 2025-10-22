@@ -22,55 +22,24 @@ function App() {
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-    // Fetch all campaigns
     useEffect(() => {
-        async function fetchCampaigns() {
-            try {
-                setLoading(true);
-                const res = await fetch(`${baseUrl}/campaign`);
-                if (!res.ok) throw new Error(`Failed to fetch campaigns`);
-                const data = await res.json();
-                setCampaigns(data);
-            } catch (err: unknown) {
-                setError(err instanceof Error ? err.message : String(err));
-            } finally {
-                setLoading(false);
-            }
-        }
-
         fetchCampaigns();
     }, [baseUrl]);
 
-    // Delete campaign handler
-    const handleDelete = async (campaignId: string) => {
-        if (
-            !confirm(
-                "Are you sure you want to delete this campaign? This will also remove its sessions."
-            )
-        ) {
-            return;
-        }
-
+    const fetchCampaigns = async () => {
         try {
-            const res = await fetch(`${baseUrl}/campaign/${campaignId}`, {
-                method: "DELETE",
-            });
-
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || "Failed to delete campaign");
-            }
-
-            // Remove deleted campaign from local state
-            setCampaigns((prev) =>
-                prev.filter((c) => c.campaign_id !== campaignId)
-            );
+            setLoading(true);
+            const res = await fetch(`${baseUrl}/campaign`);
+            if (!res.ok) throw new Error(`Failed to fetch campaigns`);
+            const data = await res.json();
+            setCampaigns(data);
         } catch (err: unknown) {
-            alert(
-                err instanceof Error ? err.message : "Error deleting campaign"
-            );
+            setError(err instanceof Error ? err.message : String(err));
+        } finally {
+            setLoading(false);
         }
     };
+
 
     return (
         <div
@@ -150,13 +119,8 @@ function App() {
                                 sessionCount={c.session_ids.length}
                                 imageUrl={c.campaign_image_url}
                                 onClick={() => setSelectedCampaign(c)}
+                                onDelete={fetchCampaigns}
                             />
-                            <button
-                                onClick={() => handleDelete(c.campaign_id)}
-                                className="mt-3 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
-                            >
-                                Delete
-                            </button>
                         </div>
                     ))}
                 </div>

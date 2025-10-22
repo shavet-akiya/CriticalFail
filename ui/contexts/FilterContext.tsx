@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useState, ReactNode } from "react";
-import { CharacterFilter } from "@/types/types"
+import { CharacterFilter } from "@/helpers/types"
 
 interface FilterContextType {
     filter: CharacterFilter;

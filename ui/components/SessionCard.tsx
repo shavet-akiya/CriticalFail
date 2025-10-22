@@ -2,48 +2,8 @@
 
 import React from "react";
 
-interface Character {
-    character_id: string;
-    name: string;
-    class: string;
-    race?: string;
-    HP: number;
-    AC: number;
-    STR: number;
-    DEX: number;
-    CON: number;
-    INT: number;
-    WIS: number;
-    CHA: number;
-}
+import { Character, Location, Session, SessionCardProps } from "@/helpers/types";
 
-interface Location {
-    location_id: string;
-    location_name: string;
-    description: string;
-}
-
-interface Event {
-    event_id: string;
-    event: string;
-    event_summary: string;
-    participants?: string;
-    location?: string;
-    event_tags?: string;
-}
-
-interface Session {
-    session_id: string;
-    processed_at?: string;
-    characters?: Character[];
-    locations?: Location[];
-    events?: Event[];
-}
-
-interface SessionCardProps {
-    session: Session;
-    formatSessionDate: (id: string) => string;
-}
 
 export default function SessionCard({ session, formatSessionDate }: SessionCardProps) {
     return (

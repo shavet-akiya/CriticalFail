@@ -3,15 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation"; // for app directory
 import Loading from "@/components/Loading";
-
-interface Character {
-    name: string;
-}
-
-interface Location {
-    name?: string;
-    location_name?: string;
-}
+import AltSessionCard from "@/components/AltSessionCard";
+import { SessionCharacter, SessionLocation } from "@/helpers/types";
 
 interface Event {
     event: string;
@@ -21,8 +14,8 @@ interface Event {
 interface SessionMetadata {
     session_id: string;
     campaign_id?: string;
-    characters?: Character[];
-    locations?: Location[];
+    characters?: SessionCharacter[];
+    locations?: SessionLocation[];
     events?: Event[];
 }
 
@@ -109,94 +102,13 @@ export default function SessionList() {
                 ) : (
                     <ul className="space-y-4">
                         {sessions.map((s) => (
-                            <li
+                            <AltSessionCard
                                 key={s.id}
-                                className="p-4 bg-gray-50 rounded shadow text-black flex flex-col gap-2"
-                            >
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <p>
-                                            <strong>Session ID:</strong>{" "}
-                                            {s.metadata?.session_id ?? "N/A"}
-                                        </p>
-                                        <p>
-                                            <strong>Campaign:</strong>{" "}
-                                            {s.metadata?.campaign_id ?? "N/A"}
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={async () => {
-                                            if (
-                                                !confirm(
-                                                    `Delete session ${s.metadata?.session_id}?`
-                                                )
-                                            )
-                                                return;
-                                            try {
-                                                const res = await fetch(
-                                                    `${baseUrl}/sessions/${encodeURIComponent(
-                                                        s.metadata
-                                                            ?.session_id ?? s.id
-                                                    )}`,
-                                                    { method: "DELETE" }
-                                                );
-                                                if (!res.ok) {
-                                                    const msg =
-                                                        await res.text();
-                                                    throw new Error(
-                                                        `Delete failed: ${res.status} ${msg}`
-                                                    );
-                                                }
-                                                // Refresh sessions after successful delete
-                                                await fetchSessions();
-                                            } catch (err: any) {
-                                                setError(err.message);
-                                            }
-                                        }}
-                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-
-                                <p>
-                                    <strong>Characters:</strong>{" "}
-                                    {s.metadata?.characters?.length
-                                        ? s.metadata.characters
-                                            .map((c) => c.name)
-                                            .join(", ")
-                                        : "None"}
-                                </p>
-                                <p>
-                                    <strong>Locations:</strong>{" "}
-                                    {s.metadata?.locations?.length
-                                        ? s.metadata.locations
-                                            .map(
-                                                (l) =>
-                                                    l.location_name || l.name
-                                            )
-                                            .join(", ")
-                                        : "None"}
-                                </p>
-                                <p>
-                                    <strong>Events:</strong>{" "}
-                                    {s.metadata?.events?.length
-                                        ? s.metadata.events
-                                            .map(
-                                                (e) =>
-                                                    `${e.event} — ${e.event_summary ?? ""
-                                                    }`
-                                            )
-                                            .join("; ")
-                                        : "None"}
-                                </p>
-                                <p className="mt-2">
-                                    <strong>Summary:</strong>
-                                </p>
-                                <p className="text-sm text-black">
-                                    {s.document}
-                                </p>
-                            </li>
+                                session={s}
+                                baseUrl={baseUrl}
+                                fetchSessions={fetchSessions}
+                                setError={setError}
+                            />
                         ))}
                     </ul>
                 )}

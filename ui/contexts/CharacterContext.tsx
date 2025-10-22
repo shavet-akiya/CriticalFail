@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, ReactNode, useState } from "react";
-import { Character } from "@/types/types";
+import { Character } from "@/helpers/types";
 
 interface CharacterContextType {
     currentCharacter: Character | null;

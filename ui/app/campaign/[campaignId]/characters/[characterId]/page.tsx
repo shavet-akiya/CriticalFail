@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import type { Character } from "@/types/types";
+import type { Character } from "@/helpers/types";
 
 export default function CharacterDetail() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;

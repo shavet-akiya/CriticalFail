@@ -3,7 +3,7 @@
 import { useCharacter } from "@/contexts/CharacterContext";
 import Link from "next/link";
 import { useParams } from "next/navigation"; // ✅ import useParams
-import { Character } from "@/types/types";
+import { Character } from "@/helpers/types";
 
 export default function CharacterCard({ character }: { character: Character }) {
     const { setCurrentCharacter } = useCharacter();

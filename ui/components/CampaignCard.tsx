@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCampaign } from "@/contexts/CampaignContext";
+import { deleteCampaign } from "@/helpers/api";
 
 interface CampaignCardProps {
     campaignID: string;
@@ -10,6 +11,7 @@ interface CampaignCardProps {
     imageUrl?: string;
     onClick?: () => void;
     extend?: boolean;
+    onDelete?: () => void;
 }
 
 export default function CampaignCard({
@@ -18,10 +20,10 @@ export default function CampaignCard({
     sessionCount,
     imageUrl,
     onClick,
-    extend = false,
+    onDelete,
 }: CampaignCardProps) {
     const router = useRouter();
-    const { selectedCampaign, sessions, loading, error } = useCampaign();
+
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     return (
@@ -49,14 +51,25 @@ export default function CampaignCard({
                             />
                         )}
                     </figure>
-                    <div className="card-actions justify-end">
+                    <div className="card-actions justify-end flex flex-row items-center">
+                        <button
+                            onClick={async (e) => {
+                                e.stopPropagation();
+                                const success = await deleteCampaign(campaignID);
+                                if (success && onDelete) onDelete();
+                            }}
+                            className="btn btn-warning white-colour"
+                        >
+                            Delete
+                        </button>
+
                         <button
                             className="btn btn-primary"
                             onClick={() => {
                                 router.push(`/campaign/${campaignID}/summary`);
                             }}
                         >
-                            Continue the story
+                            Go
                         </button>
                     </div>
                 </div>

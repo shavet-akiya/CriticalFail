@@ -4,7 +4,7 @@ import CharacterCard from "@/components/characterCard";
 import { useFilter } from "@/contexts/FilterContext";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import type { Character } from "@/types/types";
+import type { Character } from "@/helpers/types";
 
 export default function Characters() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
