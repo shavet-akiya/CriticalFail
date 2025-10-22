@@ -231,3 +231,13 @@ server/src/database-structures/main_alt.py
 server/src/chroma
 
 models/
+chroma/chroma_data/12f21466-c444-444a-851e-9144be6fe799/data_level0.bin
+chroma/chroma_data/12f21466-c444-444a-851e-9144be6fe799/length.bin
+chroma/chroma_data/chroma.sqlite3
+chroma/chroma_data/d0931f3a-c8d7-4289-9102-afc175c38267/data_level0.bin
+chroma/chroma_data/d0931f3a-c8d7-4289-9102-afc175c38267/header.bin
+chroma/chroma_data/d0931f3a-c8d7-4289-9102-afc175c38267/length.bin
+chroma/chroma_data/d0931f3a-c8d7-4289-9102-afc175c38267/link_lists.bin
+chroma/chroma_data/12f21466-c444-444a-851e-9144be6fe799/data_level0.bin
+chroma/chroma_data/12f21466-c444-444a-851e-9144be6fe799/length.bin
+chroma/chroma_data/chroma.sqlite3
