@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation"; // for app directory
+import Loading from "@/components/Loading";
 
 interface Character {
     name: string;
@@ -98,23 +99,11 @@ export default function SessionList() {
                 Delete All Sessions
             </button>
 
-            {/* Latest Session */}
-            {latestSession && (
-                <div className="bg-white shadow rounded p-6 mb-8">
-                    <h2 className="text-xl font-semibold mb-2">
-                        Latest Session
-                    </h2>
-                    <pre className="bg-gray-100 p-2 rounded overflow-x-auto text-black">
-                        {JSON.stringify(latestSession, null, 2)}
-                    </pre>
-                </div>
-            )}
-
             {/* Past Sessions */}
             <div className="bg-white shadow rounded p-6">
                 <h2 className="text-xl font-semibold mb-4">Past Sessions</h2>
                 {fetching ? (
-                    <p className="text-black">Loading sessions…</p>
+                    <Loading />
                 ) : sessions.length === 0 ? (
                     <p className="text-black">No sessions available.</p>
                 ) : (
