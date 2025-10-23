@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Loading from "@/components/Loading";
 
 export type Event = {
     event_id: string;
@@ -59,14 +60,14 @@ export default function EventDetail() {
                 const participants: string[] = Array.isArray(e.participants)
                     ? e.participants
                     : typeof e.participants === "string"
-                    ? e.participants.split(",").map((p: string) => p.trim())
-                    : [];
+                        ? e.participants.split(",").map((p: string) => p.trim())
+                        : [];
 
                 const event_tags: string[] = Array.isArray(e.event_tags)
                     ? e.event_tags
                     : typeof e.event_tags === "string"
-                    ? e.event_tags.split(",").map((t: string) => t.trim())
-                    : [];
+                        ? e.event_tags.split(",").map((t: string) => t.trim())
+                        : [];
 
                 setForm({
                     event_id: e.event_id,
@@ -89,7 +90,7 @@ export default function EventDetail() {
         fetchEvent();
     }, [eventId, campaignId, baseUrl]);
 
-    if (!form) return <div>Loading…</div>;
+    if (!form) return <Loading />;
     if (error) return <div className="text-error">{error}</div>;
 
     // Form helpers
@@ -178,8 +179,8 @@ export default function EventDetail() {
     };
 
     return (
-        <div className="max-w-2xl space-y-4">
-            <h1 className="text-2xl font-bold">{form.event}</h1>
+        <div className="max-w-2xl space-y-4 obsidian-colour">
+            <h1 className="text-center text-4xl pb-4 obsidian-colour">{form.event}</h1>
 
             <div>
                 <label>Event</label>
@@ -232,11 +233,10 @@ export default function EventDetail() {
                     {TAG_OPTIONS.map((tag) => (
                         <button
                             key={tag}
-                            className={`btn btn-sm ${
-                                form.event_tags?.includes(tag)
-                                    ? "btn-primary"
-                                    : "btn-outline"
-                            }`}
+                            className={`btn btn-sm ${form.event_tags?.includes(tag)
+                                ? "btn-primary"
+                                : "btn-outline"
+                                }`}
                             onClick={() => toggleTag(tag)}
                         >
                             {tag}
@@ -275,7 +275,7 @@ export default function EventDetail() {
                     {saving ? "Saving..." : "Save"}
                 </button>
                 <button
-                    className="btn btn-error"
+                    className="btn btn-warning"
                     onClick={remove}
                     disabled={deleting}
                 >

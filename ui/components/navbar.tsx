@@ -103,7 +103,7 @@ export default function NavBar({ found = true }: NavBarProps) {
                     const isNewSession = item.label === " + New Session";
 
                     return (
-                        <li key={item.href} className="p-4">
+                        <li key={item.href}>
                             <Link
                                 href={item.href}
                                 className={`px-2 py-1 rounded transition ${isActive
