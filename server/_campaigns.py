@@ -509,3 +509,58 @@ async def delete_campaign_image(campaign_id: str):
         raise
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.get("/locations/{campaign_id}")
+async def get_campaign_locations(campaign_id: str):
+    """
+    Return only the locations array for a given campaign.
+    """
+    try:
+        # Fetch the campaign
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+        )
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        # The campaign metadata contains the locations array
+        campaign_meta = campaign["metadatas"][0]
+
+        locations = campaign_meta.get("locations", [])
+        if isinstance(locations, str):
+            try:
+                locations = json.loads(locations)
+            except Exception:
+                locations = []
+
+        return {"locations": locations}
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.get("/locations/{campaign_id}/{location_id}")
+async def get_location(campaign_id: str, location_id: str):
+    campaign = session_collection.get(
+        where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+    )
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    campaign_meta = campaign["metadatas"][0]
+    locations = campaign_meta.get("locations", [])
+
+    if isinstance(locations, str):
+        try:
+            locations = json.loads(locations)
+        except Exception:
+            locations = []
+
+    location = next(
+        (loc for loc in locations if loc["location_id"] == location_id), None
+    )
+    if not location:
+        raise HTTPException(status_code=404, detail="Location not found")
+
+    return {"location": location}

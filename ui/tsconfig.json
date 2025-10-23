@@ -35,7 +35,7 @@
     "app/.next/types/**/*.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
-  ],
+, "app/campaign/[campaignId]/locations/page.tsx"  ],
   "exclude": [
     "node_modules"
   ]

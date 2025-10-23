@@ -24,15 +24,11 @@ export default function CharacterCard({
             className="block"
         >
             <div className="card bg-base-100 w-full max-w-sm shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer group relative">
-                {/* Edit button */}
+                {/* View button */}
                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
                     <button className="btn btn-primary rounded-full w-auto flex items-center gap-1">
-                        <img
-                            src="/svg/edit.svg"
-                            alt="Edit"
-                            className="w-4 h-4"
-                        />
-                        Edit
+                        <img className="w-4 h-4" />
+                        View
                     </button>
                 </div>
 

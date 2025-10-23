@@ -140,10 +140,10 @@ class CreateLocationRequest(BaseModel):
 async def add_location_to_campaign(campaign_id: str, req: CreateLocationRequest):
     """
     Add a location to a campaign.
-    If the location name already exists, merge session_ids and update fields.
+    Merge session_ids if the location already exists.
     """
     try:
-        # Fetch the campaign
+        # Fetch campaign metadata
         campaign = session_collection.get(
             where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
         )
@@ -159,13 +159,13 @@ async def add_location_to_campaign(campaign_id: str, req: CreateLocationRequest)
         except Exception:
             existing_locs = []
 
-        # Lookup by name
+        # Lookup by location_name
         existing_lookup = {
             l["location_name"]: l for l in existing_locs if "location_name" in l
         }
 
         if req.location_name in existing_lookup:
-            # Merge existing location
+            # Merge session_ids and update other fields
             existing_loc = existing_lookup[req.location_name]
             merged_sids = list(
                 set(existing_loc.get("session_ids", []) + req.session_ids)
@@ -181,49 +181,17 @@ async def add_location_to_campaign(campaign_id: str, req: CreateLocationRequest)
                 new_loc["session_ids"] = []
             existing_lookup[req.location_name] = new_loc
 
-        # Save back to campaign
+        # Save updated locations
         campaign_meta["locations"] = json.dumps(list(existing_lookup.values()))
         session_collection.update(ids=[campaign["ids"][0]], metadatas=[campaign_meta])
 
-        return {
-            "status": "created",
-            "campaign_id": campaign_id,
-            "location": existing_lookup[req.location_name],
-        }
+        # Return just the new/updated location
+        return {"location": existing_lookup[req.location_name]}
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-# Locations
-
-
-@router.get("/{campaign_id}")
-async def get_campaign_locations(campaign_id: str):
-    """
-    Return only the locations for a given campaign.
-    """
-    try:
-        campaign = session_collection.get(
-            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
-        )
-        if not campaign or not campaign.get("ids"):
-            return JSONResponse(
-                status_code=404, content={"error": "Campaign not found"}
-            )
-
-        campaign_meta = campaign["metadatas"][0]
-        locations_str = campaign_meta.get("locations", "[]")
-
-        try:
-            locations = json.loads(locations_str)
-        except Exception:
-            locations = []
-
-        return {"location": {"campaign_id": campaign_id, "locations": locations}}
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 ########################################
