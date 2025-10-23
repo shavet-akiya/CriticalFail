@@ -41,7 +41,6 @@ const prompts = [
     "Inscribe your prophecy, adventurer — for tomorrow’s session awaits.",
     "What mischief brews next?",
     "The adventure starts with a note.",
-    "Your next session begins with a keystroke.",
 ];
 
 export default function SessionList() {
@@ -181,7 +180,7 @@ export default function SessionList() {
                                         <div className="flex justify-between items-center ">
                                             <div>
                                                 <p className="text-xl font-semibold select-none">
-                                                    <p>Session: {formatSessionDate(s.metadata?.session_id ?? s.id)}</p>{" "}
+                                                    <p>Session from {formatSessionDate(s.metadata?.session_id ?? s.id)}</p>{" "}
                                                 </p>
                                             </div>
                                         </div>
