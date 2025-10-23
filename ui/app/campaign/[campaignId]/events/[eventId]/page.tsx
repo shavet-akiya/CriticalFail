@@ -179,13 +179,14 @@ export default function EventDetail() {
     };
 
     return (
-        <div className="max-w-2xl space-y-4 obsidian-colour">
+        <div className="max-w-2xl space-y-4 obsidian-colour select-none pb-8 pt-8">
             <h1 className="text-center text-4xl pb-4 obsidian-colour">{form.event}</h1>
 
             <div>
                 <label className="form-field">Event</label>
                 <input
-                    className="input input-bordered w-full"
+                    className="input input-bordered border input-field"
+
                     value={form.event}
                     onChange={(e) => onChange("event", e.target.value)}
                 />
@@ -194,7 +195,7 @@ export default function EventDetail() {
             <div>
                 <label className="form-field">Summary</label>
                 <textarea
-                    className="textarea textarea-bordered w-full"
+                    className="textarea textarea-bordered w-full input-field"
                     value={form.event_summary}
                     onChange={(e) => onChange("event_summary", e.target.value)}
                 />
@@ -205,14 +206,14 @@ export default function EventDetail() {
                 {form.participants?.map((p, i) => (
                     <div key={i} className="flex gap-2 my-1">
                         <input
-                            className="input input-bordered flex-1"
+                            className="input input-bordered flex-1 input-field"
                             value={p}
                             onChange={(e) =>
                                 updateParticipant(i, e.target.value)
                             }
                         />
                         <button
-                            className="btn btn-sm btn-error"
+                            className="btn btn-warning"
                             onClick={() => removeParticipant(i)}
                         >
                             Remove
@@ -230,25 +231,28 @@ export default function EventDetail() {
             <div>
                 <label className="form-field">Tags</label>
                 <div className="flex flex-wrap gap-2">
-                    {TAG_OPTIONS.map((tag) => (
-                        <button
-                            key={tag}
-                            className={`btn btn-sm ${form.event_tags?.includes(tag)
-                                ? "btn-primary"
-                                : "btn-outline"
-                                }`}
-                            onClick={() => toggleTag(tag)}
-                        >
-                            {tag}
-                        </button>
-                    ))}
+                    {TAG_OPTIONS.map((tag) => {
+                        const formattedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
+
+                        return (
+                            <button
+                                key={tag}
+                                className={`btn btn-sm ${form.event_tags?.includes(tag) ? "btn-info" : "btn-outline"
+                                    }`}
+                                onClick={() => toggleTag(tag)}
+                            >
+                                {formattedTag}
+                            </button>
+                        );
+                    })}
+
                 </div>
             </div>
 
             <div>
                 <label className="form-field">Location</label>
                 <input
-                    className="input input-bordered w-full"
+                    className="input input-bordered w-full input-field"
                     value={form.location || ""}
                     onChange={(e) => onChange("location", e.target.value)}
                 />
@@ -258,7 +262,7 @@ export default function EventDetail() {
                 <label className="form-field">Timeline Order</label>
                 <input
                     type="number"
-                    className="input input-bordered w-full"
+                    className="input input-bordered w-full input-field"
                     value={form.timeline_order}
                     onChange={(e) =>
                         onChange("timeline_order", Number(e.target.value))

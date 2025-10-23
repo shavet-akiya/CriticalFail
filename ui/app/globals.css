@@ -114,3 +114,11 @@
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
+
+.input-field {
+    border-color: #9ca3af;
+    width: 100%;
+    background-color: #eff1ed;
+    font-size: 1rem;
+    margin-bottom: 0.75rem
+}

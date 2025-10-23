@@ -86,7 +86,7 @@ export default function NewCampaign() {
     };
 
     return (
-        <div className="w-screen h-screen bg-purple-colour flex items-center justify-center relative">
+        <div className="w-screen h-screen bg-purple-colour flex items-center justify-center relative select-none">
             {loading && <Loading />}
             <form
                 onSubmit={handleSubmit}
@@ -96,7 +96,7 @@ export default function NewCampaign() {
                 <button
                     type="button"
                     onClick={() => router.push("/")}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold"
+                    className="absolute top-4 right-8 text-gray-500 hover:text-gray-800 text-3xl font-bold"
                 >
                     ×
                 </button>
