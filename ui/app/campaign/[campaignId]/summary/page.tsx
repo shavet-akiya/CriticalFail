@@ -366,31 +366,28 @@ export default function CampaignSummaryPage() {
             <div className="flex gap-20 w-full max-w-4xl">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 rounded ${
-                        activePage === "sessions"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-300"
-                    }`}
+                    className={`flex-1 py-2 rounded ${activePage === "sessions"
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-300"
+                        }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 rounded ${
-                        activePage === "characters"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-300"
-                    }`}
+                    className={`flex-1 py-2 rounded ${activePage === "characters"
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-300"
+                        }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 rounded ${
-                        activePage === "locations"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-300"
-                    }`}
+                    className={`flex-1 py-2 rounded ${activePage === "locations"
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-300"
+                        }`}
                 >
                     Locations
                 </button>
@@ -411,12 +408,15 @@ export default function CampaignSummaryPage() {
                             Characters
                         </h2>
                         {characters.length === 0 ? (
-                            <p className="obsidian-colour">
-                                The tavern is quiet... no adventurers have gathered yet.
-                            </p>
-                            <p className="obsidian-colour">
-                                Add a character, and they will appear here!
-                            </p>
+                            <div>
+                                <p className="obsidian-colour">
+                                    The tavern is quiet... no adventurers have gathered yet.
+                                </p>
+                                <p className="obsidian-colour">
+                                    Add a character, and they will appear here!
+                                </p>
+                            </div>
+
                         ) : (
                             <ul className="grid grid-cols-2 md:grid-cols-3 gap-4 obsidian-colour">
                                 {characters.map((c) => (
@@ -435,8 +435,8 @@ export default function CampaignSummaryPage() {
                                                 c.imageURL?.startsWith("http")
                                                     ? c.imageURL
                                                     : c.imageURL
-                                                    ? `${baseUrl}${c.imageURL}`
-                                                    : "/images/character-placeholder.png"
+                                                        ? `${baseUrl}${c.imageURL}`
+                                                        : "/images/character-placeholder.png"
                                             }
                                             onError={(e) => {
                                                 (
