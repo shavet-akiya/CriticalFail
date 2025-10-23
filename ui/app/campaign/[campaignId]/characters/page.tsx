@@ -19,6 +19,8 @@ export default function Characters() {
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
 
+    const [searchQuery, setSearchQuery] = useState("");
+
     const [newCharacter, setNewCharacter] = useState({
         name: "",
         race: "Human",
@@ -90,12 +92,16 @@ export default function Characters() {
         fetchSessions();
     }, [campaignId]);
 
-    const filteredCharacters = characters.filter((character) => {
-        if (filter === "all") return true;
-        if (filter === "players") return !character.npc;
-        if (filter === "npc") return character.npc;
-        return true;
-    });
+    const filteredCharacters = characters
+        .filter((character) => {
+            if (filter === "all") return true;
+            if (filter === "players") return !character.npc;
+            if (filter === "npc") return character.npc;
+            return true;
+        })
+        .filter((character) =>
+            character.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
 
     // --- Handle character creation and image upload ---
     const handleCreateCharacter = async (e: React.FormEvent) => {
@@ -175,14 +181,23 @@ export default function Characters() {
         <div className="pl-16 pr-16 pt-16 text-black">
             {error && <div className="text-red-500 mb-4">{error}</div>}
 
-            <div className="mb-8 flex justify-between items-center">
+            <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h1 className="text-3xl font-bold">Characters</h1>
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
-                >
-                    + Add Character
-                </button>
+                <div className="flex gap-2 flex-wrap items-center w-full sm:w-auto">
+                    <input
+                        type="text"
+                        placeholder="Search by name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="border px-3 py-2 rounded-lg w-full sm:w-72"
+                    />
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+                    >
+                        + Add Character
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16">

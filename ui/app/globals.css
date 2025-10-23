@@ -40,6 +40,10 @@
   background-color: var(--white-colour);
 }
 
+.bg-purple-colour {
+  background-color: var(--purple-colour);
+}
+
 .border-purple {
   border-color: var(--purple-colour);
 }
@@ -89,6 +93,7 @@
   background-position: center;
   select: none;
 }
+
 
 
 

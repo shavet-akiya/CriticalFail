@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Character } from "@/types/types";
 
-export default function CharacterDetail() {
+export default function CharacterProfile() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     const { campaignId, characterId } = useParams<{
         campaignId: string;
@@ -16,8 +16,8 @@ export default function CharacterDetail() {
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
 
-    // Fetch character on load
     useEffect(() => {
         if (!characterId || !campaignId) return;
 
@@ -49,13 +49,11 @@ export default function CharacterDetail() {
             .catch((e) => setError(e instanceof Error ? e.message : String(e)));
     }, [characterId, campaignId]);
 
-    // Generic change handler
     function onChange<K extends keyof Character>(k: K, v: any) {
         if (!form) return;
         setForm((s) => ({ ...s!, [k]: v }));
     }
 
-    // Save character updates
     async function save() {
         if (!form) return;
         setSaving(true);
@@ -73,6 +71,7 @@ export default function CharacterDetail() {
             if (!res.ok) throw new Error(`Save failed: ${res.status}`);
             const data = await res.json();
             setForm((prev) => ({ ...prev!, ...data.character }));
+            setIsEditing(false);
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {
@@ -80,7 +79,6 @@ export default function CharacterDetail() {
         }
     }
 
-    // Delete character
     async function remove() {
         if (!form) return;
         if (!confirm(`Are you sure you want to delete ${form.name}?`)) return;
@@ -91,9 +89,7 @@ export default function CharacterDetail() {
         try {
             const res = await fetch(
                 `${baseUrl}/characters/${campaignId}/${form.characterId}`,
-                {
-                    method: "DELETE",
-                }
+                { method: "DELETE" }
             );
             if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
             router.push(`/campaign/${campaignId}/characters`);
@@ -104,7 +100,6 @@ export default function CharacterDetail() {
         }
     }
 
-    // Upload image and auto-save
     async function uploadImage(file: File) {
         if (!form) return;
         const formData = new FormData();
@@ -113,154 +108,226 @@ export default function CharacterDetail() {
         try {
             const res = await fetch(
                 `${baseUrl}/characters/${campaignId}/${form.characterId}/image`,
-                {
-                    method: "POST",
-                    body: formData,
-                }
+                { method: "POST", body: formData }
             );
             const data = await res.json();
-            if (data.imageURL) {
-                onChange("imageURL", data.imageURL);
-            }
+            if (data.imageURL) onChange("imageURL", data.imageURL);
         } catch (err) {
             alert("Image upload failed: " + err);
         }
     }
 
-    if (error) return <div className="text-error">{error}</div>;
+    if (error) return <div className="text-red-500">{error}</div>;
     if (!form) return <div>Loading…</div>;
 
     return (
-        <div className="max-w-2xl space-y-4">
-            <h1 className="text-2xl font-bold">{form.name}</h1>
-
-            {/* Name */}
-            <div>
-                <label className="block">Name</label>
-                <input
-                    className="input input-bordered w-full"
-                    value={form.name}
-                    onChange={(e) => onChange("name", e.target.value)}
-                />
-            </div>
-
-            {/* Race/Class */}
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block">Race</label>
-                    <input
-                        className="input input-bordered w-full"
-                        value={form.race || ""}
-                        onChange={(e) => onChange("race", e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label className="block">Class</label>
-                    <input
-                        className="input input-bordered w-full"
-                        value={form.class || ""}
-                        onChange={(e) => onChange("class", e.target.value)}
-                    />
-                </div>
-            </div>
-
-            {/* AC / HP / NPC */}
-            <div className="grid grid-cols-3 gap-4">
-                <div>
-                    <label>AC</label>
-                    <input
-                        type="number"
-                        className="input input-bordered w-full"
-                        value={form.AC}
-                        onChange={(e) => onChange("AC", Number(e.target.value))}
-                    />
-                </div>
-                <div>
-                    <label>HP</label>
-                    <input
-                        type="number"
-                        className="input input-bordered w-full"
-                        value={form.HP}
-                        onChange={(e) => onChange("HP", Number(e.target.value))}
-                    />
-                </div>
-                <div className="flex items-end">
-                    <label className="flex items-center gap-2">
-                        <input
-                            type="checkbox"
-                            checked={!!form.npc}
-                            onChange={(e) => onChange("npc", e.target.checked)}
-                        />
-                        NPC
-                    </label>
-                </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
-                {["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((stat) => (
-                    <div key={stat}>
-                        <label>{stat}</label>
-                        <input
-                            type="number"
-                            className="input input-bordered w-full"
-                            value={(form as any)[stat] ?? 0}
-                            onChange={(e) =>
-                                onChange(
-                                    stat as keyof Character,
-                                    Number(e.target.value)
-                                )
+        <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-gray-100 p-4">
+            <div className="max-w-4xl mx-auto p-6 bg-white-colour rounded-xl shadow-md flex flex-col md:flex-row gap-6">
+                {/* Character Image */}
+                <div className="flex-shrink-0">
+                    {form.imageURL ? (
+                        <img
+                            src={
+                                form.imageURL.startsWith("http")
+                                    ? form.imageURL
+                                    : `${baseUrl}${form.imageURL}`
                             }
+                            alt={form.name}
+                            className="w-48 h-48 object-cover rounded-xl border border-gray-300"
                         />
+                    ) : (
+                        <div className="w-48 h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500">
+                            No Image
+                        </div>
+                    )}
+                    {isEditing && (
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="mt-2 file-input w-full"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                uploadImage(file);
+                            }}
+                        />
+                    )}
+                </div>
+
+                {/* Character Info */}
+                <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                        <div className="flex justify-between items-center mb-4">
+                            <h1 className="text-3xl font-bold">{form.name}</h1>
+                            <button
+                                className="btn btn-outline btn-sm"
+                                onClick={() => setIsEditing(!isEditing)}
+                            >
+                                {isEditing ? "Cancel" : "Edit"}
+                            </button>
+                        </div>
+
+                        {!isEditing ? (
+                            <div className="space-y-2 text-gray-700">
+                                <p>
+                                    <strong>Race:</strong> {form.race}
+                                </p>
+                                <p>
+                                    <strong>Class:</strong> {form.class}
+                                </p>
+                                <p>
+                                    <strong>AC:</strong> {form.AC} |{" "}
+                                    <strong>HP:</strong> {form.HP} |{" "}
+                                    <strong>NPC:</strong>{" "}
+                                    {form.npc ? "Yes" : "No"}
+                                </p>
+                                <p>
+                                    <strong>Stats:</strong> STR {form.STR}, DEX{" "}
+                                    {form.DEX}, CON {form.CON}, INT {form.INT},
+                                    WIS {form.WIS}, CHA {form.CHA}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {/* Editable Fields */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold">
+                                            Name
+                                        </label>
+                                        <input
+                                            className="input input-bordered w-full"
+                                            value={form.name}
+                                            onChange={(e) =>
+                                                onChange("name", e.target.value)
+                                            }
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold">
+                                            Race
+                                        </label>
+                                        <input
+                                            className="input input-bordered w-full"
+                                            value={form.race || ""}
+                                            onChange={(e) =>
+                                                onChange("race", e.target.value)
+                                            }
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold">
+                                            Class
+                                        </label>
+                                        <input
+                                            className="input input-bordered w-full"
+                                            value={form.class || ""}
+                                            onChange={(e) =>
+                                                onChange(
+                                                    "class",
+                                                    e.target.value
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold">
+                                            AC
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered w-full"
+                                            value={form.AC}
+                                            onChange={(e) =>
+                                                onChange(
+                                                    "AC",
+                                                    Number(e.target.value)
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold">
+                                            HP
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered w-full"
+                                            value={form.HP}
+                                            onChange={(e) =>
+                                                onChange(
+                                                    "HP",
+                                                    Number(e.target.value)
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div className="flex items-center mt-6">
+                                        <label className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!form.npc}
+                                                onChange={(e) =>
+                                                    onChange(
+                                                        "npc",
+                                                        e.target.checked
+                                                    )
+                                                }
+                                            />
+                                            NPC
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Stats */}
+                                <div className="grid grid-cols-3 gap-4">
+                                    {[
+                                        "STR",
+                                        "DEX",
+                                        "CON",
+                                        "INT",
+                                        "WIS",
+                                        "CHA",
+                                    ].map((stat) => (
+                                        <div key={stat}>
+                                            <label className="block text-sm font-semibold">
+                                                {stat}
+                                            </label>
+                                            <input
+                                                type="number"
+                                                className="input input-bordered w-full"
+                                                value={(form as any)[stat] ?? 0}
+                                                onChange={(e) =>
+                                                    onChange(
+                                                        stat as keyof Character,
+                                                        Number(e.target.value)
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-4 mt-4">
+                                    <button
+                                        onClick={save}
+                                        className="btn btn-primary"
+                                        disabled={saving}
+                                    >
+                                        {saving ? "Saving..." : "Save"}
+                                    </button>
+                                    <button
+                                        onClick={remove}
+                                        className="btn btn-error"
+                                        disabled={deleting}
+                                    >
+                                        {deleting ? "Deleting..." : "Delete"}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                ))}
-            </div>
-
-            {/* Character Image */}
-            <div>
-                <label className="block text-sm font-semibold mb-1">
-                    Character Image
-                </label>
-                <input
-                    type="file"
-                    accept="image/*"
-                    className="file-input w-full mb-3"
-                    onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        uploadImage(file);
-                    }}
-                />
-
-                {/* Preview */}
-                {form.imageURL && (
-                    <img
-                        src={
-                            form.imageURL.startsWith("http")
-                                ? form.imageURL
-                                : `${baseUrl}${form.imageURL}`
-                        }
-                        alt="Character Preview"
-                        className="mb-3 max-h-48 object-contain rounded border border-gray-300"
-                    />
-                )}
-            </div>
-
-            <div className="flex gap-4">
-                <button
-                    onClick={save}
-                    className="btn btn-primary"
-                    disabled={saving}
-                >
-                    {saving ? "Saving..." : "Save"}
-                </button>
-                <button
-                    onClick={remove}
-                    className="btn btn-error"
-                    disabled={deleting}
-                >
-                    {deleting ? "Deleting..." : "Delete"}
-                </button>
+                </div>
             </div>
         </div>
     );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/Toast";
 
@@ -14,6 +14,7 @@ export default function NewCampaign() {
         type: "success" | "error";
         message: string;
     } | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [loading, setLoading] = useState(false);
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -84,50 +85,85 @@ export default function NewCampaign() {
     };
 
     return (
-        <div className="relative bg-white-colour">
+        <div className="w-screen h-screen bg-purple-colour flex items-center justify-center relative">
             {toast && <Toast type={toast.type} message={toast.message} />}
 
             <form
                 onSubmit={handleSubmit}
-                className="flex flex-col gap-4 p-8 max-w-lg mx-auto"
+                className="flex flex-col gap-4 p-8 max-w-lg w-full bg-white rounded-xl shadow-lg relative"
             >
-                <h1 className="text-4xl text-center pb-4 obsidian-colour">Create a Campaign</h1>
+                {/* X button */}
+                <button
+                    type="button"
+                    onClick={() => router.push("/")}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
+                >
+                    ×
+                </button>
+                <h1 className="text-4xl text-center pb-4 obsidian-colour">
+                    Create a Campaign
+                </h1>
 
+                <label className="block text-lg purple-colour font-semibold mb-2">
+                    Name Your Campaign
+                </label>
                 <input
                     type="text"
-                    placeholder="Campaign Name"
+                    placeholder="e.g. The Wild Beyond Witchlight"
                     className="input input-neutral w-full"
                     value={campaignName}
                     onChange={(e) => setCampaignName(e.target.value)}
                     required
                 />
 
+                <label className="block text-lg purple-colour font-semibold mb-2">
+                    Campaign Description
+                </label>
                 <textarea
-                    placeholder="Campaign Description"
+                    placeholder="e.g. My first D&D game."
                     className="textarea textarea-neutral w-full"
                     value={campaignDescription}
                     onChange={(e) => setCampaignDescription(e.target.value)}
                     required
                 />
 
-                <input
-                    type="file"
-                    accept="image/*"
-                    className="file-input w-full"
-                    onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        handleImageChange(file);
-                    }}
-                />
-
-                {preview && (
-                    <img
-                        src={preview}
-                        alt="Preview"
-                        className="rounded-xl max-h-64 object-contain mx-auto border border-gray-300"
+                <label className="block text-lg purple-colour font-semibold mb-2">
+                    Upload Campaign Image
+                </label>
+                <div className="flex flex-col gap-2">
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="file-input w-full"
+                        ref={fileInputRef}
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            handleImageChange(file);
+                        }}
                     />
-                )}
+                    {preview && (
+                        <>
+                            <img
+                                src={preview}
+                                alt="Preview"
+                                className="rounded-xl max-h-64 object-contain mx-auto border border-gray-300"
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-outline btn-error w-full"
+                                onClick={() => {
+                                    setImage(null);
+                                    setPreview(null);
+                                    if (fileInputRef.current)
+                                        fileInputRef.current.value = "";
+                                }}
+                            >
+                                Remove Image
+                            </button>
+                        </>
+                    )}
+                </div>
 
                 <button
                     type="submit"

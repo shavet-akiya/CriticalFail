@@ -33,7 +33,7 @@ interface Session {
 interface Location {
     location_id: string;
     location_name: string;
-    description: string;
+    location_description: string;
 }
 
 interface Event {
@@ -59,17 +59,22 @@ export default function SessionCard({
             key={session.session_id}
             className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
         >
-            <p className="font-bold mb-2 text-lg">
+            <h2 className="text-2xl font-bold mb-4 obsidian-colour">
+                Latest Session
+            </h2>
+            <p className="font-bold mb-2 text-lg obsidian-colour">
                 {formatSessionDate(session.session_id)} Session
             </p>
             <p className="mb-4 text-sm text-gray-500 italic">
-                Processed at: {session.processed_at || "N/A"}
+                Created at: {session.processed_at || "N/A"}
             </p>
 
             <div className="mb-4">
-                <h3 className="font-semibold text-lg">Characters</h3>
+                <h3 className="font-semibold text-lg obsidian-colour">
+                    Characters
+                </h3>
                 {session.characters?.length ? (
-                    <ul className="list-disc list-inside text-sm mt-1 space-y-1">
+                    <ul className="list-disc list-inside text-sm mt-1 space-y-1 obsidian-colour">
                         {session.characters.map((c) => (
                             <li key={c.character_id}>
                                 {c.name} ({c.class}, {c.race || "unknown"})
@@ -82,12 +87,14 @@ export default function SessionCard({
             </div>
 
             <div className="mb-4">
-                <h3 className="font-semibold text-lg">Locations</h3>
+                <h3 className="font-semibold text-lg obsidian-colour">
+                    Locations
+                </h3>
                 {session.locations?.length ? (
-                    <ul className="list-disc list-inside text-sm mt-1 space-y-1">
+                    <ul className="list-disc list-inside text-sm mt-1 space-y-1 obsidian-colour">
                         {session.locations.map((l) => (
                             <li key={l.location_id}>
-                                {l.location_name}: {l.description}
+                                {l.location_name}: {l.location_description}
                             </li>
                         ))}
                     </ul>
@@ -97,23 +104,28 @@ export default function SessionCard({
             </div>
 
             <div>
-                <h3 className="font-semibold text-lg">Events</h3>
+                <h3 className="font-semibold text-lg obsidian-colour">
+                    Events
+                </h3>
                 {session.events?.length ? (
                     <ol className="list-none mt-1 space-y-4">
                         {session.events.map((e) => (
-                            <li key={e.event_id} className="border-b pb-2">
+                            <li
+                                key={e.event_id}
+                                className="border-b pb-2 obsidian-colour"
+                            >
                                 {/* Event Title */}
-                                <h4 className="font-semibold text-sm">
+                                <h4 className="font-semibold text-sm obsidian-colour">
                                     {e.event}
                                 </h4>
 
                                 {/* Event Summary */}
-                                <p className="text-sm text-gray-700">
+                                <p className="text-sm obsidian-colour">
                                     {e.event_summary}
                                 </p>
 
                                 {/* Additional Details */}
-                                <div className="text-xs text-gray-500 mt-1 space-x-2">
+                                <div className="text-xs text-gray-500 mt-1 space-x-2 obsidian-colour">
                                     {e.participants && (
                                         <p>Participants: {e.participants}</p>
                                     )}
@@ -124,7 +136,7 @@ export default function SessionCard({
                         ))}
                     </ol>
                 ) : (
-                    <p className="text-gray-500 text-sm">No events.</p>
+                    <p className="obsidian-colour text-sm">No events.</p>
                 )}
             </div>
         </div>

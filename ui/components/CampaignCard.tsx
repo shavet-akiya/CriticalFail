@@ -27,13 +27,19 @@ export default function CampaignCard({
 
     return (
         <div
-            onClick={onClick}
-            className="cursor-pointer rounded shadow-lg hover:shadow-xl transition"
+            onClick={() => {
+                router.push(`/campaign/${campaignID}/summary`);
+            }}
+            className="cursor-pointer rounded-lg shadow-lg hover:shadow-xl transition bg-white-colour"
         >
-            <div className="card w-96 shadow-sm">
+            <div className="card-body flex flex-col items-center text-center gap-4">
                 <div className="card-body">
-                    <h2 className="card-title text-2xl">{campaignName}</h2>
-                    <p>Sessions thus far: {sessionCount}</p>
+                    <h2 className="card-title text-2xl purple-colour">
+                        {campaignName}
+                    </h2>
+                    <p className="purple-colour text-xl">
+                        Total Sessions: {sessionCount}
+                    </p>
                     <figure>
                         <img
                             src={
@@ -49,24 +55,14 @@ export default function CampaignCard({
                             }}
                         />
                     </figure>
-                    <div className="card-actions justify-end flex flex-row items-center">
-                        <button
-                            onClick={async (e) => {
-                                e.stopPropagation();
-                                const success = await deleteCampaign(campaignID);
-                                if (success && onDelete) onDelete();
-                            }}
-                            className="btn btn-warning white-colour"
-                        >
-                            Delete
-                        </button>
+                    <div className="card-actions justify-center">
                         <button
                             className="btn btn-primary"
                             onClick={() => {
                                 router.push(`/campaign/${campaignID}/summary`);
                             }}
                         >
-                            Go
+                            Enter Campaign
                         </button>
                     </div>
                 </div>

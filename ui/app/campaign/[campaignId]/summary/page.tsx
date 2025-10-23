@@ -35,7 +35,7 @@ interface Character {
 interface Location {
     location_id: string;
     location_name: string;
-    description: string;
+    location_description: string;
     session_id: string;
 }
 
@@ -81,6 +81,10 @@ export default function CampaignSummaryPage() {
     const [newDescription, setNewDescription] = useState("");
     const [newImageUrl, setNewImageUrl] = useState("");
     const [saving, setSaving] = useState(false);
+
+    const [activePage, setActivePage] = useState<
+        "sessions" | "characters" | "locations"
+    >("sessions");
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -200,8 +204,9 @@ export default function CampaignSummaryPage() {
     if (!campaign) return <div className="p-6">Campaign not found.</div>;
 
     return (
-        <div className="p-6 flex flex-col items-center obsidian-colour min-h-screen w-full select-none gap-8">
-            <div className="border-2 border-purple rounded-xl w-full max-w-4xl flex flex-col justify-center items-center p-4">
+        <div className="p-6 flex flex-col items-center bg-white-colour min-h-screen w-full select-none gap-8">
+            <div className="rounded-xl w-full max-w-4xl relative flex flex-col md:flex-row items-center md:items-start p-4 bg-purple-colour gap-6">
+                {/* Campaign Image */}
                 <img
                     src={
                         campaign.campaign_image_url?.startsWith("http")
@@ -213,37 +218,39 @@ export default function CampaignSummaryPage() {
                             "/images/campaign-placeholder.jpg";
                     }}
                     alt={campaign.campaign_name}
-                    className="rounded-lg max-w-xs max-h-48 object-contain"
+                    className="rounded-lg w-48 h-48 object-contain"
                 />
-                <h1 className="text-4xl font-bold text-center mb-2">
-                    {campaign.campaign_name}
-                </h1>
-                {campaign.campaign_description && (
-                    <p className="text-center text-gray-200 max-w-2xl mb-4 whitespace-pre-line">
-                        {campaign.campaign_description}
-                    </p>
-                )}
-                <div className="flex gap-4 mt-2">
-                    <button
-                        onClick={() => setEditing(true)}
-                        className="btn btn-primary"
-                    >
-                        Edit Campaign
-                    </button>
-                    <button onClick={handleDelete} className="btn btn-danger">
-                        Delete Campaign
-                    </button>
+
+                {/* Name and Description */}
+                <div className="flex-1 flex flex-col justify-center">
+                    <h1 className="text-4xl font-bold mb-2">
+                        {campaign.campaign_name}
+                    </h1>
+                    {campaign.campaign_description && (
+                        <p className="text-gray-200 whitespace-pre-line">
+                            {campaign.campaign_description}
+                        </p>
+                    )}
                 </div>
+                {/* Edit Button */}
+                <button
+                    onClick={() => setEditing(true)}
+                    className="btn btn-primary absolute top-4 right-4"
+                >
+                    Edit Campaign
+                </button>
             </div>
 
             {/* Edit Modal */}
             {editing && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-gray-800 text-white rounded-lg shadow-lg p-6 w-11/12 max-w-md">
-                        <h2 className="text-xl font-bold mb-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-purple-colour bg-opacity-50">
+                    <div className="flex flex-col gap-4 p-8 max-w-lg w-full bg-white rounded-xl shadow-lg relative">
+                        <h1 className="text-4xl text-center pb-4 obsidian-colour">
                             Edit Campaign
-                        </h2>
-
+                        </h1>
+                        <label className="block text-lg purple-colour font-semibold mb-2">
+                            Campaign Name
+                        </label>
                         <input
                             type="text"
                             value={newName}
@@ -251,14 +258,18 @@ export default function CampaignSummaryPage() {
                             className="border p-2 rounded w-full mb-3 text-black"
                             placeholder="Campaign Name"
                         />
-
+                        <label className="block text-lg purple-colour font-semibold mb-2">
+                            Campaign Description
+                        </label>
                         <textarea
                             value={newDescription}
                             onChange={(e) => setNewDescription(e.target.value)}
                             className="border p-2 rounded w-full h-24 mb-3 text-black"
                             placeholder="Campaign Description"
                         />
-
+                        <label className="block text-lg purple-colour font-semibold mb-2">
+                            Upload New Campaign Image
+                        </label>
                         <input
                             type="file"
                             accept="image/*"
@@ -267,13 +278,11 @@ export default function CampaignSummaryPage() {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
 
-                                // Preview immediately
                                 const reader = new FileReader();
                                 reader.onloadend = () =>
                                     setNewImageUrl(reader.result as string);
                                 reader.readAsDataURL(file);
 
-                                // Upload to backend
                                 const formData = new FormData();
                                 formData.append("campaign_image", file);
 
@@ -291,7 +300,6 @@ export default function CampaignSummaryPage() {
                             }}
                         />
 
-                        {/* Preview */}
                         {newImageUrl && (
                             <div className="relative mb-3">
                                 <img
@@ -305,16 +313,11 @@ export default function CampaignSummaryPage() {
                                 />
                                 <button
                                     onClick={async () => {
-                                        // Remove image locally
                                         setNewImageUrl("");
-
-                                        // Remove from backend
                                         try {
                                             const res = await fetch(
                                                 `${baseUrl}/campaign/${campaignId}/image`,
-                                                {
-                                                    method: "DELETE",
-                                                }
+                                                { method: "DELETE" }
                                             );
                                             if (!res.ok)
                                                 throw new Error(
@@ -331,97 +334,161 @@ export default function CampaignSummaryPage() {
                             </div>
                         )}
 
-                        <div className="flex justify-end gap-2 mt-2">
+                        <div className="flex justify-between mt-2">
                             <button
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="px-3 py-1 bg-green-600 rounded hover:bg-green-700"
+                                onClick={handleDelete}
+                                className="px-3 py-1 bg-red-600 rounded hover:bg-red-700"
                             >
-                                {saving ? "Saving..." : "Save"}
+                                Delete Campaign
                             </button>
-                            <button
-                                onClick={() => setEditing(false)}
-                                className="px-3 py-1 bg-gray-500 rounded hover:bg-gray-600"
-                            >
-                                Cancel
-                            </button>
+
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className="px-3 py-1 bg-green-600 rounded hover:bg-green-700"
+                                >
+                                    {saving ? "Saving..." : "Save"}
+                                </button>
+                                <button
+                                    onClick={() => setEditing(false)}
+                                    className="px-3 py-1 bg-gray-500 rounded hover:bg-gray-600"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Sessions */}
-            {sessions.length === 0 ? (
-                <div className="flex flex-col justify-center items-center gap-8 pt-16">
-                    <p className="text-xl obsidian-colour text-center">
-                        No recent sessions! Press New Session to start your
-                        session.
-                    </p>
-                    <button className="btn btn-primary mt-4">
-                        <Link href={`/campaign/${campaignId}/new_session`}>
-                            New Session
-                        </Link>
-                    </button>
-                </div>
-            ) : (
-                <>
-                    <div className="flex flex-col gap-6 w-full max-w-4xl mt-8">
-                        <h2 className="text-2xl font-bold mb-4">
-                            Most Recent Session
-                        </h2>
-                        <SessionCard
-                            session={sessions[0]}
-                            formatSessionDate={formatSessionDate}
-                        />
-                    </div>
+            {/* Carousel Buttons */}
+            <div className="flex gap-20 w-full max-w-4xl">
+                <button
+                    onClick={() => setActivePage("sessions")}
+                    className={`flex-1 py-2 rounded ${
+                        activePage === "sessions"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-300"
+                    }`}
+                >
+                    Sessions
+                </button>
+                <button
+                    onClick={() => setActivePage("characters")}
+                    className={`flex-1 py-2 rounded ${
+                        activePage === "characters"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-300"
+                    }`}
+                >
+                    Characters
+                </button>
+                <button
+                    onClick={() => setActivePage("locations")}
+                    className={`flex-1 py-2 rounded ${
+                        activePage === "locations"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-300"
+                    }`}
+                >
+                    Locations
+                </button>
+            </div>
 
-                    {/* Characters */}
-                    <div className="mt-8 w-full max-w-4xl">
-                        <h2 className="text-2xl font-bold mb-4">Characters</h2>
+            {/* Carousel Pages */}
+            <div className="flex flex-col gap-6 w-full max-w-4xl mt-8">
+                {activePage === "sessions" && sessions.length > 0 && (
+                    <SessionCard
+                        session={sessions[0]}
+                        formatSessionDate={formatSessionDate}
+                    />
+                )}
+
+                {activePage === "characters" && (
+                    <div className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                        <h2 className="text-2xl font-bold mb-4 obsidian-colour">
+                            Characters
+                        </h2>
                         {characters.length === 0 ? (
-                            <p>No characters found.</p>
+                            <p className="obsidian-colour">
+                                The tavern is quiet... no adventurers have gathered yet.
+                            </p>
+                            <p className="obsidian-colour">
+                                Add a character, and they will appear here!
+                            </p>
                         ) : (
-                            <ul className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <ul className="grid grid-cols-2 md:grid-cols-3 gap-4 obsidian-colour">
                                 {characters.map((c) => (
                                     <li
                                         key={c.character_id}
-                                        className="border p-2 rounded"
+                                        className="border p-2 rounded cursor-pointer bg-white-colour flex items-center gap-3 hover:bg-gray-100 transition"
+                                        onClick={() =>
+                                            router.push(
+                                                `/campaign/${campaignId}/characters/${c.character_id}`
+                                            )
+                                        }
                                     >
-                                        <p className="font-semibold">
-                                            {c.name}
-                                        </p>
-                                        <p>
-                                            {c.race} {c.class}
-                                        </p>
+                                        {/* Character Image */}
+                                        <img
+                                            src={
+                                                c.imageURL?.startsWith("http")
+                                                    ? c.imageURL
+                                                    : c.imageURL
+                                                    ? `${baseUrl}${c.imageURL}`
+                                                    : "/images/character-placeholder.png"
+                                            }
+                                            onError={(e) => {
+                                                (
+                                                    e.target as HTMLImageElement
+                                                ).src =
+                                                    "/images/character-placeholder.png";
+                                            }}
+                                            alt={c.name}
+                                            className="w-12 h-12 object-cover rounded-full border border-gray-300"
+                                        />
+
+                                        {/* Character Info */}
+                                        <div>
+                                            <p className="font-semibold">
+                                                {c.name}
+                                            </p>
+                                            <p className="text-sm text-gray-700">
+                                                {c.race} {c.class}
+                                            </p>
+                                        </div>
                                     </li>
                                 ))}
                             </ul>
                         )}
+                    </div>
+                )}
 
-                        {/* Locations */}
-                        <h2 className="text-2xl font-bold mt-8 mb-4">
+                {activePage === "locations" && (
+                    <div className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                        <h2 className="text-2xl font-bold mb-4 obsidian-colour">
                             Locations
                         </h2>
                         {locations.length === 0 ? (
                             <p>No locations found.</p>
                         ) : (
-                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 obsidian-colour">
                                 {locations.map((l) => (
                                     <li
                                         key={l.location_id}
-                                        className="border p-2 rounded"
+                                        className="border p-2 rounded bg-white-colour"
                                     >
-                                        <p className="font-semibold">
+                                        <p className="font-semibold obsidian-colour">
                                             {l.location_name}
                                         </p>
-                                        <p>{l.description}</p>
+                                        <p>{l.location_description}</p>
                                     </li>
                                 ))}
                             </ul>
                         )}
                     </div>
-                </>
-            )}
+                )}
+            </div>
         </div>
     );
 }
