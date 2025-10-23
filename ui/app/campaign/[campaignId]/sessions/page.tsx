@@ -7,6 +7,8 @@ import Loading from "@/components/Loading";
 import { useCampaign } from "@/contexts/CampaignContext";
 
 
+
+
 interface Character {
     name: string;
 }
@@ -31,21 +33,39 @@ interface Session {
     metadata?: SessionMetadata;
 }
 
+const prompts = [
+    "Scribe your schemes, tally your treasures, and prepare for chaos.",
+    "The party awaits your wisdom. What quests shall unfold next?",
+    "Pen your plans, oh Dungeon Master — your players’ fate lies within these notes.",
+    "Record your secrets here before your players inevitably ruin them.",
+    "The ink is still wet, and destiny is unwritten. Chronicle your next campaign chapter.",
+    "Let your parchment bear the whispers of dragons, taverns, and tragic backstories.",
+    "From crypt to castle, weave the tale that shall echo through taverns for ages.",
+    "Inscribe your prophecy, adventurer — for tomorrow’s session awaits.",
+    "What mischief brews next?",
+    "The adventure starts with a note.",
+    "Your next session begins with a keystroke.",
+];
+
 export default function SessionList() {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [fetching, setFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [editedDocument, setEditedDocument] = useState<string>("");
+    const [prompt, setPrompt] = useState("");
+    const [savingSessionId, setSavingSessionId] = useState<string | null>(null);
 
-    const params = useParams();
     const { selectedCampaign } = useCampaign();
-
     const campaignId = selectedCampaign?.campaign_id;
     const campaignName = selectedCampaign?.campaign_name;
-
-
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+    // Picks a random prompt line to display as the instruction
+    useEffect(() => {
+        const randomIndex = Math.floor(Math.random() * prompts.length);
+        setPrompt(prompts[randomIndex]);
+    }, []);
 
     async function fetchSessions() {
         setFetching(true);
@@ -80,6 +100,7 @@ export default function SessionList() {
 
 
     async function saveDocument(session: Session) {
+        setSavingSessionId(session.id);
         try {
             const res = await fetch(
                 `${baseUrl}/sessions/${encodeURIComponent(session.id)}`,
@@ -100,8 +121,11 @@ export default function SessionList() {
             setEditingSessionId(null);
         } catch (err: any) {
             setError(err.message);
+        } finally {
+            setSavingSessionId(null);
         }
     }
+
 
     async function deleteSession(session: Session) {
         if (
@@ -133,16 +157,22 @@ export default function SessionList() {
                     <Loading />
                 ) : sessions.length === 0 ? (
                     <div>
-                        <h1 className="text-4xl text-center mb-4 ">
-                            {campaignName} sessions
-                        </h1>
+                        <div>
+                            <h1 className="text-4xl text-center mb-4 ">
+                                {campaignName} sessions
+                            </h1>
+                            <h2>{prompt}</h2>
+                        </div>
                         <p>No sessions available.</p>
                     </div>
                 ) : (
                     <>
-                        <h1 className="text-4xl text-center mb-4 ">
-                            {campaignName} sessions
-                        </h1>
+                        <div className="flex flex-col items-center mb-8 obsidian-colour">
+                            <h1 className="text-4xl text-center mb-4 ">
+                                {campaignName} sessions
+                            </h1>
+                            <h2 className="text-lg italic red-colour">{prompt}</h2>
+                        </div>
                         <ul className="space-y-4">
                             {sessions.map((s) => {
                                 const isEditing = editingSessionId === s.id;
@@ -153,15 +183,14 @@ export default function SessionList() {
                                     >
                                         <div className="flex justify-between items-center ">
                                             <div>
-                                                <p className="text-xl">
-                                                    <strong>Session:</strong>{" "}
-                                                    {formatSessionDate(s.metadata?.session_id ?? s.id)}
+                                                <p className="text-xl font-semibold">
+                                                    <p>Session: {formatSessionDate(s.metadata?.session_id ?? s.id)}</p>{" "}
                                                 </p>
                                             </div>
                                         </div>
 
                                         <div className="flex flex-row justify-between items-center">
-                                            <p className="text-lg font-semibold">Summary Notes</p>
+                                            <p className="text-lg font-semibold">Session Notes</p>
 
                                         </div>
 
@@ -170,29 +199,37 @@ export default function SessionList() {
                                                 className="w-full border p-2 rounded obsidian-colour"
                                                 rows={6}
                                                 value={editedDocument}
-                                                onChange={(e) =>
-                                                    setEditedDocument(e.target.value)
-                                                }
+                                                disabled={savingSessionId === s.id}
+                                                onChange={(e) => setEditedDocument(e.target.value)}
                                             />
                                         ) : (
-                                            <p className=" w-full p-2 rounded obsidian-colour text-md whitespace-pre-wrap">
+                                            <p className="w-full p-2 rounded obsidian-colour text-md whitespace-pre-wrap">
                                                 {s.document}
                                             </p>
                                         )}
 
+
                                         {isEditing ? (
-                                            <div className="flex gap-2 gap-2 justify-end">
-                                                <button
-                                                    onClick={() => saveDocument(s)}
-                                                    className="btn px-3 py-1 bg-green-600 white-colour text-sm rounded hover:bg-green-700"
-                                                >
-                                                    Save
-                                                </button>
+                                            <div className="flex gap-2 justify-end">
                                                 <button
                                                     onClick={() => setEditingSessionId(null)}
-                                                    className="btn px-3 py-1 bg-gray-400 white-colour text-sm rounded hover:bg-gray-500"
+                                                    disabled={savingSessionId === s.id}
+                                                    className={`btn px-3 py-1 text-sm rounded ${savingSessionId === s.id
+                                                        ? "bg-gray-300 cursor-not-allowed"
+                                                        : "bg-gray-400 hover:bg-gray-500 white-colour"
+                                                        }`}
                                                 >
                                                     Cancel
+                                                </button>
+                                                <button
+                                                    onClick={() => saveDocument(s)}
+                                                    disabled={savingSessionId === s.id}
+                                                    className={`btn px-3 py-1 text-sm rounded ${savingSessionId === s.id
+                                                        ? "bg-green-400 cursor-not-allowed obsidian-colour"
+                                                        : "bg-green-600 hover:bg-green-700"
+                                                        }`}
+                                                >
+                                                    {savingSessionId === s.id ? "Saving..." : "Save"}
                                                 </button>
                                             </div>
                                         ) : (
@@ -214,6 +251,7 @@ export default function SessionList() {
                                                 </button>
                                             </div>
                                         )}
+
                                     </li>
                                 );
                             })}
