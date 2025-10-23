@@ -71,7 +71,7 @@ export default function NavBar({ found = true }: NavBarProps) {
 
             <ul className="hidden lg:flex menu menu-horizontal px-1 gap-4">
                 <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/summary`} className="white-colour">Campaign Summary</Link></li>
-                <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/sessions`} className="white-colour">Session List</Link></li>
+                <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/sessions`} className="white-colour">Session Notes</Link></li>
                 <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/events`} className="white-colour">Event Timeline</Link></li>
                 <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/characters`} className="white-colour">Characters</Link></li>
                 <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/locations`} className="white-colour">Locations</Link></li>
@@ -93,7 +93,7 @@ export default function NavBar({ found = true }: NavBarProps) {
             {menuOpen && (
                 <ul className="absolute top-[64px] left-0 right-0 bg-[#0B1215] flex flex-col items-center space-y-4 py-6 border-t border-gray-700 lg:hidden">
                     <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/summary`} className="white-colour" onClick={() => setMenuOpen(false)}>Campaign Summary</Link></li>
-                    <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/sessions`} className="white-colour" onClick={() => setMenuOpen(false)}>Session List</Link></li>
+                    <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/sessions`} className="white-colour" onClick={() => setMenuOpen(false)}>Session Notes</Link></li>
                     <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/events`} className="white-colour" onClick={() => setMenuOpen(false)}>Event Timeline</Link></li>
                     <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/characters`} className="white-colour" onClick={() => setMenuOpen(false)}>Characters</Link></li>
                     <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/locations`} className="white-colour" onClick={() => setMenuOpen(false)}>Locations</Link></li>
