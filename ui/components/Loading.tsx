@@ -28,9 +28,9 @@ export default function Loading() {
     }, []);
 
     return (
-        <div className="fixed inset-0 bg-purple-colour flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50  flex items-center justify-center z-50">
             {/* --- White Card Container --- */}
-            <div className="bg-white rounded-2xl shadow-xl flex flex-col items-center justify-center p-8 w-80 h-96">
+            <div className="bg-white-colour rounded-2xl shadow-xl flex flex-col items-center justify-center p-8 w-80 h-96">
                 {/* GIF */}
                 <img
                     src="/images/200.gif" // replace with your GIF path
