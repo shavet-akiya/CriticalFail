@@ -107,6 +107,10 @@
   select: none;
 }
 
-
-
-
+.form-field {
+    display: block;
+    font-size: 1.125rem;
+    color: #3c1642;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}

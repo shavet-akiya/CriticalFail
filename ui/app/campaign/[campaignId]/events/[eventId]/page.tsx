@@ -183,7 +183,7 @@ export default function EventDetail() {
             <h1 className="text-center text-4xl pb-4 obsidian-colour">{form.event}</h1>
 
             <div>
-                <label>Event</label>
+                <label className="form-field">Event</label>
                 <input
                     className="input input-bordered w-full"
                     value={form.event}
