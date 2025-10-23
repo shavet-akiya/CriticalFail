@@ -97,10 +97,12 @@ export default function CampaignEventsPage() {
     if (error) return <div className="text-red-500">Error: {error}</div>;
 
     return (
-        <div className="max-w-6xl mx-auto h-full overflow-hidden pt-4">
+        <div className="max-w-6xl mx-auto h-full overflow-hidden pt-8 px-4">
             <h1 className="page-heading">Event History</h1>
-            <div className="flex">
-                <div className="w-1/3 h-full p-6 sticky top-0">
+
+            <div className="flex flex-col md:flex-row gap-6">
+                {/* Sidebar */}
+                <div className="md:w-1/3 w-full sticky top-16 self-start">
                     <input
                         type="text"
                         value={searchTerm}
@@ -108,8 +110,7 @@ export default function CampaignEventsPage() {
                         placeholder="Search events..."
                         className="border p-2 rounded w-full mb-4 obsidian-colour"
                     />
-                    <div className="h-full border border-obsidian rounded-md shadow-md bg-white-colour p-6 flex flex-col">
-
+                    <div className="border border-obsidian rounded-md shadow-md bg-white-colour p-4 flex flex-col">
                         <FilterSidebar
                             events={events}
                             filters={filters}
@@ -118,8 +119,8 @@ export default function CampaignEventsPage() {
                     </div>
                 </div>
 
-                <div className="w-full min-h-screen overflow-y-auto p-6 text-black flex flex-col justify-start">
-
+                {/* Main content */}
+                <div className="md:w-2/3 w-full min-h-screen overflow-y-auto md:p-6 text-black flex flex-col justify-start">
                     {Object.entries(sessionsMap).length === 0 ? (
                         <div className="mt-0">No events match your search or filters.</div>
                     ) : (
@@ -142,5 +143,6 @@ export default function CampaignEventsPage() {
                 </div>
             </div>
         </div>
+
     );
 }
