@@ -366,31 +366,28 @@ export default function CampaignSummaryPage() {
             <div className="flex gap-20 w-full max-w-4xl">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 rounded ${
-                        activePage === "sessions"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-300"
-                    }`}
+                    className={`flex-1 py-2 rounded ${activePage === "sessions"
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-300"
+                        }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 rounded ${
-                        activePage === "characters"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-300"
-                    }`}
+                    className={`flex-1 py-2 rounded ${activePage === "characters"
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-300"
+                        }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 rounded ${
-                        activePage === "locations"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-300"
-                    }`}
+                    className={`flex-1 py-2 rounded ${activePage === "locations"
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-300"
+                        }`}
                 >
                     Locations
                 </button>
@@ -454,8 +451,8 @@ export default function CampaignSummaryPage() {
                                                 c.imageURL?.startsWith("http")
                                                     ? c.imageURL
                                                     : c.imageURL
-                                                    ? `${baseUrl}${c.imageURL}`
-                                                    : "/images/character-placeholder.png"
+                                                        ? `${baseUrl}${c.imageURL}`
+                                                        : "/images/character-placeholder.png"
                                             }
                                             onError={(e) => {
                                                 (
