@@ -100,7 +100,7 @@ export default function CampaignEventsPage() {
         <div className="max-w-6xl mx-auto h-full overflow-hidden pt-4">
             <h1 className="page-heading">Event History</h1>
             <div className="flex">
-                <div className="w-1/3 h-full p-4 sticky">
+                <div className="w-1/3 h-full p-6 sticky top-0">
                     <input
                         type="text"
                         value={searchTerm}
@@ -108,7 +108,7 @@ export default function CampaignEventsPage() {
                         placeholder="Search events..."
                         className="border p-2 rounded w-full mb-4 obsidian-colour"
                     />
-                    <div className="h-full border border-black rounded-md shadow-md bg-white-colour p-6 flex flex-col">
+                    <div className="h-full border border-obsidian rounded-md shadow-md bg-white-colour p-6 flex flex-col">
 
                         <FilterSidebar
                             events={events}
@@ -118,10 +118,10 @@ export default function CampaignEventsPage() {
                     </div>
                 </div>
 
-                <div className="w-full h-full overflow-y-auto p-6 text-black">
+                <div className="w-full min-h-screen overflow-y-auto p-6 text-black flex flex-col justify-start">
 
                     {Object.entries(sessionsMap).length === 0 ? (
-                        <div>No events match your search or filters.</div>
+                        <div className="mt-0">No events match your search or filters.</div>
                     ) : (
                         Object.entries(sessionsMap).map(([sessionId, sessionEvents]) => (
                             <div

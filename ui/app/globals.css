@@ -60,6 +60,10 @@
   border-color: var(--red-colour);
 }
 
+.border-red {
+  border-color: var(--obsidian-colour);
+}
+
 
 .btn-primary {
   @apply relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold 
