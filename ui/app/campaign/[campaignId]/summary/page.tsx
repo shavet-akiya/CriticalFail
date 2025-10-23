@@ -398,25 +398,44 @@ export default function CampaignSummaryPage() {
 
             {/* Carousel Pages */}
             <div className="flex flex-col gap-6 w-full max-w-4xl mt-8">
-                {activePage === "sessions" && sessions.length > 0 && (
-                    <SessionCard
-                        session={sessions[0]}
-                        formatSessionDate={formatSessionDate}
-                    />
+                {activePage === "sessions" && (
+                    <div className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                        <h2 className="text-2xl font-bold mb-4 obsidian-colour">
+                            Recent Sessions
+                        </h2>
+                        {sessions.length > 0 ? (
+                            <SessionCard
+                                session={sessions[0]}
+                                formatSessionDate={formatSessionDate}
+                            />
+                        ) : (
+                            <div>
+                                <p className="obsidian-colour text-lg font-medium">
+                                    No recent sessions found.
+                                </p>
+                                <p className="obsidian-colour text-sm">
+                                    Complete a new session and it’ll appear here
+                                    once saved!
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 )}
-
                 {activePage === "characters" && (
                     <div className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                         <h2 className="text-2xl font-bold mb-4 obsidian-colour">
                             Characters
                         </h2>
                         {characters.length === 0 ? (
-                            <p className="obsidian-colour">
-                                The tavern is quiet... no adventurers have gathered yet.
-                            </p>
-                            <p className="obsidian-colour">
-                                Add a character, and they will appear here!
-                            </p>
+                            <div>
+                                <p className="obsidian-colour">
+                                    The tavern is quiet... no adventurers have
+                                    gathered yet.
+                                </p>
+                                <p className="obsidian-colour">
+                                    Add a character, and they will appear here!
+                                </p>
+                            </div>
                         ) : (
                             <ul className="grid grid-cols-2 md:grid-cols-3 gap-4 obsidian-colour">
                                 {characters.map((c) => (
@@ -470,7 +489,15 @@ export default function CampaignSummaryPage() {
                             Locations
                         </h2>
                         {locations.length === 0 ? (
-                            <p>No locations found.</p>
+                            <div>
+                                <p className="obsidian-colour">
+                                    The map is empty... no places have been
+                                    discovered yet!
+                                </p>
+                                <p className="obsidian-colour">
+                                    Add a location, and it will appear here!
+                                </p>
+                            </div>
                         ) : (
                             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 obsidian-colour">
                                 {locations.map((l) => (
