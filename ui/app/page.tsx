@@ -119,43 +119,44 @@ function App() {
 
                 {!loading && (
                     <>
-                        <div className="text-center w-full max-w-3xl">
-                            <h2 className="text-4xl font-bold purple-colour mb-4 pt-8">
-                                Campaign Selection
-                            </h2>
+                        <h2 className="text-4xl font-bold purple-colour mb-4 pt-8 text-center">
+                            Campaign Selection
+                        </h2>
 
-                            {/* Search + Sort */}
-                            {campaigns.length > 0 && (
-                                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center w-full mb-6">
-                                    <input
-                                        type="text"
-                                        placeholder="Search campaigns..."
-                                        value={searchTerm}
-                                        onChange={(e) =>
-                                            setSearchTerm(e.target.value)
-                                        }
-                                        className="input input-neutral w-full sm:w-2/3"
-                                    />
-                                    <select
-                                        value={sortOption}
-                                        onChange={(e) =>
-                                            setSortOption(e.target.value as any)
-                                        }
-                                        className="select select-neutral w-full sm:w-1/3"
-                                    >
-                                        <option value="alphabetical">
-                                            Alphabetical
-                                        </option>
-                                        <option value="sessions">
-                                            Number of Sessions
-                                        </option>
-                                        <option value="recent">
-                                            Most Recently Created
-                                        </option>
-                                    </select>
-                                </div>
-                            )}
-                        </div>
+                        {/* Search + Sort aligned with grid */}
+                        {campaigns.length > 0 && (
+                            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 w-full max-w-7xl mb-6">
+                                {/* Search input */}
+                                <input
+                                    type="text"
+                                    placeholder="Search campaigns..."
+                                    value={searchTerm}
+                                    onChange={(e) =>
+                                        setSearchTerm(e.target.value)
+                                    }
+                                    className="input input-neutral w-full sm:w-1/2"
+                                />
+
+                                {/* Sort / Filter select */}
+                                <select
+                                    value={sortOption}
+                                    onChange={(e) =>
+                                        setSortOption(e.target.value as any)
+                                    }
+                                    className="select select-neutral w-full sm:w-1/4"
+                                >
+                                    <option value="alphabetical">
+                                        Alphabetical
+                                    </option>
+                                    <option value="sessions">
+                                        Number of Sessions
+                                    </option>
+                                    <option value="recent">
+                                        Most Recently Created
+                                    </option>
+                                </select>
+                            </div>
+                        )}
 
                         {error && <p className="text-red-500">{error}</p>}
 
@@ -180,7 +181,7 @@ function App() {
 
                         {/* Campaigns grid */}
                         {filteredCampaigns.length > 0 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 pb-16">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 pb-16 w-full max-w-7xl">
                                 {filteredCampaigns.map((c) => (
                                     <div
                                         key={c.campaign_id}
