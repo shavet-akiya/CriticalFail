@@ -233,11 +233,12 @@ export default function EventDetail() {
                     </div>
                 ))}
                 <button
-                    className="btn btn-sm btn-primary mt-2"
+                    className="secondary-button secondary-button:hover"
                     onClick={addParticipant}
                 >
                     Add Participant
                 </button>
+
             </div>
 
             <div>
@@ -250,7 +251,7 @@ export default function EventDetail() {
                             <button
                                 key={tag}
                                 className={`btn ${form.event_tags?.includes(tag) ? "btn-info" : "btn-outline"
-                                    }`}
+                                    } rounded-lg`}
                                 onClick={() => toggleTag(tag)}
                             >
                                 {formattedTag}
@@ -284,14 +285,14 @@ export default function EventDetail() {
 
             <div className="flex gap-4 pb-8">
                 <button
-                    className="btn btn-primary"
+                    className="save-button save-button:hover"
                     onClick={save}
                     disabled={saving}
                 >
                     {saving ? "Saving..." : "Save"}
                 </button>
                 <button
-                    className="btn btn-warning"
+                    className="delete-button delete-button:hover"
                     onClick={remove}
                     disabled={deleting}
                 >

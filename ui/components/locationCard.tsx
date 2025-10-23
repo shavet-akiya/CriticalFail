@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import type { Location } from "@/types/types";
+import { formatSessionDate } from "@/helpers/helper_functions";
 
 export function LocationCard({ location }: { location: Location }) {
     const { campaignId } = useParams<{ campaignId: string }>();
@@ -30,7 +31,7 @@ export function LocationCard({ location }: { location: Location }) {
                                 key={idx}
                                 className="bg-purple-200 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full"
                             >
-                                {sessionId}
+                                {formatSessionDate(sessionId)}
                             </span>
                         ))}
                     </div>

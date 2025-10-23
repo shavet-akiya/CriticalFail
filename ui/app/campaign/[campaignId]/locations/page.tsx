@@ -4,11 +4,13 @@ import { LocationCard } from "@/components/locationCard";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Location } from "@/types/types";
+import { useCampaign } from "@/contexts/CampaignContext";
+import Loading from "@/components/Loading";
 
 export default function Locations() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const { campaignId } = useParams<{ campaignId: string }>();
-    const router = useRouter();
+    const { selectedCampaign } = useCampaign();
+    const [loading, setLoading] = useState(false);
 
     const [locations, setLocations] = useState<Location[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -21,8 +23,8 @@ export default function Locations() {
     });
 
     const fetchLocations = async (): Promise<Location[]> => {
-        if (!campaignId) return [];
-        const res = await fetch(`${baseUrl}/campaign/locations/${campaignId}`, {
+        if (!selectedCampaign?.campaign_id) return [];
+        const res = await fetch(`${baseUrl}/campaign/locations/${selectedCampaign?.campaign_id}`, {
             cache: "no-store",
         });
         if (!res.ok) throw new Error(`GET /locations failed: ${res.status}`);
@@ -37,10 +39,23 @@ export default function Locations() {
     };
 
     useEffect(() => {
-        fetchLocations()
-            .then(setLocations)
-            .catch((e) => setError(e instanceof Error ? e.message : String(e)));
-    }, [campaignId]);
+        if (!selectedCampaign?.campaign_id) return;
+
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const locs = await fetchLocations();
+                setLocations(locs);
+            } catch (e: any) {
+                setError(e instanceof Error ? e.message : String(e));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [selectedCampaign?.campaign_id]);
+
 
     const filteredLocations = locations.filter((loc) =>
         loc.location_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -48,17 +63,17 @@ export default function Locations() {
 
     const handleCreateLocation = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!campaignId) return;
+        if (!selectedCampaign?.campaign_id) return;
 
         try {
             const createRes = await fetch(
-                `${baseUrl}/locations/${campaignId}`,
+                `${baseUrl}/locations/${selectedCampaign?.campaign_id}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         ...newLocation,
-                        campaign_id: campaignId,
+                        campaign_id: selectedCampaign?.campaign_id,
                     }),
                 }
             );
@@ -76,35 +91,34 @@ export default function Locations() {
         }
     };
 
-    return (
-        <div className="pl-16 pr-16 text-black h-screen flex flex-col">
-            {/* Sticky header + search */}
-            <div className="sticky top-0 z-10 bg-white">
-                <div className="w-full bg-purple-colour rounded-b-lg shadow-md py-6 px-4 mb-4 text-center">
-                    <h1 className="text-4xl font-bold text-white tracking-wide">
-                        Locations
-                    </h1>
+    return loading ? (
+        <Loading />
+    ) : (
+        <div className="pl-16 pr-16 text-black h-screen flex flex-col pb-16">
+            <div className="sticky top-0 z-10">
+                <div className="heading-banner">
+                    <h1 className="page-heading">Locations</h1>
                 </div>
 
-                <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2">
+                <div className="mb-4 flex flex-col sm:flex-row gap-4 px-2">
                     <input
                         type="text"
                         placeholder="Search by name..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border border-gray-300 px-3 py-2 rounded-lg w-full sm:w-72 text-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                        className="border bg-white border-gray-300 px-3 py-2 rounded-lg flex-1 text-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                     />
                     <button
                         onClick={() => setShowModal(true)}
-                        className="bg-purple-colour text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md"
+                        className="bg-purple-colour text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
                     >
                         + Add Location
                     </button>
                 </div>
+
             </div>
 
-            {/* Scrollable location cards */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto min-h-0">
                 {locations.length === 0 && (
                     <div className="text-gray-500 text-center mt-16">
                         <p className="mb-2">No locations available.</p>
@@ -112,18 +126,16 @@ export default function Locations() {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {filteredLocations.map((loc) => (
                         <LocationCard key={loc.location_id} location={loc} />
                     ))}
                 </div>
             </div>
 
-            {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-purple-colour">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-purple-colour bg-opacity-50">
                     <div className="flex flex-col gap-2 p-8 max-w-2xl w-full bg-white rounded-xl shadow-lg relative border-2 border-purple">
-                        {/* X button */}
                         <button
                             type="button"
                             onClick={() => setShowModal(false)}
@@ -134,10 +146,7 @@ export default function Locations() {
                         <h1 className="text-4xl text-center pb-4 obsidian-colour font-bold">
                             Create New Location
                         </h1>
-                        <form
-                            onSubmit={handleCreateLocation}
-                            className="space-y-4"
-                        >
+                        <form onSubmit={handleCreateLocation} className="space-y-4">
                             <div>
                                 <label className="block text-lg purple-colour font-semibold mb-1">
                                     Location Name
@@ -161,13 +170,12 @@ export default function Locations() {
                                     Description
                                 </label>
                                 <textarea
-                                    placeholder="e.g. A bustling port city of trade and intrigue, where crowded streets hide both opportunity and danger."
+                                    placeholder="e.g. A bustling port city of trade and intrigue."
                                     value={newLocation.location_description}
                                     onChange={(e) =>
                                         setNewLocation({
                                             ...newLocation,
-                                            location_description:
-                                                e.target.value,
+                                            location_description: e.target.value,
                                         })
                                     }
                                     className="w-full border rounded-lg px-3 py-2"
@@ -195,4 +203,5 @@ export default function Locations() {
             )}
         </div>
     );
+
 }

@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Location } from "@/types/types";
+import Loading from "@/components/Loading";
+import { formatSessionDate } from "@/helpers/helper_functions";
+import BackButton from "@/components/BackButton";
 
 export default function LocationProfile() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -95,92 +98,91 @@ export default function LocationProfile() {
     }
 
     if (error) return <div className="text-red-500">{error}</div>;
-    if (!form) return <div>Loading…</div>;
+    if (!form) return <Loading />;
 
     return (
         <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-gray-100 p-4">
-            <div className="max-w-4xl mx-auto p-6 bg-white-colour rounded-xl shadow-md flex flex-col md:flex-row gap-6">
-                <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <h1 className="text-3xl font-bold">
-                                {form.location_name}
-                            </h1>
-                            <button
-                                className="btn btn-outline btn-sm"
-                                onClick={() => setIsEditing(!isEditing)}
-                            >
-                                {isEditing ? "Cancel" : "Edit"}
-                            </button>
-                        </div>
+            <div className="max-w-4xl mx-auto p-6 bg-white-colour rounded-xl shadow-md flex flex-col gap-6 w-full">
+                {/* Back button (optional) */}
+                {isEditing && <BackButton />}
 
-                        {!isEditing ? (
-                            <div className="space-y-2 text-gray-700">
-                                <p>
-                                    <strong>Description:</strong>{" "}
-                                    {form.location_description}
-                                </p>
-                                <p>
-                                    <strong>Sessions:</strong>{" "}
-                                    {(form.session_ids || []).join(", ")}
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-1 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold">
-                                            Name
-                                        </label>
-                                        <input
-                                            className="input input-bordered w-full"
-                                            value={form.location_name}
-                                            onChange={(e) =>
-                                                onChange(
-                                                    "location_name",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold">
-                                            Description
-                                        </label>
-                                        <textarea
-                                            className="input input-bordered w-full"
-                                            value={form.location_description}
-                                            onChange={(e) =>
-                                                onChange(
-                                                    "location_description",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                </div>
+                {/* Header */}
+                <div className="flex justify-between items-center w-full">
+                    <h1 className="text-3xl font-bold obsidian-colour">
+                        {form.location_name}
+                    </h1>
+                    {!isEditing && (
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => setIsEditing(true)}
+                        >
+                            Edit
+                        </button>
+                    )}
+                </div>
 
-                                <div className="flex gap-4 mt-4">
-                                    <button
-                                        onClick={save}
-                                        className="btn btn-primary"
-                                        disabled={saving}
-                                    >
-                                        {saving ? "Saving..." : "Save"}
-                                    </button>
-                                    <button
-                                        onClick={remove}
-                                        className="btn btn-error"
-                                        disabled={deleting}
-                                    >
-                                        {deleting ? "Deleting..." : "Delete"}
-                                    </button>
-                                </div>
+                {/* Main content */}
+                <div className="space-y-4 text-gray-700 w-full flex flex-col gap-4">
+                    {isEditing ? (
+                        <>
+                            <div className="w-full">
+                                <label className="form-field">Name</label>
+                                <input
+                                    className="input input-field w-full"
+                                    value={form.location_name}
+                                    onChange={(e) =>
+                                        onChange("location_name", e.target.value)
+                                    }
+                                />
                             </div>
-                        )}
-                    </div>
+                            <div className="w-full">
+                                <label className="form-field">Description</label>
+                                <textarea
+                                    className="input input-field w-full"
+                                    value={form.location_description}
+                                    onChange={(e) =>
+                                        onChange("location_description", e.target.value)
+                                    }
+                                />
+                            </div>
+                            <div className="flex gap-4 w-full justify-end">
+                                <button
+                                    onClick={save}
+                                    className="save-button save-button:hover"
+                                    disabled={saving}
+                                >
+                                    {saving ? "Saving..." : "Save"}
+                                </button>
+                                <button
+                                    onClick={remove}
+                                    className="delete-button delete-button:hover"
+                                    disabled={deleting}
+                                >
+                                    {deleting ? "Deleting..." : "Delete"}
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <p>
+                                <strong>Description:</strong> {form.location_description}
+                            </p>
+                            <p className="flex flex-wrap gap-2">
+                                <strong>Visited on:</strong>{" "}
+                                {(form.session_ids || []).map((sessionId, idx) => (
+                                    <span
+                                        key={idx}
+                                        className="bg-purple-200 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full"
+                                    >
+                                        {formatSessionDate(sessionId)}
+                                    </span>
+                                ))}
+                            </p>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
     );
+
 }

@@ -475,7 +475,7 @@ export default function CampaignSummaryPage() {
                         <div className="flex justify-between mt-2">
                             <button
                                 onClick={handleDelete}
-                                className="px-3 py-1 bg-red-600 rounded hover:bg-red-700 font-bold cursor-pointer"
+                                className="delete-button delete-button:hover"
                             >
                                 Delete Campaign
                             </button>
@@ -484,7 +484,7 @@ export default function CampaignSummaryPage() {
                                 <button
                                     onClick={handleSave}
                                     disabled={saving}
-                                    className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 font-bold cursor-pointer"
+                                    className="save-button save-button:hover"
                                 >
                                     {saving ? "Saving..." : "Save"}
                                 </button>
@@ -504,31 +504,28 @@ export default function CampaignSummaryPage() {
             <div className="flex w-full max-w-4xl border-b border-gray-300">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
-                        activePage === "sessions"
-                            ? "border-b-4 border-red-600 text-red-600"
-                            : "text-gray-600 hover:text-gray-800"
-                    }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "sessions"
+                        ? "border-b-4 border-red-600 text-red-600"
+                        : "text-gray-600 hover:text-gray-800"
+                        }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
-                        activePage === "characters"
-                            ? "border-b-4 border-red-600 text-red-600"
-                            : "text-gray-600 hover:text-gray-800"
-                    }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "characters"
+                        ? "border-b-4 border-red-600 text-red-600"
+                        : "text-gray-600 hover:text-gray-800"
+                        }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
-                        activePage === "locations"
-                            ? "border-b-4 border-red-600 text-red-600"
-                            : "text-gray-600 hover:text-gray-800"
-                    }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "locations"
+                        ? "border-b-4 border-red-600 text-red-600"
+                        : "text-gray-600 hover:text-gray-800"
+                        }`}
                 >
                     Locations
                 </button>
@@ -592,8 +589,8 @@ export default function CampaignSummaryPage() {
                                                 c.imageURL?.startsWith("http")
                                                     ? c.imageURL
                                                     : c.imageURL
-                                                    ? `${baseUrl}${c.imageURL}`
-                                                    : "/images/character-placeholder.png"
+                                                        ? `${baseUrl}${c.imageURL}`
+                                                        : "/images/character-placeholder.png"
                                             }
                                             onError={(e) => {
                                                 (
