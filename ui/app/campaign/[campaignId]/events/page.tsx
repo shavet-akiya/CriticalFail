@@ -97,8 +97,8 @@ export default function CampaignEventsPage() {
     if (error) return <div className="text-red-500">Error: {error}</div>;
 
     return (
-        <div className="max-w-6xl mx-auto h-full overflow-hidden">
-            <h1 className="obsidian-colour text-4xl text-center">Event History</h1>
+        <div className="max-w-6xl mx-auto h-full overflow-hidden pt-4">
+            <h1 className="page-heading">Event History</h1>
             <div className="flex">
                 <div className="w-1/3 h-full p-4 sticky">
                     <input
@@ -118,7 +118,7 @@ export default function CampaignEventsPage() {
                     </div>
                 </div>
 
-                <div className="w-2/3 h-full overflow-y-auto p-6 text-black">
+                <div className="w-full h-full overflow-y-auto p-6 text-black">
 
                     {Object.entries(sessionsMap).length === 0 ? (
                         <div>No events match your search or filters.</div>
@@ -126,12 +126,12 @@ export default function CampaignEventsPage() {
                         Object.entries(sessionsMap).map(([sessionId, sessionEvents]) => (
                             <div
                                 key={sessionId}
-                                className="border p-4 rounded shadow-sm bg-white mb-6"
+                                className="w-full border p-4 rounded shadow-sm bg-white mb-6"
                             >
                                 <h2 className="text-xl font-bold mb-4">
                                     Session: {formatSessionDate(sessionId)}
                                 </h2>
-                                <div className="space-y-4">
+                                <div className="space-y-4 w-full">
                                     {sessionEvents.map((ev) => (
                                         <EventCard key={ev.event_id} event={ev} showEdit={true} />
                                     ))}

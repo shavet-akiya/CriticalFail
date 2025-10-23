@@ -19,7 +19,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         }
 
         if (pathname.startsWith("/campaign")) {
-            const parts = pathname.split("/").filter(Boolean); // e.g. ["campaign", "0", "summary"]
+            const parts = pathname.split("/").filter(Boolean);
 
             // /campaign/ or /campaign/id/
             if (parts.length === 1 || parts.length === 2) {
