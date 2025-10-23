@@ -41,7 +41,6 @@ const prompts = [
     "Inscribe your prophecy, adventurer — for tomorrow’s session awaits.",
     "What mischief brews next?",
     "The adventure starts with a note.",
-    "Your next session begins with a keystroke.",
 ];
 
 export default function SessionList() {
@@ -165,10 +164,10 @@ export default function SessionList() {
                 ) : (
                     <>
                         <div className="flex flex-col items-center mb-8 obsidian-colour">
-                            <h1 className="text-4xl text-center mb-4 ">
+                            <h1 className="text-4xl text-center mb-4 select-none">
                                 {campaignName} sessions
                             </h1>
-                            <h2 className="text-lg italic red-colour">{prompt}</h2>
+                            <h2 className="text-lg italic red-colour select-none">{prompt}</h2>
                         </div>
                         <ul className="space-y-4">
                             {sessions.map((s) => {
@@ -180,27 +179,27 @@ export default function SessionList() {
                                     >
                                         <div className="flex justify-between items-center ">
                                             <div>
-                                                <p className="text-xl font-semibold">
-                                                    <p>Session: {formatSessionDate(s.metadata?.session_id ?? s.id)}</p>{" "}
+                                                <p className="text-xl font-semibold select-none">
+                                                    <p>Session from {formatSessionDate(s.metadata?.session_id ?? s.id)}</p>{" "}
                                                 </p>
                                             </div>
                                         </div>
 
                                         <div className="flex flex-row justify-between items-center">
-                                            <p className="text-lg font-semibold">Session Notes</p>
+                                            <p className="text-lg font-semibold select-none">Session Notes</p>
 
                                         </div>
 
                                         {isEditing ? (
                                             <TextareaAutosize
-                                                className="max-w-6xl border p-2 rounded obsidian-colour resize-none"
+                                                className="max-w-6xl border border-red-600 p-4 rounded obsidian-colour resize-none"
                                                 minRows={2}
                                                 value={editedDocument}
                                                 disabled={savingSessionId === s.id}
                                                 onChange={(e) => setEditedDocument(e.target.value)}
                                             />
                                         ) : (
-                                            <p className="max-w-6xl w-full p-2 border border-transparent rounded obsidian-colour text-md whitespace-pre-wrap">
+                                            <p className="max-w-6xl w-full p-4 border border-gray-300 rounded obsidian-colour text-md whitespace-pre-wrap">
                                                 {s.document}
                                             </p>
                                         )}
