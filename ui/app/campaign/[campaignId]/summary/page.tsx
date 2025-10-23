@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import SessionCard from "@/components/SessionCard";
 import Link from "next/link";
+import Loading from "@/components/Loading";
 
 interface Campaign {
     campaign_id: string;
@@ -198,8 +199,7 @@ export default function CampaignSummaryPage() {
         }
     }
 
-    if (loading)
-        return <div className="p-6">Loading campaign and sessions...</div>;
+    if (loading) return <Loading />
     if (error) return <div className="p-6 text-red-500">{error}</div>;
     if (!campaign) return <div className="p-6">Campaign not found.</div>;
 

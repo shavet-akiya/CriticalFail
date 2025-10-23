@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { LocationCard } from "@/components/locationCard"; // import from new file
+import { LocationCard } from "@/components/locationCard";
+import Loading from "@/components/Loading";
 
 export type Location = {
     location_id: string;
@@ -39,7 +40,7 @@ export default function LocationsPage() {
         fetchLocations();
     }, [campaignId, baseUrl]);
 
-    if (loading) return <div>Loading locations…</div>;
+    if (loading) return <Loading />
     if (error) return <div className="text-red-500">Error: {error}</div>;
     if (locations.length === 0) return <div>No locations found.</div>;
 
