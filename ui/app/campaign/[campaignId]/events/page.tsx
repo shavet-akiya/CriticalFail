@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import EventCard, { Event } from "@/components/eventCard";
 import FilterSidebar from "@/components/FilterSidebar";
 import Loading from "@/components/Loading";
+import { formatSessionDate } from "@/helpers/helper_functions";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -96,43 +97,49 @@ export default function CampaignEventsPage() {
     if (error) return <div className="text-red-500">Error: {error}</div>;
 
     return (
-        <div className="flex flex-col sm:flex-row max-w-6xl mx-auto gap-6 p-4 items-start">
-            <div className="sm:w-64 flex-shrink-0 sm:sticky sm:top-4 self-start">
-                <FilterSidebar
-                    events={events}
-                    filters={filters}
-                    setFilters={setFilters}
-                />
-            </div>
+        <div className="max-w-6xl mx-auto h-full overflow-hidden">
+            <h1 className="obsidian-colour text-4xl text-center">Event History</h1>
+            <div className="flex">
+                <div className="w-1/3 h-full p-4 sticky">
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search events..."
+                        className="border p-2 rounded w-full mb-4 obsidian-colour"
+                    />
+                    <div className="h-full border border-black rounded-md shadow-md bg-white-colour p-6 flex flex-col">
 
-            <div className="flex-1 space-y-4 text-black">
-                <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search events..."
-                    className="border p-2 rounded w-full mb-4"
-                />
+                        <FilterSidebar
+                            events={events}
+                            filters={filters}
+                            setFilters={setFilters}
+                        />
+                    </div>
+                </div>
 
-                {Object.entries(sessionsMap).length === 0 ? (
-                    <div>No events match your search or filters.</div>
-                ) : (
-                    Object.entries(sessionsMap).map(([sessionId, sessionEvents]) => (
-                        <div
-                            key={sessionId}
-                            className="border p-4 rounded shadow-sm bg-white"
-                        >
-                            <h2 className="text-xl font-bold mb-4">
-                                Session {sessionId}
-                            </h2>
-                            <div className="space-y-4">
-                                {sessionEvents.map((ev) => (
-                                    <EventCard key={ev.event_id} event={ev} />
-                                ))}
+                <div className="w-2/3 h-full overflow-y-auto p-6 text-black">
+
+                    {Object.entries(sessionsMap).length === 0 ? (
+                        <div>No events match your search or filters.</div>
+                    ) : (
+                        Object.entries(sessionsMap).map(([sessionId, sessionEvents]) => (
+                            <div
+                                key={sessionId}
+                                className="border p-4 rounded shadow-sm bg-white mb-6"
+                            >
+                                <h2 className="text-xl font-bold mb-4">
+                                    Session: {formatSessionDate(sessionId)}
+                                </h2>
+                                <div className="space-y-4">
+                                    {sessionEvents.map((ev) => (
+                                        <EventCard key={ev.event_id} event={ev} />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    ))
-                )}
+                        ))
+                    )}
+                </div>
             </div>
         </div>
     );

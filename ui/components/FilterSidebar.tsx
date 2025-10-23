@@ -58,14 +58,13 @@ export default function FilterSidebar({
     };
 
     return (
-        <div className="bg-white-colour border rounded-xl p-4 shadow-sm obsidian-colour w-full sm:w-64 self-start">
-            <h3 className="text-lg font-semibold mb-3">Filters</h3>
+        <div className="select-none flex flex-col">
+            <h3 className="text-xl font-semibold mb-3 obsidian-colour">Filters</h3>
 
             <div className="flex flex-wrap gap-2">
                 {ALL_POSSIBLE_TAGS.map((tag) => {
                     const isAvailable = existingTags.has(tag);
                     const isActive = filters.includes(tag);
-
                     const formattedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
 
                     return (
@@ -74,7 +73,7 @@ export default function FilterSidebar({
                             onClick={() => toggleFilter(tag)}
                             disabled={!isAvailable}
                             className={`px-3 py-1 rounded-full border text-sm transition 
-          ${isActive
+                            ${isActive
                                     ? "bg-blue-500 text-white border-blue-500"
                                     : isAvailable
                                         ? "bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-300"
@@ -86,7 +85,6 @@ export default function FilterSidebar({
                     );
                 })}
             </div>
-
         </div>
     );
 }
