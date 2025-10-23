@@ -91,7 +91,7 @@ export default function NewCampaign() {
                 onSubmit={handleSubmit}
                 className="flex flex-col gap-4 p-8 max-w-lg mx-auto"
             >
-                <h1 className="text-4xl text-center pb-4">Create a Campaign</h1>
+                <h1 className="text-4xl text-center pb-4 obsidian-colour">Create a Campaign</h1>
 
                 <input
                     type="text"

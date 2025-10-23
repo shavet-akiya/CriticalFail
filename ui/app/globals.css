@@ -76,6 +76,19 @@
   outline-offset: 2px;
 }
 
+.btn-warning {
+  @apply relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold 
+         rounded-lg shadow-lg border transition-all duration-300 ease-in-out;
+
+  background-color: #a80d18; 
+  colour: #eff1ed;
+  border: 2px solid #8f0a13; 
+  user-select: none;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  select: none;
+}
 
 
 
