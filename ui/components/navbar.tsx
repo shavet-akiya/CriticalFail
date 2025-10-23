@@ -98,40 +98,48 @@ export default function NavBar({ found = true }: NavBarProps) {
 
             {/* Desktop Menu */}
             <ul className="hidden lg:flex menu menu-horizontal px-1 gap-4">
-                {menuItems.map((item) => (
-                    <li key={item.href}>
-                        <Link
-                            href={item.href}
-                            className={`px-2 py-1 rounded ${
-                                pathname === item.href
-                                    ? "bg-[#a80d18] text-black text-bold"
-                                    : "white-colour"
-                            }`}
-                        >
-                            {item.label}
-                        </Link>
-                    </li>
-                ))}
-            </ul>
+                {menuItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    const isNewSession = item.label === " + New Session";
 
-            {/* Mobile Menu */}
-            {menuOpen && (
-                <ul className="absolute top-[64px] left-0 right-0 bg-[#0B1215] flex flex-col items-center space-y-4 py-6 border-t border-gray-700 lg:hidden">
-                    {menuItems.map((item) => (
+                    return (
                         <li key={item.href}>
                             <Link
                                 href={item.href}
-                                className={`px-2 py-1 rounded ${
-                                    pathname === item.href
-                                        ? "bg-[#a80d18] text-black"
-                                        : "white-colour"
-                                }`}
-                                onClick={() => setMenuOpen(false)}
+                                className={`px-2 py-1 rounded transition ${isActive
+                                    ? "bg-[#a80d18] text-black font-bold"
+                                    : "text-white hover:text-[#a80d18]"
+                                    } ${isNewSession ? "outline-2 outline-[#a80d18]" : ""}`}
                             >
                                 {item.label}
                             </Link>
                         </li>
-                    ))}
+                    );
+                })}
+            </ul>
+
+
+            {/* Mobile Menu */}
+            {menuOpen && (
+                <ul className="absolute top-[64px] left-0 right-0 bg-[#0B1215] flex flex-col items-center space-y-4 py-6 border-t border-gray-700 lg:hidden">
+                    {menuItems.map((item) => {
+                        const isActive = pathname === item.href;
+                        const isNewSession = item.label === " + New Session";
+
+                        return (
+                            <li key={item.href}>
+                                <Link
+                                    href={item.href}
+                                    className={`px-2 py-1 rounded transition ${isActive ? "bg-[#a80d18] text-black font-bold" : "text-white hover:text-[#a80d18]"
+                                        } ${isNewSession ? "outline-2 outline-[#a80d18]" : ""}`}
+                                    onClick={() => setMenuOpen(false)}
+                                >
+                                    {item.label}
+                                </Link>
+                            </li>
+                        );
+                    })}
+
                 </ul>
             )}
         </nav>
