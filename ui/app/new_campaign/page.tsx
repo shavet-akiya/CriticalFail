@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/Toast";
+import Loading from "@/components/Loading";
 
 export default function NewCampaign() {
     const router = useRouter();
@@ -86,8 +87,8 @@ export default function NewCampaign() {
 
     return (
         <div className="w-screen h-screen bg-purple-colour flex items-center justify-center relative">
+            {loading && <Loading />} {/* <-- Shows the loading overlay */}
             {toast && <Toast type={toast.type} message={toast.message} />}
-
             <form
                 onSubmit={handleSubmit}
                 className="flex flex-col gap-4 p-8 max-w-lg w-full bg-white rounded-xl shadow-lg relative"
@@ -100,10 +101,12 @@ export default function NewCampaign() {
                 >
                     ×
                 </button>
+
                 <h1 className="text-4xl text-center pb-4 obsidian-colour">
                     Create a Campaign
                 </h1>
 
+                {/* Name input */}
                 <label className="block text-lg purple-colour font-semibold mb-2">
                     Name Your Campaign
                 </label>
@@ -116,6 +119,7 @@ export default function NewCampaign() {
                     required
                 />
 
+                {/* Description */}
                 <label className="block text-lg purple-colour font-semibold mb-2">
                     Campaign Description
                 </label>
@@ -127,6 +131,7 @@ export default function NewCampaign() {
                     required
                 />
 
+                {/* Image Upload */}
                 <label className="block text-lg purple-colour font-semibold mb-2">
                     Upload Campaign Image
                 </label>
