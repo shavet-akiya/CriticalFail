@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import type { Location } from "@/types/types"; 
+import type { Location } from "@/types/types";
 
 export function LocationCard({ location }: { location: Location }) {
     const { campaignId } = useParams<{ campaignId: string }>();
@@ -12,12 +12,28 @@ export function LocationCard({ location }: { location: Location }) {
             href={`/campaign/${campaignId}/locations/${location.location_id}`}
             className="block"
         >
-            <div className="card bg-base-100 shadow-sm hover:bg-gray-200 rounded-lg cursor-pointer p-4">
-                <h2 className="text-xl font-bold">{location.location_name}</h2>
+            <div className="bg-white rounded-2xl shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer p-6 flex flex-col justify-between gap-3 border border-gray-100">
+                <h2 className="text-xl font-bold text-black">
+                    {location.location_name}
+                </h2>
                 {location.location_description && (
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-gray-600 line-clamp-3">
                         {location.location_description}
                     </p>
+                )}
+
+                {/* Session badges */}
+                {location.session_ids && location.session_ids.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                        {location.session_ids.map((sessionId, idx) => (
+                            <span
+                                key={idx}
+                                className="bg-purple-200 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full"
+                            >
+                                {sessionId}
+                            </span>
+                        ))}
+                    </div>
                 )}
             </div>
         </Link>

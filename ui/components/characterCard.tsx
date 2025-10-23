@@ -23,11 +23,10 @@ export default function CharacterCard({
             onClick={() => setCurrentCharacter(character)}
             className="block"
         >
-            <div className="card bg-base-100 w-full max-w-sm shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer group relative">
+            <div className="card bg-purple-colour w-full max-w-sm shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer group relative">
                 {/* View button */}
-                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                    <button className="btn btn-primary rounded-full w-auto flex items-center gap-1">
-                        <img className="w-4 h-4" />
+                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                    <button className="bg-white-colour text-black font-semibold rounded-lg px-3 py-1 shadow-md hover:shadow-lg hover:bg-gray-100 transition-all flex items-center gap-1">
                         View
                     </button>
                 </div>
@@ -35,7 +34,7 @@ export default function CharacterCard({
                 {/* Character image */}
                 <figure>
                     <img
-                        className="rounded-t-lg w-full h-48 object-contain"
+                        className="rounded-lg pt-2 w-full h-48 object-cover"
                         src={imageSrc}
                         alt={character.name || "Character Image"}
                         onError={(e) => {
@@ -64,7 +63,7 @@ export default function CharacterCard({
                     </div>
 
                     {/* Stats grid */}
-                    <div className="grid grid-cols-4 gap-2 mt-4 text-sm">
+                    <div className="grid grid-cols-3 gap-2 mt-4 text-sm">
                         <div>
                             <strong>STR</strong> {character.STR ?? 0}
                         </div>

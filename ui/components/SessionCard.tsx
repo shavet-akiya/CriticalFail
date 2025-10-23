@@ -50,90 +50,127 @@ interface SessionCardProps {
     formatSessionDate: (id: string) => string;
 }
 
+function formatProcessedAt(isoString?: string) {
+    if (!isoString) return "N/A";
+    const [datePart, timePart] = isoString.split("T");
+    const time = timePart.replace("Z", "");
+    const [year, month, day] = datePart.split("-");
+    return `${day}/${month}/${year} ${time}`;
+}
+
 export default function SessionCard({
     session,
     formatSessionDate,
 }: SessionCardProps) {
     return (
-        <div
-            key={session.session_id}
-            className="p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 bg-white-colour"
-        >
+        <div className="rounded-xl shadow-md hover:shadow-lg transition-all duration-200 bg-white-colour">
             <p className="font-bold mb-2 text-lg obsidian-colour">
                 {formatSessionDate(session.session_id)} Session
             </p>
             <p className="mb-4 text-sm text-gray-500 italic">
-                Created at: {session.processed_at || "N/A"}
+                Created at: {formatProcessedAt(session.processed_at) || "N/A"}
             </p>
 
-            <div className="mb-4">
-                <h3 className="font-semibold text-lg obsidian-colour">
+            {/* Characters */}
+            <div className="mb-6">
+                <h3 className="font-semibold text-lg obsidian-colour mb-2">
                     Characters
                 </h3>
                 {session.characters?.length ? (
-                    <ul className="list-disc list-inside text-sm mt-1 space-y-1 obsidian-colour">
+                    <div className="flex flex-wrap gap-2">
                         {session.characters.map((c) => (
-                            <li key={c.character_id}>
-                                {c.name} ({c.class}, {c.race || "unknown"})
-                            </li>
+                            <div
+                                key={c.character_id}
+                                className="bg-purple-50 border border-purple-200 rounded-lg p-2 text-sm flex flex-col items-center w-42"
+                            >
+                                <p className="font-semibold text-sm text-gray-800">
+                                    {c.name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                    {c.class}, {c.race || "unknown"}
+                                </p>
+                                <div className="flex gap-1 text-xs mt-1">
+                                    <span className="bg-gray-200 rounded px-1 text-gray-500">
+                                        HP: {c.HP}
+                                    </span>
+                                    <span className="bg-gray-200 rounded px-1 text-gray-500">
+                                        AC: {c.AC}
+                                    </span>
+                                </div>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 ) : (
                     <p className="text-gray-500 text-sm">No characters.</p>
                 )}
             </div>
 
-            <div className="mb-4">
-                <h3 className="font-semibold text-lg obsidian-colour">
+            {/* Locations */}
+            <div className="mb-6">
+                <h3 className="font-semibold text-lg obsidian-colour mb-2">
                     Locations
                 </h3>
                 {session.locations?.length ? (
-                    <ul className="list-disc list-inside text-sm mt-1 space-y-1 obsidian-colour">
+                    <div className="flex flex-wrap gap-2">
                         {session.locations.map((l) => (
-                            <li key={l.location_id}>
-                                {l.location_name}: {l.location_description}
-                            </li>
+                            <div
+                                key={l.location_id}
+                                className="bg-green-50 border-l-4 border-green-400 p-2 rounded shadow-sm text-sm"
+                            >
+                                <p className="font-semibold text-gray-800">
+                                    {l.location_name}
+                                </p>
+                                <p className="text-gray-500">
+                                    {l.location_description}
+                                </p>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 ) : (
                     <p className="text-gray-500 text-sm">No locations.</p>
                 )}
             </div>
 
+            {/* Events */}
             <div>
-                <h3 className="font-semibold text-lg obsidian-colour">
+                <h3 className="font-semibold text-lg obsidian-colour mb-2">
                     Events
                 </h3>
                 {session.events?.length ? (
-                    <ol className="list-decimal mt-1 space-y-4">
+                    <div className="flex flex-col gap-4">
                         {session.events.map((e) => (
-                            <li
+                            <div
                                 key={e.event_id}
-                                className="border-b pb-2 obsidian-colour"
+                                className="border-l-4 border-blue-400 bg-blue-50 p-3 rounded shadow-sm"
                             >
-                                {/* Event Title */}
-                                <h4 className="font-semibold text-sm obsidian-colour">
+                                <h4 className="font-semibold text-sm obsidian-colour mb-1">
                                     {e.event}
                                 </h4>
-
-                                {/* Event Summary */}
-                                <p className="text-sm obsidian-colour">
+                                <p className="text-sm obsidian-colour mb-1">
                                     {e.event_summary}
                                 </p>
-
-                                {/* Additional Details */}
-                                <div className="text-xs text-gray-500 mt-1 space-x-2 obsidian-colour">
+                                <div className="flex flex-wrap gap-1 text-xs">
                                     {e.participants && (
-                                        <p>Participants: {e.participants}</p>
+                                        <span className="bg-blue-100 rounded px-1 text-gray-500">
+                                            {e.participants}
+                                        </span>
                                     )}
-                                    {e.location && <p>@ {e.location}</p>}
-                                    {e.event_tags && <p>[{e.event_tags}]</p>}
+                                    {e.location && (
+                                        <span className="bg-blue-100 rounded px-1 text-gray-500">
+                                            {e.location}
+                                        </span>
+                                    )}
+                                    {e.event_tags && (
+                                        <span className="bg-blue-100 rounded px-1 text-gray-500">
+                                            {e.event_tags}
+                                        </span>
+                                    )}
                                 </div>
-                            </li>
+                            </div>
                         ))}
-                    </ol>
+                    </div>
                 ) : (
-                    <p className="obsidian-colour text-sm">No events.</p>
+                    <p className="text-gray-500 text-sm">No events.</p>
                 )}
             </div>
         </div>

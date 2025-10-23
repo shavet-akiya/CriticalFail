@@ -21,8 +21,9 @@ function App() {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [sortOption, setSortOption] = useState<
-        "alphabetical" | "sessions" | "recent"
-    >("recent");
+        "alphabetical" | "sessions" | "recent" | ""
+    >("");
+
     const { setSelectedCampaign } = useCampaign();
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -100,7 +101,7 @@ function App() {
                 <div className="bottom-20 text-center flex flex-row gap-8 z-10">
                     <a
                         href="#campaign_selection"
-                        className="btn btn-primary scroll-smooth"
+                        className="btn btn-primary scroll-smooth pt-2 pb-2"
                     >
                         Select Campaign
                     </a>
@@ -113,56 +114,70 @@ function App() {
             {/* Campaign Selection Section */}
             <section
                 id="campaign_selection"
-                className="flex flex-col items-center justify-center bg-[#e0d6cb] snap-start min-h-screen select-none gap-8 p-4"
+                className="flex flex-col items-center justify-start bg-[#f5f1ec] snap-start min-h-screen select-none"
             >
                 {loading && <Loading />}
 
                 {!loading && (
                     <>
-                        <h2 className="text-4xl font-bold purple-colour mb-4 pt-8 text-center">
-                            Campaign Selection
-                        </h2>
+                        {/* Sticky title + search bar */}
+                        <div className="w-full max-w-7xl sticky top-0 bg-purple-colour z-20 py-6 px-4 rounded-b-lg shadow-md">
+                            <h2 className="text-4xl font-bold text-white mb-4 text-center">
+                                Campaign Selection
+                            </h2>
 
-                        {/* Search + Sort aligned with grid */}
-                        {campaigns.length > 0 && (
-                            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 w-full max-w-7xl mb-6">
-                                {/* Search input */}
-                                <input
-                                    type="text"
-                                    placeholder="Search campaigns..."
-                                    value={searchTerm}
-                                    onChange={(e) =>
-                                        setSearchTerm(e.target.value)
-                                    }
-                                    className="input input-neutral w-full sm:w-1/2"
-                                />
+                            {/* Search + Sort */}
+                            {campaigns.length > 0 && (
+                                <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-4">
+                                    <input
+                                        type="text"
+                                        placeholder="Search Campaigns..."
+                                        value={searchTerm}
+                                        onChange={(e) =>
+                                            setSearchTerm(e.target.value)
+                                        }
+                                        className="w-full sm:w-1/2 bg-white text-black rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                                    />
 
-                                {/* Sort / Filter select */}
-                                <select
-                                    value={sortOption}
-                                    onChange={(e) =>
-                                        setSortOption(e.target.value as any)
-                                    }
-                                    className="select select-neutral w-full sm:w-1/4"
-                                >
-                                    <option value="alphabetical">
-                                        Alphabetical
-                                    </option>
-                                    <option value="sessions">
-                                        Number of Sessions
-                                    </option>
-                                    <option value="recent">
-                                        Most Recently Created
-                                    </option>
-                                </select>
-                            </div>
-                        )}
+                                    <select
+                                        value={sortOption}
+                                        onChange={(e) =>
+                                            setSortOption(e.target.value as any)
+                                        }
+                                        className="w-full sm:w-1/4 bg-white text-black rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                                    >
+                                        <option value="" disabled>
+                                            Sort By...
+                                        </option>
+                                        <option value="alphabetical">
+                                            Alphabetical
+                                        </option>
+                                        <option value="sessions">
+                                            Number of Sessions
+                                        </option>
+                                        <option value="recent">
+                                            Most Recently Created
+                                        </option>
+                                    </select>
 
-                        {error && <p className="text-red-500">{error}</p>}
+                                    {/* New Campaign button */}
+                                    <Link
+                                        href="/new_campaign"
+                                        className="btn btn-primary w-full sm:w-auto 
+               transition-transform transform hover:scale-105 
+               hover:shadow-lg"
+                                    >
+                                        New Campaign
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+
+                        {error && <p className="text-red-500 mt-4">{error}</p>}
 
                         {/* No campaigns */}
                         {!error && filteredCampaigns.length === 0 && (
-                            <div className="flex flex-col items-center justify-center flex-1 text-center">
+                            <div className="flex flex-col items-center justify-center flex-1 text-center mt-10">
                                 <p className="text-lg mb-2 purple-colour">
                                     You don’t have any campaigns yet!
                                 </p>
@@ -181,23 +196,17 @@ function App() {
 
                         {/* Campaigns grid */}
                         {filteredCampaigns.length > 0 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 pb-16 w-full max-w-7xl">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 pt-8 w-full max-w-7xl">
                                 {filteredCampaigns.map((c) => (
-                                    <div
+                                    <CampaignCard
                                         key={c.campaign_id}
-                                        className="relative flex flex-col items-center"
-                                    >
-                                        <CampaignCard
-                                            campaignID={c.campaign_id}
-                                            campaignName={c.campaign_name}
-                                            sessionCount={c.session_ids.length}
-                                            imageUrl={c.campaign_image_url}
-                                            onClick={() =>
-                                                setSelectedCampaign(c)
-                                            }
-                                            onDelete={fetchCampaigns}
-                                        />
-                                    </div>
+                                        campaignID={c.campaign_id}
+                                        campaignName={c.campaign_name}
+                                        sessionCount={c.session_ids.length}
+                                        imageUrl={c.campaign_image_url}
+                                        onClick={() => setSelectedCampaign(c)}
+                                        onDelete={fetchCampaigns}
+                                    />
                                 ))}
                             </div>
                         )}

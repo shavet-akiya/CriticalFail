@@ -228,7 +228,7 @@ export default function CampaignSummaryPage() {
     if (!campaign) return <div className="p-6">Campaign not found.</div>;
 
     return (
-        <div className="p-6 flex flex-col items-center bg-white-colour min-h-screen w-full select-none gap-8">
+        <div className="flex flex-col items-center bg-white-colour h-full w-full max-w-20xl select-none gap-8 overflow-hidden">
             <div className="rounded-xl w-full max-w-4xl relative flex flex-col md:flex-row items-center md:items-start p-4 bg-purple-colour gap-6">
                 {/* Campaign Image */}
                 <img
@@ -250,7 +250,7 @@ export default function CampaignSummaryPage() {
                         {campaign.campaign_name}
                     </h1>
                     {campaign.campaign_description && (
-                        <p className="text-gray-200 whitespace-pre-line">
+                        <p className="text-gray-200 whitespace-pre-line pl-4 border-l-4 border-white italic">
                             {campaign.campaign_description}
                         </p>
                     )}
@@ -258,9 +258,9 @@ export default function CampaignSummaryPage() {
                 {/* Edit Button */}
                 <button
                     onClick={() => setEditing(true)}
-                    className="btn btn-primary absolute top-2 right-2 white-colour font-bold"
+                    className="absolute top-3 right-3 bg-white obsidian-colour font-bold px-4 py-2 rounded shadow hover:bg-gray-300"
                 >
-                    Edit Campaign
+                    Edit
                 </button>
             </div>
 
@@ -268,13 +268,21 @@ export default function CampaignSummaryPage() {
             {editing && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="flex flex-col gap-2 p-8 max-w-2xl w-full bg-white rounded-xl shadow-lg relative border-2 border-purple">
+                        {/* X button */}
+                        <button
+                            type="button"
+                            onClick={() => setEditing(false)}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold"
+                        >
+                            ×
+                        </button>
                         <h1 className="text-4xl text-center pb-4 obsidian-colour font-bold">
                             Edit Campaign
                         </h1>
                         <label className="block text-lg purple-colour font-semibold mb-1">
                             Campaign Name
                         </label>
-                        <p className="text-sm text-gray-800 mb-1">
+                        <p className="text-sm text-gray-900 mb-1">
                             This will rename your campaign.
                         </p>
                         <input
@@ -287,7 +295,7 @@ export default function CampaignSummaryPage() {
                         <label className="block text-lg purple-colour font-semibold mb-1">
                             Campaign Description
                         </label>
-                        <p className="text-sm text-gray-800 mb-1">
+                        <p className="text-sm text-gray-900 mb-1">
                             Provide a short description of your campaign.
                         </p>
                         <textarea
@@ -300,7 +308,7 @@ export default function CampaignSummaryPage() {
                         <label className="block text-lg purple-colour font-semibold mb-1">
                             Upload New Campaign Image
                         </label>
-                        <p className="text-sm text-gray-800 mb-1">
+                        <p className="text-sm text-gray-900 mb-1">
                             Choose an image that represents your campaign. Click
                             the box to pick a new image.
                         </p>
@@ -492,34 +500,34 @@ export default function CampaignSummaryPage() {
                 </div>
             )}
 
-            {/* Carousel Buttons */}
-            <div className="flex gap-20 w-full max-w-4xl">
+            {/* Carousel Tabs */}
+            <div className="flex w-full max-w-4xl border-b border-gray-300">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 rounded ${
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
                         activePage === "sessions"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-300"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
                     }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 rounded ${
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
                         activePage === "characters"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-300"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
                     }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 rounded ${
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
                         activePage === "locations"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-300"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
                     }`}
                 >
                     Locations
@@ -527,9 +535,9 @@ export default function CampaignSummaryPage() {
             </div>
 
             {/* Carousel Pages */}
-            <div className="flex flex-col gap-6 w-full max-w-4xl mt-8">
+            <div className="p-6 flex flex-col gap-6 w-full max-w-4xl mt-0 h-[60vh] overflow-auto">
                 {activePage === "sessions" && (
-                    <div className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                    <div className="bg-[#e0d6cb] p-6">
                         <h2 className="text-2xl font-bold mb-4 obsidian-colour">
                             Latest Session
                         </h2>
@@ -540,12 +548,12 @@ export default function CampaignSummaryPage() {
                             />
                         ) : (
                             <div>
-                                <p className="obsidian-colour text-lg font-medium">
+                                <p className="obsidian-colour">
                                     No recent sessions found.
                                 </p>
-                                <p className="obsidian-colour text-sm">
-                                    Complete a new session and it’ll appear here
-                                    once saved!
+                                <p className="obsidian-colour">
+                                    Venture forth! Record a new D&D session and
+                                    watch your tale unfold here once chronicled.
                                 </p>
                             </div>
                         )}
@@ -593,7 +601,7 @@ export default function CampaignSummaryPage() {
                                                 ).src =
                                                     "/images/character-placeholder.png";
                                             }}
-                                            className="w-12 h-12 object-cover rounded-full border border-gray-300"
+                                            className="w-12 h-12 object-cover rounded-full border-2 border-white"
                                         />
 
                                         {/* Character Info */}
@@ -632,7 +640,7 @@ export default function CampaignSummaryPage() {
                                 {locations.map((l) => (
                                     <li
                                         key={l.location_id}
-                                        className="border p-2 rounded bg-white-colour"
+                                        className="border p-2 rounded bg-white-colour cursor-pointer"
                                         onClick={() =>
                                             router.push(
                                                 `/campaign/${campaignId}/locations/${l.location_id}`

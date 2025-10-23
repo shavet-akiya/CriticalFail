@@ -302,9 +302,11 @@ export default function NewSession() {
     const handleSaveToDatabase = async () => {
         if (!completedTranscript) return;
 
+        // Close modal immediately
+        setCompletedTranscript(null);
+        setIsUploading(true);
+
         try {
-            setUploadStatus("Sending transcript for processing...");
-            setIsUploading(true);
             setUploadError("");
 
             // Send transcript for LLM processing
@@ -320,8 +322,6 @@ export default function NewSession() {
             const { job_id } = await response.json();
 
             if (!job_id) throw new Error("No job ID returned from server.");
-
-            setUploadStatus("AI is analyzing the session...");
 
             // Poll until job is completed
             let resultData = null;
@@ -343,9 +343,8 @@ export default function NewSession() {
 
             console.log("LLM processed session:", resultData);
 
-            // Merge new characters into the campaign
+            // Merge new characters into the campaign (same as before)
             if (resultData?.characters?.length) {
-                // Fetch existing campaign data
                 const campaignRes = await fetch(
                     `${baseUrl}/campaigns/${campaignId}`
                 );
@@ -356,7 +355,6 @@ export default function NewSession() {
                 const existingChars = campaignData.characters || [];
                 const newChars = resultData.characters;
 
-                // Merge characters by name
                 const mergedChars = [...existingChars];
 
                 newChars.forEach((char: any) => {
@@ -364,7 +362,6 @@ export default function NewSession() {
                         (c) => c.name.toLowerCase() === char.name.toLowerCase()
                     );
                     if (existingChar) {
-                        // Append new session_id if not already included
                         if (
                             !existingChar.session_ids.includes(
                                 resultData.session_id
@@ -375,7 +372,6 @@ export default function NewSession() {
                             );
                         }
                     } else {
-                        // Add entirely new character
                         mergedChars.push({
                             ...char,
                             session_ids: [resultData.session_id],
@@ -383,43 +379,34 @@ export default function NewSession() {
                     }
                 });
 
-                // Send PATCH request with updated characters
-                try {
-                    const patchRes = await fetch(
-                        `${baseUrl}/campaigns/${campaignId}`,
-                        {
-                            method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                characters: mergedChars,
-                                session_ids: [resultData.session_id],
-                            }),
-                        }
-                    );
-
-                    if (!patchRes.ok) {
-                        const errText = await patchRes.text();
-                        console.error("Failed to update campaign:", errText);
-                        setUploadError("Failed to update campaign characters.");
-                    } else {
-                        setUploadStatus(
-                            "Session saved and campaign characters updated successfully!"
-                        );
+                const patchRes = await fetch(
+                    `${baseUrl}/campaigns/${campaignId}`,
+                    {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            characters: mergedChars,
+                            session_ids: [resultData.session_id],
+                        }),
                     }
-                } catch (patchErr: any) {
-                    console.error("Error patching campaign:", patchErr);
-                    setUploadError(
-                        patchErr.message || "Failed to update campaign"
+                );
+
+                if (!patchRes.ok) {
+                    const errText = await patchRes.text();
+                    console.error("Failed to update campaign:", errText);
+                    setUploadError("Failed to update campaign characters.");
+                } else {
+                    setUploadStatus(
+                        "Session saved and campaign characters updated successfully!"
                     );
                 }
             }
-
-            setIsUploading(false);
-            setTimeout(() => setUploadStatus(""), 3000);
         } catch (err: any) {
             console.error(err);
             setUploadError(err.message || "Failed to process session");
+        } finally {
             setIsUploading(false);
+            setTimeout(() => setUploadStatus(""), 3000);
         }
     };
 
@@ -541,6 +528,12 @@ export default function NewSession() {
                         )}
                     </button>
                 )}
+                {/* Loading component below buttons */}
+                {isUploading && !isRecording && (
+                    <div className="mt-6 w-full flex flex-col items-center">
+                        <Loading />
+                    </div>
+                )}
             </div>
 
             {/* Status Messages */}
@@ -613,7 +606,7 @@ export default function NewSession() {
                         </div>
 
                         {/* Transcript Scroll Area */}
-                        <div className="p-6 max-h-[70vh] overflow-y-auto bg-gray-50">
+                        <div className="p-6 max-h-[60vh] overflow-y-auto bg-gray-50">
                             <pre className="whitespace-pre-wrap font-sans text-sm text-gray-800">
                                 {completedTranscript}
                             </pre>
@@ -625,11 +618,11 @@ export default function NewSession() {
                                 onClick={() => setCompletedTranscript(null)} // close modal
                                 className="px-5 py-2 rounded-lg text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 transition"
                             >
-                                Close
+                                Cancel
                             </button>
                             <button
                                 onClick={handleSaveToDatabase}
-                                className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow"
+                                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow"
                             >
                                 Scribe Your Session
                             </button>

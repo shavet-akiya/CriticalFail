@@ -88,10 +88,9 @@ export default function NewCampaign() {
     return (
         <div className="w-screen h-screen bg-purple-colour flex items-center justify-center relative">
             {loading && <Loading />}
-            {toast && <Toast type={toast.type} message={toast.message} />}
             <form
                 onSubmit={handleSubmit}
-                className="flex flex-col gap-2 p-8 max-w-lg w-full bg-white rounded-xl shadow-lg relative"
+                className="flex flex-col gap-2 p-8 max-w-2xl w-full bg-white rounded-xl shadow-lg relative border-2 border-purple"
             >
                 {/* X button */}
                 <button
@@ -116,7 +115,7 @@ export default function NewCampaign() {
                 <input
                     type="text"
                     placeholder="e.g. The Wild Beyond Witchlight"
-                    className="input input-neutral w-full"
+                    className="border p-2 rounded w-full mb-3 text-black"
                     value={campaignName}
                     onChange={(e) => setCampaignName(e.target.value)}
                     required
@@ -131,10 +130,9 @@ export default function NewCampaign() {
                 </p>
                 <textarea
                     placeholder="e.g. My first D&D game."
-                    className="textarea textarea-neutral w-full"
+                    className="border p-2 rounded w-full h-24 mb-3 text-black"
                     value={campaignDescription}
                     onChange={(e) => setCampaignDescription(e.target.value)}
-                    required
                 />
 
                 {/* Image Upload */}
@@ -142,25 +140,56 @@ export default function NewCampaign() {
                     Upload Campaign Image
                 </label>
                 <p className="text-sm text-gray-900 mb-1">
-                    Choose an image that represents your campaign. Click the box
-                    to pick a new image.
+                    Choose an image that represents your campaign.
                 </p>
                 <div className="flex flex-col gap-2 items-center">
                     {/* Clickable area */}
                     <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-64 h-64 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-gray-50"
+                        className="w-64 h-64 border-2 border-dashed border-gray-700 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-gray-300 relative"
                     >
                         {preview ? (
                             <img
                                 src={preview}
                                 alt="Preview"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover opacity-80"
                             />
                         ) : (
-                            <span className="absolute text-white text-center border border-black px-1">
+                            <span
+                                className="absolute text-white text-center px-2"
+                                style={{
+                                    textShadow: `
+          1px 1px 0 #353434ff,
+          -1px 1px 0 #353434ff,
+          1px -1px 0 #353434ff,
+          -1px -1px 0 #353434ff,
+          0 1px 0 #353434ff,
+          0 -1px 0 #353434ff,
+          1px 0 0 #353434ff,
+          -1px 0 0 #353434ff
+        `,
+                                }}
+                            >
                                 Click to pick an image
                             </span>
+                        )}
+                        {/* Remove image button */}
+                        {preview && (
+                            <button
+                                type="button"
+                                className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-gray-200 text-white font-bold rounded-full text-sm hover:bg-gray-400 cursor-pointer"
+                                onClick={() => {
+                                    setImage(null);
+                                    setPreview(null);
+                                    if (fileInputRef.current)
+                                        fileInputRef.current.value = "";
+                                }}
+                            >
+                                <img
+                                    src="/svg/x-circle.svg"
+                                    className="w-6 h-6" // adjust size as needed
+                                />
+                            </button>
                         )}
                     </div>
 
@@ -176,31 +205,22 @@ export default function NewCampaign() {
                             handleImageChange(file);
                         }}
                     />
-
-                    {/* Remove image button */}
-                    {preview && (
-                        <button
-                            type="button"
-                            className="btn btn-outline btn-error mt-2 w-full"
-                            onClick={() => {
-                                setImage(null);
-                                setPreview(null);
-                                if (fileInputRef.current)
-                                    fileInputRef.current.value = "";
-                            }}
-                        >
-                            Remove Image
-                        </button>
-                    )}
                 </div>
-
-                <button
-                    type="submit"
-                    className="btn btn-primary w-full"
-                    disabled={loading}
-                >
-                    {loading ? "Creating..." : "Create"}
-                </button>
+                <div className="flex gap-2 justify-end">
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 font-bold cursor-pointer"
+                    >
+                        {loading ? "Creating..." : "Create"}
+                    </button>
+                    <button
+                        onClick={() => router.push("/")}
+                        className="px-3 py-1 bg-gray-500 rounded hover:bg-gray-600 font-bold cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                </div>
             </form>
         </div>
     );

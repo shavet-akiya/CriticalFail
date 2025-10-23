@@ -178,8 +178,15 @@ export default function Characters() {
     };
 
     return (
-        <div className="pl-16 pr-16 pt-16 text-black">
-            <h1 className="text-3xl font-bold">Characters</h1>
+        <div className="pl-16 pr-16 text-black">
+            {/* Header Section */}
+            <div className="w-full bg-purple-colour rounded-b-lg shadow-md py-6 px-4 mb-6 text-center">
+                <h1 className="text-4xl font-bold text-white tracking-wide">
+                    Characters
+                </h1>
+            </div>
+
+            {/* Search + Add Character Section */}
             <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex gap-2 flex-wrap items-center w-full sm:w-auto">
                     <input
@@ -187,11 +194,11 @@ export default function Characters() {
                         placeholder="Search by name..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border px-3 py-2 rounded-lg w-full sm:w-72"
+                        className="border border-gray-300 px-3 py-2 rounded-lg w-full sm:w-72 text-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                     />
                     <button
                         onClick={() => setShowModal(true)}
-                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+                        className="bg-purple-colour text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md"
                     >
                         + Add Character
                     </button>
@@ -225,7 +232,7 @@ export default function Characters() {
             </div>
 
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white text-black rounded-2xl shadow-xl p-8 w-full max-w-lg overflow-y-auto max-h-[90vh]">
                         <h2 className="text-2xl font-bold mb-4">
                             Create New Character
