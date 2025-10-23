@@ -93,6 +93,7 @@ export default function CampaignSummaryPage() {
     useEffect(() => {
         async function fetchData() {
             try {
+                // Fetch campaign
                 const resCampaign = await fetch(
                     `${baseUrl}/campaign/${campaignId}`
                 );
@@ -110,7 +111,7 @@ export default function CampaignSummaryPage() {
                 setNewDescription(data.campaign_description || "");
                 setNewImageUrl(data.campaign_image_url || "");
 
-                // Fetch sessions
+                // Fetch all sessions
                 let sessionData: Session[] = [];
                 if (data.session_ids && data.session_ids.length > 0) {
                     const sessionPromises = data.session_ids.map(async (id) => {
@@ -119,6 +120,8 @@ export default function CampaignSummaryPage() {
                         return res.json() as Promise<Session>;
                     });
                     sessionData = await Promise.all(sessionPromises);
+
+                    // Sort by date ascending
                     sessionData.sort((a, b) => {
                         const dateA = a.processed_at
                             ? new Date(a.processed_at).getTime()
@@ -128,14 +131,13 @@ export default function CampaignSummaryPage() {
                             : 0;
                         return dateA - dateB;
                     });
-                    const mostRecent = sessionData.pop();
-                    if (mostRecent) {
-                        setSessions([mostRecent]);
-                        setLocations(mostRecent.locations || []);
-                    }
+
+                    // Show latest session
+                    const mostRecent = sessionData[sessionData.length - 1];
+                    if (mostRecent) setSessions([mostRecent]);
                 }
 
-                // Fetch characters
+                // Fetch all characters
                 const resChars = await fetch(
                     `${baseUrl}/characters/${campaignId}`
                 );
@@ -144,6 +146,27 @@ export default function CampaignSummaryPage() {
                 const charJson = await resChars.json();
                 const charData: Character[] = charJson.characters || [];
                 setCharacters(charData);
+
+                // Fetch all locations
+                const resLocs = await fetch(
+                    `${baseUrl}/campaign/locations/${campaignId}`
+                );
+                if (!resLocs.ok) throw new Error("Locations not found");
+                const locJson = await resLocs.json();
+                const locData: Location[] = locJson.locations || [];
+
+                // Optionally link session info to location
+                const linkedLocs = locData.map((loc) => {
+                    const session = sessionData.find(
+                        (s) => s.session_id === loc.session_id
+                    );
+                    return {
+                        ...loc,
+                        session_name: session?.processed_at || "",
+                    }; // or session?.session_name
+                });
+
+                setLocations(linkedLocs);
             } catch (e: any) {
                 setError(e.message);
             } finally {
@@ -200,7 +223,7 @@ export default function CampaignSummaryPage() {
         }
     }
 
-    if (loading) return <Loading />
+    if (loading) return <Loading />;
     if (error) return <div className="p-6 text-red-500">{error}</div>;
     if (!campaign) return <div className="p-6">Campaign not found.</div>;
 
@@ -409,7 +432,7 @@ export default function CampaignSummaryPage() {
                 {activePage === "sessions" && (
                     <div className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                         <h2 className="text-2xl font-bold mb-4 obsidian-colour">
-                            Recent Sessions
+                            Latest Session
                         </h2>
                         {sessions.length > 0 ? (
                             <SessionCard
@@ -512,6 +535,11 @@ export default function CampaignSummaryPage() {
                                     <li
                                         key={l.location_id}
                                         className="border p-2 rounded bg-white-colour"
+                                        onClick={() =>
+                                            router.push(
+                                                `/campaign/${campaignId}/locations/${l.location_id}`
+                                            )
+                                        }
                                     >
                                         <p className="font-semibold obsidian-colour">
                                             {l.location_name}

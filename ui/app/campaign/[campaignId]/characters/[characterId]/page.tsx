@@ -124,33 +124,46 @@ export default function CharacterProfile() {
         <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-gray-100 p-4">
             <div className="max-w-4xl mx-auto p-6 bg-white-colour rounded-xl shadow-md flex flex-col md:flex-row gap-6">
                 {/* Character Image */}
-                <div className="flex-shrink-0">
-                    {form.imageURL ? (
-                        <img
-                            src={
-                                form.imageURL.startsWith("http")
+                <div className="flex-shrink-0 w-48 h-48 rounded-xl overflow-hidden border border-gray-300 relative">
+                    <img
+                        src={
+                            form.imageURL
+                                ? form.imageURL.startsWith("http")
                                     ? form.imageURL
                                     : `${baseUrl}${form.imageURL}`
-                            }
-                            alt={form.name}
-                            className="w-48 h-48 object-cover rounded-xl border border-gray-300"
-                        />
-                    ) : (
-                        <div className="w-48 h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500">
-                            No Image
-                        </div>
-                    )}
+                                : "/images/character-placeholder.png"
+                        }
+                        alt={form.name}
+                        className="w-full h-full object-cover"
+                    />
                     {isEditing && (
-                        <input
-                            type="file"
-                            accept="image/*"
-                            className="mt-2 file-input w-full"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                uploadImage(file);
-                            }}
-                        />
+                        <label className="absolute inset-0 flex items-center justify-center bg-black-50/75 hover:bg-black hover:bg-opacity-25 cursor-pointer text-white font-semibold transition">
+                            Change Image
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+
+                                    // Show selected image immediately
+                                    const reader = new FileReader();
+                                    reader.onload = (event) => {
+                                        if (event.target?.result) {
+                                            onChange(
+                                                "imageURL",
+                                                event.target.result as string
+                                            );
+                                        }
+                                    };
+                                    reader.readAsDataURL(file);
+
+                                    // Then upload to server
+                                    uploadImage(file);
+                                }}
+                            />
+                        </label>
                     )}
                 </div>
 
@@ -158,7 +171,9 @@ export default function CharacterProfile() {
                 <div className="flex-1 flex flex-col justify-between">
                     <div>
                         <div className="flex justify-between items-center mb-4">
-                            <h1 className="text-3xl font-bold">{form.name}</h1>
+                            <h1 className="text-3xl font-bold obsidian-colour">
+                                {form.name}
+                            </h1>
                             <button
                                 className="btn btn-outline btn-sm"
                                 onClick={() => setIsEditing(!isEditing)}

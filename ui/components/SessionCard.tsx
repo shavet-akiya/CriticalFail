@@ -57,11 +57,8 @@ export default function SessionCard({
     return (
         <div
             key={session.session_id}
-            className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+            className="p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
         >
-            <h2 className="text-2xl font-bold mb-4 obsidian-colour">
-                Latest Session
-            </h2>
             <p className="font-bold mb-2 text-lg obsidian-colour">
                 {formatSessionDate(session.session_id)} Session
             </p>
@@ -108,7 +105,7 @@ export default function SessionCard({
                     Events
                 </h3>
                 {session.events?.length ? (
-                    <ol className="list-none mt-1 space-y-4">
+                    <ol className="list-decimal mt-1 space-y-4">
                         {session.events.map((e) => (
                             <li
                                 key={e.event_id}

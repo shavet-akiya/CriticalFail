@@ -38,8 +38,10 @@ export type CampaignTags=
   "misc";
 
 export type Location = {
-  id: number;
-  name: string;
+  location_id: string;           // unique ID of the location
+  location_name: string;         // name of the location
+  location_description: string;  // description of the location
+  session_ids: string[];         // array of session IDs where this location appears
 };
 
 
