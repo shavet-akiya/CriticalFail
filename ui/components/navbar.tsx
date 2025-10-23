@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRecording } from "@/contexts/RecordingContext";
 import { useCampaign } from "@/contexts/CampaignContext";
+import { usePathname } from "next/navigation";
 
 type NavBarProps = {
     found?: boolean;
@@ -13,10 +14,9 @@ export default function NavBar({ found = true }: NavBarProps) {
     const { isRecording, isPaused } = useRecording();
     const { selectedCampaign } = useCampaign();
     const [menuOpen, setMenuOpen] = useState(false);
-
+    const pathname = usePathname();
 
     if (!found) {
-        // Blank version
         return (
             <div className="fixed top-0 left-0 right-0 z-50 navbar bg-[#0B1215]">
                 <div className="flex-1 font-metal-mania">
@@ -31,6 +31,33 @@ export default function NavBar({ found = true }: NavBarProps) {
         );
     }
 
+    const menuItems = [
+        {
+            label: "Campaign Summary",
+            href: `/campaign/${selectedCampaign?.campaign_id}/summary`,
+        },
+        {
+            label: "Session Notes",
+            href: `/campaign/${selectedCampaign?.campaign_id}/sessions`,
+        },
+        {
+            label: "Event Timeline",
+            href: `/campaign/${selectedCampaign?.campaign_id}/events`,
+        },
+        {
+            label: "Characters",
+            href: `/campaign/${selectedCampaign?.campaign_id}/characters`,
+        },
+        {
+            label: "Locations",
+            href: `/campaign/${selectedCampaign?.campaign_id}/locations`,
+        },
+        {
+            label: "New Session",
+            href: `/campaign/${selectedCampaign?.campaign_id}/new_session`,
+        },
+    ];
+
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0B1215] flex items-center justify-between px-4 py-3">
             {/* Logo */}
@@ -40,7 +67,7 @@ export default function NavBar({ found = true }: NavBarProps) {
                 </Link>
             </div>
 
-            {/* Hamburger Button (visible on small screens) */}
+            {/* Hamburger Button */}
             <button
                 className="lg:hidden text-white focus:outline-none"
                 onClick={() => setMenuOpen((prev) => !prev)}
@@ -69,47 +96,42 @@ export default function NavBar({ found = true }: NavBarProps) {
                 </svg>
             </button>
 
+            {/* Desktop Menu */}
             <ul className="hidden lg:flex menu menu-horizontal px-1 gap-4">
-                <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/summary`} className="white-colour">Campaign Summary</Link></li>
-                <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/sessions`} className="white-colour">Session Notes</Link></li>
-                <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/events`} className="white-colour">Event Timeline</Link></li>
-                <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/characters`} className="white-colour">Characters</Link></li>
-                <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/locations`} className="white-colour">Locations</Link></li>
-                <li>
-                    <Link
-                        href={
-                            isRecording || isPaused
-                                ? `/campaign/${selectedCampaign?.campaign_id}/new_session/recording`
-                                : `/campaign/${selectedCampaign?.campaign_id}/new_session`
-                        }
-                        className="border-1 white-colour"
-                    >
-                        New Session
-                    </Link>
-                </li>
-            </ul>
-
-            {/* Dropdown Menu (mobile) */}
-            {menuOpen && (
-                <ul className="absolute top-[64px] left-0 right-0 bg-[#0B1215] flex flex-col items-center space-y-4 py-6 border-t border-gray-700 lg:hidden">
-                    <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/summary`} className="white-colour" onClick={() => setMenuOpen(false)}>Campaign Summary</Link></li>
-                    <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/sessions`} className="white-colour" onClick={() => setMenuOpen(false)}>Session Notes</Link></li>
-                    <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/events`} className="white-colour" onClick={() => setMenuOpen(false)}>Event Timeline</Link></li>
-                    <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/characters`} className="white-colour" onClick={() => setMenuOpen(false)}>Characters</Link></li>
-                    <li><Link href={`/campaign/${selectedCampaign?.campaign_id}/locations`} className="white-colour" onClick={() => setMenuOpen(false)}>Locations</Link></li>
-                    <li>
+                {menuItems.map((item) => (
+                    <li key={item.href}>
                         <Link
-                            href={
-                                isRecording || isPaused
-                                    ? `/campaign/${selectedCampaign?.campaign_id}/new_session/recording`
-                                    : `/campaign/${selectedCampaign?.campaign_id}/new_session`
-                            }
-                            className="border-1 white-colour"
-                            onClick={() => setMenuOpen(false)}
+                            href={item.href}
+                            className={`px-2 py-1 rounded ${
+                                pathname === item.href
+                                    ? "bg-[#a80d18] text-white"
+                                    : "white-colour"
+                            }`}
                         >
-                            New Session
+                            {item.label}
                         </Link>
                     </li>
+                ))}
+            </ul>
+
+            {/* Mobile Menu */}
+            {menuOpen && (
+                <ul className="absolute top-[64px] left-0 right-0 bg-[#0B1215] flex flex-col items-center space-y-4 py-6 border-t border-gray-700 lg:hidden">
+                    {menuItems.map((item) => (
+                        <li key={item.href}>
+                            <Link
+                                href={item.href}
+                                className={`px-2 py-1 rounded ${
+                                    pathname === item.href
+                                        ? "bg-[#a80d18] text-white"
+                                        : "white-colour"
+                                }`}
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                {item.label}
+                            </Link>
+                        </li>
+                    ))}
                 </ul>
             )}
         </nav>

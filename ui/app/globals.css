@@ -44,6 +44,10 @@
   background-color: var(--purple-colour);
 }
 
+.bg-red-colour {
+  background-color: var(--red-colour);
+}
+
 .border-purple {
   border-color: var(--purple-colour);
 }
