@@ -57,7 +57,7 @@ export default function SessionCard({
     return (
         <div
             key={session.session_id}
-            className="p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+            className="p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 bg-white-colour"
         >
             <p className="font-bold mb-2 text-lg obsidian-colour">
                 {formatSessionDate(session.session_id)} Session

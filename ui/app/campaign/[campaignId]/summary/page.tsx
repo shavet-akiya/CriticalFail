@@ -241,13 +241,12 @@ export default function CampaignSummaryPage() {
                         (e.target as HTMLImageElement).src =
                             "/images/campaign-placeholder.jpg";
                     }}
-                    alt={campaign.campaign_name}
                     className="rounded-lg w-48 h-48 object-contain"
                 />
 
                 {/* Name and Description */}
                 <div className="flex-1 flex flex-col justify-center">
-                    <h1 className="text-4xl font-bold mb-2">
+                    <h1 className="text-4xl font-bold mb-2 mt-2">
                         {campaign.campaign_name}
                     </h1>
                     {campaign.campaign_description && (
@@ -259,7 +258,7 @@ export default function CampaignSummaryPage() {
                 {/* Edit Button */}
                 <button
                     onClick={() => setEditing(true)}
-                    className="btn btn-primary absolute top-4 right-4"
+                    className="btn btn-primary absolute top-2 right-2 white-colour font-bold"
                 >
                     Edit Campaign
                 </button>
@@ -267,108 +266,208 @@ export default function CampaignSummaryPage() {
 
             {/* Edit Modal */}
             {editing && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-purple-colour bg-opacity-50">
-                    <div className="flex flex-col gap-4 p-8 max-w-lg w-full bg-white rounded-xl shadow-lg relative">
-                        <h1 className="text-4xl text-center pb-4 obsidian-colour">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="flex flex-col gap-2 p-8 max-w-2xl w-full bg-white rounded-xl shadow-lg relative border-2 border-purple">
+                        <h1 className="text-4xl text-center pb-4 obsidian-colour font-bold">
                             Edit Campaign
                         </h1>
-                        <label className="block text-lg purple-colour font-semibold mb-2">
+                        <label className="block text-lg purple-colour font-semibold mb-1">
                             Campaign Name
                         </label>
+                        <p className="text-sm text-gray-800 mb-1">
+                            This will rename your campaign.
+                        </p>
                         <input
                             type="text"
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
                             className="border p-2 rounded w-full mb-3 text-black"
-                            placeholder="Campaign Name"
+                            placeholder="e.g. The Wild Beyond Witchlight"
                         />
-                        <label className="block text-lg purple-colour font-semibold mb-2">
+                        <label className="block text-lg purple-colour font-semibold mb-1">
                             Campaign Description
                         </label>
+                        <p className="text-sm text-gray-800 mb-1">
+                            Provide a short description of your campaign.
+                        </p>
                         <textarea
                             value={newDescription}
                             onChange={(e) => setNewDescription(e.target.value)}
                             className="border p-2 rounded w-full h-24 mb-3 text-black"
-                            placeholder="Campaign Description"
+                            placeholder="e.g. My first D&D game."
                         />
-                        <label className="block text-lg purple-colour font-semibold mb-2">
+                        {/* Upload New Campaign Image */}
+                        <label className="block text-lg purple-colour font-semibold mb-1">
                             Upload New Campaign Image
                         </label>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            className="file-input w-full mb-3"
-                            onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
+                        <p className="text-sm text-gray-800 mb-1">
+                            Choose an image that represents your campaign. Click
+                            the box to pick a new image.
+                        </p>
+                        <div className="flex flex-col gap-2 items-center">
+                            {/* Clickable area */}
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-64 h-64 border-2 border-dashed border-gray-700 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-gray-300 relative"
+                            >
+                                {/* Old image at opacity */}
+                                {campaign?.campaign_image_url &&
+                                    !newImageUrl && (
+                                        <img
+                                            src={
+                                                campaign.campaign_image_url.startsWith(
+                                                    "http"
+                                                )
+                                                    ? campaign.campaign_image_url
+                                                    : `${baseUrl}${campaign.campaign_image_url}`
+                                            }
+                                            className="w-full h-full object-cover opacity-40"
+                                        />
+                                    )}
 
-                                const reader = new FileReader();
-                                reader.onloadend = () =>
-                                    setNewImageUrl(reader.result as string);
-                                reader.readAsDataURL(file);
-
-                                const formData = new FormData();
-                                formData.append("campaign_image", file);
-
-                                try {
-                                    const res = await fetch(
-                                        `${baseUrl}/campaign/${campaignId}/image`,
-                                        {
-                                            method: "POST",
-                                            body: formData,
+                                {/* New image preview */}
+                                {newImageUrl && (
+                                    <img
+                                        src={
+                                            newImageUrl.startsWith("http")
+                                                ? newImageUrl
+                                                : `${baseUrl}${newImageUrl}`
                                         }
-                                    );
-                                    const data = await res.json();
-                                    if (data.campaign_image_url)
-                                        setNewImageUrl(data.campaign_image_url);
-                                } catch (err) {
-                                    alert("Image upload failed: " + err);
-                                }
-                            }}
-                        />
+                                        className="w-full h-full object-cover"
+                                    />
+                                )}
 
-                        {newImageUrl && (
-                            <div className="relative mb-3">
-                                <img
-                                    src={
-                                        newImageUrl.startsWith("http")
-                                            ? newImageUrl
-                                            : `${baseUrl}${newImageUrl}`
-                                    }
-                                    alt="Campaign Preview"
-                                    className="max-h-48 object-contain rounded border border-gray-300"
-                                />
-                                <button
-                                    onClick={async () => {
-                                        setNewImageUrl("");
-                                        if (fileInputRef.current)
-                                            fileInputRef.current.value = "";
+                                {/* Overlay text */}
+                                {!newImageUrl && (
+                                    <span
+                                        className="absolute text-white text-center px-2"
+                                        style={{
+                                            textShadow: `
+          1px 1px 0 #353434ff,
+          -1px 1px 0 #353434ff,
+          1px -1px 0 #353434ff,
+          -1px -1px 0 #353434ff,
+          0 1px 0 #353434ff,
+          0 -1px 0 #353434ff,
+          1px 0 0 #353434ff,
+          -1px 0 0 #353434ff
+        `,
+                                        }}
+                                    >
+                                        Click to pick an image
+                                    </span>
+                                )}
 
-                                        try {
-                                            const res = await fetch(
-                                                `${baseUrl}/campaign/${campaignId}/image`,
-                                                { method: "DELETE" }
-                                            );
-                                            if (!res.ok)
-                                                throw new Error(
-                                                    "Failed to remove image"
+                                {/* Small Remove X */}
+                                {newImageUrl && (
+                                    <button
+                                        type="button"
+                                        onClick={async (e) => {
+                                            e.stopPropagation(); // prevent triggering file picker
+                                            setNewImageUrl("");
+                                            if (fileInputRef.current)
+                                                fileInputRef.current.value = "";
+
+                                            try {
+                                                const res = await fetch(
+                                                    `${baseUrl}/campaign/${campaignId}/image`,
+                                                    { method: "DELETE" }
                                                 );
-                                        } catch (err) {
-                                            alert(err);
-                                        }
-                                    }}
-                                    className="absolute top-1 right-1 bg-red-600 px-2 py-1 rounded text-white hover:bg-red-700"
-                                >
-                                    Remove
-                                </button>
+                                                if (!res.ok)
+                                                    throw new Error(
+                                                        "Failed to remove image"
+                                                    );
+                                            } catch (err) {
+                                                alert(err);
+                                            }
+                                        }}
+                                        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-gray-200 text-white font-bold rounded-full text-sm hover:bg-gray-400 cursor-pointer"
+                                    >
+                                        <img
+                                            src="/svg/x-circle.svg"
+                                            className="w-6 h-6" // adjust size as needed
+                                        />
+                                    </button>
+                                )}
                             </div>
-                        )}
+
+                            {/* Hidden file input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+
+                                    // Preview
+                                    const reader = new FileReader();
+                                    reader.onloadend = () =>
+                                        setNewImageUrl(reader.result as string);
+                                    reader.readAsDataURL(file);
+
+                                    // Upload to server
+                                    const formData = new FormData();
+                                    formData.append("campaign_image", file);
+
+                                    try {
+                                        const res = await fetch(
+                                            `${baseUrl}/campaign/${campaignId}/image`,
+                                            { method: "POST", body: formData }
+                                        );
+                                        const data = await res.json();
+                                        if (data.campaign_image_url)
+                                            setNewImageUrl(
+                                                data.campaign_image_url
+                                            );
+                                    } catch (err) {
+                                        alert("Image upload failed: " + err);
+                                    }
+                                }}
+                            />
+
+                            {/* Hidden file input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+
+                                    // Preview
+                                    const reader = new FileReader();
+                                    reader.onloadend = () =>
+                                        setNewImageUrl(reader.result as string);
+                                    reader.readAsDataURL(file);
+
+                                    // Upload to server
+                                    const formData = new FormData();
+                                    formData.append("campaign_image", file);
+
+                                    try {
+                                        const res = await fetch(
+                                            `${baseUrl}/campaign/${campaignId}/image`,
+                                            { method: "POST", body: formData }
+                                        );
+                                        const data = await res.json();
+                                        if (data.campaign_image_url)
+                                            setNewImageUrl(
+                                                data.campaign_image_url
+                                            );
+                                    } catch (err) {
+                                        alert("Image upload failed: " + err);
+                                    }
+                                }}
+                            />
+                        </div>
 
                         <div className="flex justify-between mt-2">
                             <button
                                 onClick={handleDelete}
-                                className="px-3 py-1 bg-red-600 rounded hover:bg-red-700"
+                                className="px-3 py-1 bg-red-600 rounded hover:bg-red-700 font-bold cursor-pointer"
                             >
                                 Delete Campaign
                             </button>
@@ -377,13 +476,13 @@ export default function CampaignSummaryPage() {
                                 <button
                                     onClick={handleSave}
                                     disabled={saving}
-                                    className="px-3 py-1 bg-green-600 rounded hover:bg-green-700"
+                                    className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 font-bold cursor-pointer"
                                 >
                                     {saving ? "Saving..." : "Save"}
                                 </button>
                                 <button
                                     onClick={() => setEditing(false)}
-                                    className="px-3 py-1 bg-gray-500 rounded hover:bg-gray-600"
+                                    className="px-3 py-1 bg-gray-500 rounded hover:bg-gray-600 font-bold cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -494,7 +593,6 @@ export default function CampaignSummaryPage() {
                                                 ).src =
                                                     "/images/character-placeholder.png";
                                             }}
-                                            alt={c.name}
                                             className="w-12 h-12 object-cover rounded-full border border-gray-300"
                                         />
 

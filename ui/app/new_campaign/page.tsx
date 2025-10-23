@@ -87,29 +87,32 @@ export default function NewCampaign() {
 
     return (
         <div className="w-screen h-screen bg-purple-colour flex items-center justify-center relative">
-            {loading && <Loading />} {/* <-- Shows the loading overlay */}
+            {loading && <Loading />}
             {toast && <Toast type={toast.type} message={toast.message} />}
             <form
                 onSubmit={handleSubmit}
-                className="flex flex-col gap-4 p-8 max-w-lg w-full bg-white rounded-xl shadow-lg relative"
+                className="flex flex-col gap-2 p-8 max-w-lg w-full bg-white rounded-xl shadow-lg relative"
             >
                 {/* X button */}
                 <button
                     type="button"
                     onClick={() => router.push("/")}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold"
                 >
                     ×
                 </button>
 
-                <h1 className="text-4xl text-center pb-4 obsidian-colour">
+                <h1 className="text-4xl text-center pb-4 purple-colour font-bold">
                     Create a Campaign
                 </h1>
 
                 {/* Name input */}
-                <label className="block text-lg purple-colour font-semibold mb-2">
+                <label className="block text-lg purple-colour font-semibold mb-1">
                     Name Your Campaign
                 </label>
+                <p className="text-sm text-gray-900 mb-1">
+                    This will name your campaign.
+                </p>
                 <input
                     type="text"
                     placeholder="e.g. The Wild Beyond Witchlight"
@@ -120,9 +123,12 @@ export default function NewCampaign() {
                 />
 
                 {/* Description */}
-                <label className="block text-lg purple-colour font-semibold mb-2">
+                <label className="block text-lg purple-colour font-semibold mb-1">
                     Campaign Description
                 </label>
+                <p className="text-sm text-gray-900 mb-1">
+                    Provide a short description of your campaign.
+                </p>
                 <textarea
                     placeholder="e.g. My first D&D game."
                     className="textarea textarea-neutral w-full"
@@ -132,14 +138,37 @@ export default function NewCampaign() {
                 />
 
                 {/* Image Upload */}
-                <label className="block text-lg purple-colour font-semibold mb-2">
+                <label className="block text-lg purple-colour font-semibold mb-1">
                     Upload Campaign Image
                 </label>
-                <div className="flex flex-col gap-2">
+                <p className="text-sm text-gray-900 mb-1">
+                    Choose an image that represents your campaign. Click the box
+                    to pick a new image.
+                </p>
+                <div className="flex flex-col gap-2 items-center">
+                    {/* Clickable area */}
+                    <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-64 h-64 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-gray-50"
+                    >
+                        {preview ? (
+                            <img
+                                src={preview}
+                                alt="Preview"
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <span className="absolute text-white text-center border border-black px-1">
+                                Click to pick an image
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Hidden file input */}
                     <input
                         type="file"
                         accept="image/*"
-                        className="file-input w-full"
+                        className="hidden"
                         ref={fileInputRef}
                         onChange={(e) => {
                             const file = e.target.files?.[0];
@@ -147,26 +176,21 @@ export default function NewCampaign() {
                             handleImageChange(file);
                         }}
                     />
+
+                    {/* Remove image button */}
                     {preview && (
-                        <>
-                            <img
-                                src={preview}
-                                alt="Preview"
-                                className="rounded-xl max-h-64 object-contain mx-auto border border-gray-300"
-                            />
-                            <button
-                                type="button"
-                                className="btn btn-outline btn-error w-full"
-                                onClick={() => {
-                                    setImage(null);
-                                    setPreview(null);
-                                    if (fileInputRef.current)
-                                        fileInputRef.current.value = "";
-                                }}
-                            >
-                                Remove Image
-                            </button>
-                        </>
+                        <button
+                            type="button"
+                            className="btn btn-outline btn-error mt-2 w-full"
+                            onClick={() => {
+                                setImage(null);
+                                setPreview(null);
+                                if (fileInputRef.current)
+                                    fileInputRef.current.value = "";
+                            }}
+                        >
+                            Remove Image
+                        </button>
                     )}
                 </div>
 
