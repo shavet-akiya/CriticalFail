@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import { formatSessionDate } from "@/helpers/helper_functions";
 import Loading from "@/components/Loading";
 import { useCampaign } from "@/contexts/CampaignContext";
-
-
-
+import TextareaAutosize from "react-textarea-autosize";
 
 interface Character {
     name: string;
@@ -195,15 +192,15 @@ export default function SessionList() {
                                         </div>
 
                                         {isEditing ? (
-                                            <textarea
-                                                className="w-full border p-2 rounded obsidian-colour"
-                                                rows={6}
+                                            <TextareaAutosize
+                                                className="max-w-6xl border p-2 rounded obsidian-colour resize-none"
+                                                minRows={2}
                                                 value={editedDocument}
                                                 disabled={savingSessionId === s.id}
                                                 onChange={(e) => setEditedDocument(e.target.value)}
                                             />
                                         ) : (
-                                            <p className="w-full p-2 rounded obsidian-colour text-md whitespace-pre-wrap">
+                                            <p className="max-w-6xl w-full p-2 border border-transparent rounded obsidian-colour text-md whitespace-pre-wrap">
                                                 {s.document}
                                             </p>
                                         )}
