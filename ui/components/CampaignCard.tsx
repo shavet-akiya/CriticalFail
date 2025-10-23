@@ -34,20 +34,19 @@ export default function CampaignCard({
                     <h2 className="card-title text-2xl">{campaignName}</h2>
                     <p>Sessions thus far: {sessionCount}</p>
                     <figure>
-                        {imageUrl ? (
-                            // Use the full URL to FastAPI
-                            <img
-                                src={`${baseUrl}${imageUrl}`}
-                                alt="Campaign Image"
-                                className="rounded-lg max-h-64 object-contain"
-                            />
-                        ) : (
-                            <img
-                                src="images/campaign-placeholder.jpg" // fallback image in public folder
-                                alt="Default Campaign Image"
-                                className="rounded-lg max-h-64 object-contain"
-                            />
-                        )}
+                        <img
+                            src={
+                                imageUrl
+                                    ? `${baseUrl}${imageUrl}`
+                                    : "/images/campaign-placeholder.jpg"
+                            }
+                            alt="Campaign Image"
+                            className="rounded-lg max-h-64 object-contain"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                    "/images/campaign-placeholder.jpg";
+                            }}
+                        />
                     </figure>
                     <div className="card-actions justify-end">
                         <button

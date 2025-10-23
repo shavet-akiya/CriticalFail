@@ -41,10 +41,10 @@ def save_campaign_to_chroma(campaign_name: str, session_ids: list[str]) -> str:
 
 
 def save_session_to_chroma(session_data: dict) -> str:
-    chroma_id = str(uuid.uuid4())[:6]
+    # Use the session_id as the Chroma document ID
+    session_id = session_data.get("session_id", str(uuid.uuid4())[:6])
     summary = session_data.get("summary", {})
     summary_text = summary.get("session_summary", "No summary")
-    session_id = session_data.get("session_id", str(uuid.uuid4())[:6])
     campaign_id = session_data.get("campaign_id", "Unassigned")
 
     # --- Prepare metadata ---
@@ -60,14 +60,14 @@ def save_session_to_chroma(session_data: dict) -> str:
         "events": json.dumps(session_data.get("events", [])),
     }
 
-    # Save main session
+    # Save main session using session_id as the ID
     session_collection.add(
         documents=[summary_text],
-        ids=[chroma_id],
+        ids=[session_id],  # <-- use session_id here
         metadatas=[metadata],
     )
 
-    # --- Save characters, ensuring consistent character_id ---
+    # --- Save characters, locations, and events ---
     from ._characters import save_characters
     from ._locations import save_locations
     from ._events import save_events
@@ -76,7 +76,7 @@ def save_session_to_chroma(session_data: dict) -> str:
     save_locations(session_collection, summary, session_data, campaign_id)
     save_events(session_collection, summary, session_data)
 
-    return chroma_id
+    return session_id
 
 
 # --- When fetching sessions, deserialize lists ---

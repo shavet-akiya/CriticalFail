@@ -400,6 +400,7 @@ class UpdateCampaignRequest(BaseModel):
     campaign_id: str
     campaign_name: str | None = None
     campaign_image_url: str | None = None
+    campaign_description: str | None = None
 
 
 @router.patch("/{campaign_id}")
@@ -428,5 +429,83 @@ async def update_campaign(campaign_id: str, req: UpdateCampaignRequest):
             "campaign_image_url": meta.get("campaign_image_url", ""),
         }
 
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.post("/{campaign_id}/image")
+async def update_campaign_image(
+    campaign_id: str,
+    campaign_image: UploadFile = File(...),
+):
+    """
+    Upload a new image for a campaign.
+    Replaces existing image if present.
+    """
+    try:
+        # Fetch campaign
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+        )
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        meta = campaign["metadatas"][0]
+        campaign_chroma_id = campaign["ids"][0]
+
+        # Save new image
+        file_ext = os.path.splitext(campaign_image.filename)[1]
+        filename = f"{campaign_id}{file_ext}"
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        with open(file_path, "wb") as f:
+            f.write(await campaign_image.read())
+
+        # Update campaign metadata
+        image_url = f"/campaign_images/{filename}"
+        meta["campaign_image_url"] = image_url
+        session_collection.update(ids=[campaign_chroma_id], metadatas=[meta])
+
+        return {"status": "updated", "campaign_image_url": image_url}
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.delete("/{campaign_id}/image")
+async def delete_campaign_image(campaign_id: str):
+    """
+    Remove the campaign image: deletes the file (if exists) and clears the URL in metadata.
+    """
+    try:
+        # Fetch campaign
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+        )
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        meta = campaign["metadatas"][0]
+        chroma_id = campaign["ids"][0]
+
+        # Delete file from disk if exists
+        image_url = meta.get("campaign_image_url", "")
+        if image_url:
+            filename = os.path.basename(image_url)
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+        # Clear image URL in metadata
+        meta["campaign_image_url"] = ""
+        session_collection.update(ids=[chroma_id], metadatas=[meta])
+
+        return {
+            "status": "removed",
+            "campaign_id": campaign_id,
+            "campaign_image_url": "",
+        }
+
+    except HTTPException:
+        raise
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

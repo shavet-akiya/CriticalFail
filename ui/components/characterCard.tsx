@@ -2,12 +2,20 @@
 
 import { useCharacter } from "@/contexts/CharacterContext";
 import Link from "next/link";
-import { useParams } from "next/navigation"; // ✅ import useParams
+import { useParams } from "next/navigation";
 import { Character } from "@/types/types";
 
-export default function CharacterCard({ character }: { character: Character }) {
+interface CharacterCardProps {
+    character: Character;
+    imageSrc: string;
+}
+
+export default function CharacterCard({
+    character,
+    imageSrc,
+}: CharacterCardProps) {
     const { setCurrentCharacter } = useCharacter();
-    const { campaignId } = useParams<{ campaignId: string }>(); // ✅ get campaignId from route
+    const { campaignId } = useParams<{ campaignId: string }>();
 
     return (
         <Link
@@ -29,13 +37,17 @@ export default function CharacterCard({ character }: { character: Character }) {
                 </div>
 
                 {/* Character image */}
-                <div>
+                <figure>
                     <img
-                        className="rounded-t-lg"
-                        src="/images/picrew.png"
-                        alt="Character Image"
+                        className="rounded-t-lg w-full h-48 object-contain"
+                        src={imageSrc}
+                        alt={character.name || "Character Image"}
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                                "./images/character-placeholder.png";
+                        }}
                     />
-                </div>
+                </figure>
 
                 {/* Character info */}
                 <div className="card-body text-white">

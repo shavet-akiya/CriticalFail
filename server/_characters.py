@@ -1,10 +1,11 @@
 import uuid
 import json
 from pydantic import BaseModel
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from ._database import session_collection
 from ._sessions import get_session_ids_for_campaign
+import os
 
 router = APIRouter()
 
@@ -37,6 +38,8 @@ def save_characters(collection, summary, session_data, campaign_id):
         name = character.get("name", "Unknown Character")
         # Reuse existing character_id if name exists
         character_id = existing_chars.get(name, str(uuid.uuid4())[:6])
+        # Ensure imageURL is included (or empty string if missing)
+        image_url = character.get("imageURL", "")
 
         collection.add(
             documents=[name],
@@ -111,6 +114,10 @@ async def get_campaign_character(campaign_id: str, character_id: str):
 
         # Optionally remove session_ids if you don’t want to expose them
         character.pop("session_ids", None)
+
+        # Ensure imageURL is returned (or null if missing)
+        if "imageURL" not in character:
+            character["imageURL"] = None
 
         return {"character": character}
 
@@ -247,6 +254,7 @@ class CreateCharacterRequest(BaseModel):
     INT: int = 0
     WIS: int = 0
     CHA: int = 0
+    
 
 
 # create character campaign - /characters/campaign_id
@@ -410,5 +418,108 @@ async def get_campaign_character_instances(campaign_id: str, name: str):
 
     except HTTPException:
         raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+# --- Character images ---
+CHAR_IMAGE_DIR = "server/images/character_images"
+os.makedirs(CHAR_IMAGE_DIR, exist_ok=True)
+
+
+@router.post("/{campaign_id}/{character_id}/image")
+async def update_character_image(
+    campaign_id: str,
+    character_id: str,
+    character_image: UploadFile = File(...),
+):
+    """
+    Upload a new image for a character.
+    Replaces existing image if present.
+    Saves file to disk and updates character metadata.
+    """
+    try:
+        # Fetch campaign
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+        )
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        meta = campaign["metadatas"][0]
+        campaign_chroma_id = campaign["ids"][0]
+
+        # Load characters
+        characters = json.loads(meta.get("characters", "[]"))
+
+        # Find character
+        char = next(
+            (c for c in characters if c.get("character_id") == character_id), None
+        )
+        if not char:
+            raise HTTPException(status_code=404, detail="Character not found")
+
+        # Save new image
+        ext = os.path.splitext(character_image.filename)[1]
+        filename = f"{character_id}{ext}"
+        file_path = os.path.join(CHAR_IMAGE_DIR, filename)
+        with open(file_path, "wb") as f:
+            f.write(await character_image.read())
+
+        # Update metadata
+        image_url = f"/character_images/{filename}"
+        char["imageURL"] = image_url
+
+        # Save back updated characters
+        meta["characters"] = json.dumps(characters)
+        session_collection.update(ids=[campaign_chroma_id], metadatas=[meta])
+
+        return {"status": "updated", "imageURL": image_url}
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.delete("/{campaign_id}/{character_id}/image")
+async def delete_character_image(campaign_id: str, character_id: str):
+    """
+    Delete character image from disk and clear imageURL in metadata.
+    """
+    try:
+        # Fetch campaign
+        campaign = session_collection.get(
+            where={"$and": [{"type": "campaign"}, {"campaign_id": campaign_id}]}
+        )
+        if not campaign or not campaign.get("ids"):
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        meta = campaign["metadatas"][0]
+        campaign_chroma_id = campaign["ids"][0]
+
+        # Load characters
+        characters = json.loads(meta.get("characters", "[]"))
+
+        # Find character
+        char = next(
+            (c for c in characters if c.get("character_id") == character_id), None
+        )
+        if not char:
+            raise HTTPException(status_code=404, detail="Character not found")
+
+        # Delete file if exists
+        image_url = char.get("imageURL", "")
+        if image_url:
+            filename = os.path.basename(image_url)
+            file_path = os.path.join(CHAR_IMAGE_DIR, filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+        # Clear imageURL
+        char["imageURL"] = ""
+        meta["characters"] = json.dumps(characters)
+        session_collection.update(ids=[campaign_chroma_id], metadatas=[meta])
+
+        return {"status": "removed", "imageURL": ""}
+
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

@@ -34,14 +34,20 @@ export default function Characters() {
         CHA: 10,
     });
 
+    const [newCharacterImage, setNewCharacterImage] = useState<File | null>(
+        null
+    );
+    const [newCharacterImagePreview, setNewCharacterImagePreview] = useState<
+        string | null
+    >(null);
+
     // --- Fetch all characters ---
     const fetchCharacters = async (): Promise<Character[]> => {
         if (!campaignId) return [];
         const res = await fetch(`${baseUrl}/characters/${campaignId}`, {
             cache: "no-store",
         });
-        if (!res.ok)
-            throw new Error(`GET /api/characters failed: ${res.status}`);
+        if (!res.ok) throw new Error(`GET /characters failed: ${res.status}`);
         const data = await res.json();
 
         return (data.characters ?? []).map((char: any) => ({
@@ -58,6 +64,7 @@ export default function Characters() {
             INT: char.INT ?? 0,
             WIS: char.WIS ?? 0,
             CHA: char.CHA ?? 0,
+            imageURL: char.imageURL || "",
         }));
     };
 
@@ -68,7 +75,7 @@ export default function Characters() {
             const res = await fetch(
                 `${baseUrl}/campaign/${campaignId}/sessions`
             );
-            if (!res.ok) throw new Error(``);
+            if (!res.ok) throw new Error(`Failed to fetch sessions`);
             const data = await res.json();
             setSessions(data.sessions ?? []);
         } catch (e) {
@@ -90,30 +97,56 @@ export default function Characters() {
         return true;
     });
 
+    // --- Handle character creation and image upload ---
     const handleCreateCharacter = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!campaignId) return;
 
         try {
-            const payload = {
-                ...newCharacter,
-                session_ids: selectedSessions, // leave empty if none selected
-                campaign_id: campaignId,
-            };
+            // Step 1: Create character
+            const createRes = await fetch(
+                `${baseUrl}/characters/${campaignId}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        ...newCharacter,
+                        campaign_id: campaignId,
+                        session_ids: selectedSessions,
+                    }),
+                }
+            );
 
-            const res = await fetch(`${baseUrl}/characters/${campaignId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
+            if (!createRes.ok)
+                throw new Error(`Create character failed: ${createRes.status}`);
+            const characterData = await createRes.json();
+            const createdCharacter: Character = characterData.character;
 
-            if (!res.ok) throw new Error(`POST failed: ${res.status}`);
-            await res.json();
+            // Step 2: Upload image if exists
+            if (newCharacterImage) {
+                const formData = new FormData();
+                formData.append("character_image", newCharacterImage);
 
-            const updatedCharacters = await fetchCharacters();
-            setCharacters(updatedCharacters);
+                const imageRes = await fetch(
+                    `${baseUrl}/characters/${campaignId}/${createdCharacter.characterId}/image`,
+                    {
+                        method: "POST",
+                        body: formData,
+                    }
+                );
 
-            // Reset modal
+                if (!imageRes.ok)
+                    throw new Error(`Image upload failed: ${imageRes.status}`);
+                const imageData = await imageRes.json();
+                if (imageData.imageURL) {
+                    createdCharacter.imageURL = imageData.imageURL;
+                }
+            }
+
+            // Step 3: Update state immediately
+            setCharacters((prev) => [...prev, createdCharacter]);
+
+            // Step 4: Reset modal
             setShowModal(false);
             setNewCharacter({
                 name: "",
@@ -130,6 +163,8 @@ export default function Characters() {
                 CHA: 10,
             });
             setSelectedSessions([]);
+            setNewCharacterImage(null);
+            setNewCharacterImagePreview(null);
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
@@ -151,17 +186,26 @@ export default function Characters() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16">
-                {filteredCharacters.map((character) => (
-                    <CharacterCard
-                        key={character.characterId}
-                        character={character}
-                    />
-                ))}
+                {filteredCharacters.map((character) => {
+                    const imageSrc = character.imageURL
+                        ? character.imageURL.startsWith("http")
+                            ? character.imageURL
+                            : `${baseUrl}${character.imageURL}`
+                        : "/images/character-placeholder.png";
+
+                    return (
+                        <CharacterCard
+                            key={character.characterId}
+                            character={character}
+                            imageSrc={imageSrc}
+                        />
+                    );
+                })}
             </div>
 
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white text-black rounded-2xl shadow-xl p-8 w-full max-w-lg">
+                    <div className="bg-white text-black rounded-2xl shadow-xl p-8 w-full max-w-lg overflow-y-auto max-h-[90vh]">
                         <h2 className="text-2xl font-bold mb-4">
                             Create New Character
                         </h2>
@@ -170,6 +214,7 @@ export default function Characters() {
                             onSubmit={handleCreateCharacter}
                             className="space-y-4"
                         >
+                            {/* --- Name / Race / Class / NPC --- */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-1">
@@ -235,6 +280,35 @@ export default function Characters() {
                                         Is NPC?
                                     </label>
                                 </div>
+                            </div>
+
+                            {/* --- Image Picker --- */}
+                            <div>
+                                <label className="block text-sm font-semibold mb-1">
+                                    Character Image
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const file =
+                                            e.target.files?.[0] || null;
+                                        setNewCharacterImage(file);
+                                        setNewCharacterImagePreview(
+                                            file
+                                                ? URL.createObjectURL(file)
+                                                : null
+                                        );
+                                    }}
+                                    className="w-full border rounded-lg px-3 py-2"
+                                />
+                                {newCharacterImagePreview && (
+                                    <img
+                                        src={newCharacterImagePreview}
+                                        alt="Preview"
+                                        className="mt-2 w-32 h-32 object-cover rounded-lg border"
+                                    />
+                                )}
                             </div>
 
                             {/* --- Session Selector --- */}
@@ -311,7 +385,11 @@ export default function Characters() {
                             <div className="flex justify-end gap-4 pt-4">
                                 <button
                                     type="button"
-                                    onClick={() => setShowModal(false)}
+                                    onClick={() => {
+                                        setShowModal(false);
+                                        setNewCharacterImage(null);
+                                        setNewCharacterImagePreview(null);
+                                    }}
                                     className="px-4 py-2 rounded-lg border border-gray-400 hover:bg-gray-200 transition"
                                 >
                                     Cancel

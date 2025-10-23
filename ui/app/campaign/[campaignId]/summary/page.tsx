@@ -68,6 +68,7 @@ function formatSessionDate(sessionId: string): string {
 export default function CampaignSummaryPage() {
     const { campaignId } = useParams();
     const router = useRouter();
+
     const [campaign, setCampaign] = useState<Campaign | null>(null);
     const [sessions, setSessions] = useState<Session[]>([]);
     const [characters, setCharacters] = useState<Character[]>([]);
@@ -97,6 +98,7 @@ export default function CampaignSummaryPage() {
                 const data: Campaign = Array.isArray(rawCampaign)
                     ? rawCampaign[0]
                     : rawCampaign;
+
                 setCampaign(data);
                 setNewName(data.campaign_name || "");
                 setNewDescription(data.campaign_description || "");
@@ -200,22 +202,19 @@ export default function CampaignSummaryPage() {
     return (
         <div className="p-6 flex flex-col items-center obsidian-colour min-h-screen w-full select-none gap-8">
             <div className="border-2 border-purple rounded-xl w-full max-w-4xl flex flex-col justify-center items-center p-4">
-                {/* Image above title */}
-                {/* Image above title with fallback */}
                 <img
                     src={
-                        campaign.campaign_image_url
-                            ? campaign.campaign_image_url.startsWith("http") ||
-                              campaign.campaign_image_url.startsWith("data:")
-                                ? campaign.campaign_image_url
-                                : `${baseUrl}${campaign.campaign_image_url}`
-                            : "images/campaign-placeholder.jpg" // fallback image
+                        campaign.campaign_image_url?.startsWith("http")
+                            ? campaign.campaign_image_url
+                            : `${baseUrl}${campaign.campaign_image_url}`
                     }
-                    alt={campaign.campaign_name || "Campaign Image"}
-                    className="w-48 h-48 object-cover rounded mb-4 border border-gray-300 shadow-md"
+                    onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                            "/images/campaign-placeholder.jpg";
+                    }}
+                    alt={campaign.campaign_name}
+                    className="rounded-lg max-w-xs max-h-48 object-contain"
                 />
-
-                {/* Title + description */}
                 <h1 className="text-4xl font-bold text-center mb-2">
                     {campaign.campaign_name}
                 </h1>
@@ -224,69 +223,134 @@ export default function CampaignSummaryPage() {
                         {campaign.campaign_description}
                     </p>
                 )}
-
-                {/* Edit / Delete */}
                 <div className="flex gap-4 mt-2">
-                    {editing ? (
-                        <div className="flex flex-col gap-2 items-center">
-                            <input
-                                type="text"
-                                value={newName}
-                                onChange={(e) => setNewName(e.target.value)}
-                                className="border p-1 rounded w-64"
-                                placeholder="Campaign Name"
-                            />
-                            <textarea
-                                value={newDescription}
-                                onChange={(e) =>
-                                    setNewDescription(e.target.value)
-                                }
-                                className="border p-1 rounded w-64 h-24"
-                                placeholder="Campaign Description"
-                            />
-                            <input
-                                type="text"
-                                value={newImageUrl}
-                                onChange={(e) => setNewImageUrl(e.target.value)}
-                                className="border p-1 rounded w-64"
-                                placeholder="Image URL"
-                            />
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleSave}
-                                    disabled={saving}
-                                    className="btn btn-primary"
-                                >
-                                    {saving ? "Saving..." : "Save"}
-                                </button>
-                                <button
-                                    onClick={() => setEditing(false)}
-                                    className="btn btn-secondary"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            <button
-                                onClick={() => setEditing(true)}
-                                className="btn btn-primary"
-                            >
-                                Edit Campaign
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className="btn btn-danger"
-                            >
-                                Delete Campaign
-                            </button>
-                        </>
-                    )}
+                    <button
+                        onClick={() => setEditing(true)}
+                        className="btn btn-primary"
+                    >
+                        Edit Campaign
+                    </button>
+                    <button onClick={handleDelete} className="btn btn-danger">
+                        Delete Campaign
+                    </button>
                 </div>
             </div>
 
-            {/* Sessions, Characters, Locations (unchanged) */}
+            {/* Edit Modal */}
+            {editing && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-gray-800 text-white rounded-lg shadow-lg p-6 w-11/12 max-w-md">
+                        <h2 className="text-xl font-bold mb-4">
+                            Edit Campaign
+                        </h2>
+
+                        <input
+                            type="text"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            className="border p-2 rounded w-full mb-3 text-black"
+                            placeholder="Campaign Name"
+                        />
+
+                        <textarea
+                            value={newDescription}
+                            onChange={(e) => setNewDescription(e.target.value)}
+                            className="border p-2 rounded w-full h-24 mb-3 text-black"
+                            placeholder="Campaign Description"
+                        />
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="file-input w-full mb-3"
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                // Preview immediately
+                                const reader = new FileReader();
+                                reader.onloadend = () =>
+                                    setNewImageUrl(reader.result as string);
+                                reader.readAsDataURL(file);
+
+                                // Upload to backend
+                                const formData = new FormData();
+                                formData.append("campaign_image", file);
+
+                                try {
+                                    const res = await fetch(
+                                        `${baseUrl}/campaign/${campaignId}/image`,
+                                        { method: "POST", body: formData }
+                                    );
+                                    const data = await res.json();
+                                    if (data.campaign_image_url)
+                                        setNewImageUrl(data.campaign_image_url);
+                                } catch (err) {
+                                    alert("Image upload failed: " + err);
+                                }
+                            }}
+                        />
+
+                        {/* Preview */}
+                        {newImageUrl && (
+                            <div className="relative mb-3">
+                                <img
+                                    src={
+                                        newImageUrl.startsWith("http")
+                                            ? newImageUrl
+                                            : `${baseUrl}${newImageUrl}`
+                                    }
+                                    alt="Campaign Preview"
+                                    className="max-h-48 object-contain rounded border border-gray-300"
+                                />
+                                <button
+                                    onClick={async () => {
+                                        // Remove image locally
+                                        setNewImageUrl("");
+
+                                        // Remove from backend
+                                        try {
+                                            const res = await fetch(
+                                                `${baseUrl}/campaign/${campaignId}/image`,
+                                                {
+                                                    method: "DELETE",
+                                                }
+                                            );
+                                            if (!res.ok)
+                                                throw new Error(
+                                                    "Failed to remove image"
+                                                );
+                                        } catch (err) {
+                                            alert(err);
+                                        }
+                                    }}
+                                    className="absolute top-1 right-1 bg-red-600 px-2 py-1 rounded text-white hover:bg-red-700"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        )}
+
+                        <div className="flex justify-end gap-2 mt-2">
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="px-3 py-1 bg-green-600 rounded hover:bg-green-700"
+                            >
+                                {saving ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                                onClick={() => setEditing(false)}
+                                className="px-3 py-1 bg-gray-500 rounded hover:bg-gray-600"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Sessions */}
             {sessions.length === 0 ? (
                 <div className="flex flex-col justify-center items-center gap-8 pt-16">
                     <p className="text-xl obsidian-colour text-center">
@@ -311,6 +375,7 @@ export default function CampaignSummaryPage() {
                         />
                     </div>
 
+                    {/* Characters */}
                     <div className="mt-8 w-full max-w-4xl">
                         <h2 className="text-2xl font-bold mb-4">Characters</h2>
                         {characters.length === 0 ? (
@@ -333,6 +398,7 @@ export default function CampaignSummaryPage() {
                             </ul>
                         )}
 
+                        {/* Locations */}
                         <h2 className="text-2xl font-bold mt-8 mb-4">
                             Locations
                         </h2>

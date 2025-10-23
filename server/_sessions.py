@@ -231,14 +231,12 @@ async def list_chroma_sessions(
 @router.delete("/{session_id}")
 async def delete_session(session_id: str):
     try:
-        # Remove session document
-        results = session_collection.get(where={"session_id": session_id})
-        if results and results.get("ids"):
-            session_collection.delete(ids=[results["ids"][0]])
+        # Delete the session document directly by session_id
+        session_collection.delete(ids=[session_id])
 
         # Remove from any campaign's session_ids
         campaigns = session_collection.get(where={"type": "campaign"})
-        for i, cmeta in enumerate(campaigns["metadatas"]):
+        for i, cmeta in enumerate(campaigns.get("metadatas", [])):
             try:
                 session_ids = json.loads(cmeta.get("session_ids", "[]"))
             except:
@@ -331,5 +329,3 @@ def get_session_ids_for_campaign(campaign_id: str):
         where={"$and": [{"type": "session"}, {"campaign_id": campaign_id}]}
     ).get("metadatas", [])
     return [s["session_id"] for s in sessions]
- 
-

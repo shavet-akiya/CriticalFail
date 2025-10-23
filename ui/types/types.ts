@@ -1,6 +1,6 @@
 // need to be able to edit this.
 export type Character = {
-  characterId: string // uuid
+  characterId: string; // uuid
   name: string;
   race?: string;
   class?: string;
@@ -15,6 +15,9 @@ export type Character = {
   INT: number;
   WIS: number;
   CHA: number;
+
+  // image URL for uploaded character image
+  imageURL?: string;
 };
 
 // export type Event = {

@@ -41,7 +41,11 @@ app.mount(
     StaticFiles(directory="server/images/campaign_images"),
     name="campaign_images",
 )
-
+app.mount(
+    "/character_images",
+    StaticFiles(directory="server/images/character_images"),
+    name="character_images",
+)
 # Ensure folder exists
 
 

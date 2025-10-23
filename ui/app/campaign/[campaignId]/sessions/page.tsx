@@ -1,22 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation"; // for app directory
+import { useParams } from "next/navigation";
 
 interface Character {
     name: string;
 }
-
 interface Location {
     name?: string;
     location_name?: string;
 }
-
 interface Event {
     event: string;
     event_summary?: string;
 }
-
 interface SessionMetadata {
     session_id: string;
     campaign_id?: string;
@@ -24,9 +21,8 @@ interface SessionMetadata {
     locations?: Location[];
     events?: Event[];
 }
-
 interface Session {
-    id: string;
+    id: string; // maps to the API 'id'
     document: string;
     metadata?: SessionMetadata;
 }
@@ -35,31 +31,17 @@ export default function SessionList() {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [fetching, setFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [latestSession] = useState<any>(null);
+    const [editingSession, setEditingSession] = useState<Session | null>(null);
+    const [editedDocument, setEditedDocument] = useState<string>("");
 
     const params = useParams();
     const campaignId = params?.campaignId;
-
-    // Use environment variable with fallback
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-    async function resetDatabase() {
-        try {
-            const res = await fetch(`${baseUrl}/sessions`, {
-                method: "DELETE",
-            });
-            if (!res.ok) throw new Error(`RESET failed: ${res.status}`);
-            await fetchSessions();
-        } catch (e: unknown) {
-            setError(e instanceof Error ? e.message : String(e));
-        }
-    }
 
     async function fetchSessions() {
         setFetching(true);
         setError(null);
         try {
-            // Add campaignId as query param
             const url = campaignId
                 ? `${baseUrl}/sessions?campaign_id=${campaignId}`
                 : `${baseUrl}/sessions`;
@@ -86,37 +68,62 @@ export default function SessionList() {
         fetchSessions();
     }, [campaignId]);
 
+    async function saveDocument(session: Session) {
+        try {
+            const res = await fetch(
+                `${baseUrl}/sessions/${encodeURIComponent(session.id)}`,
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ document: editedDocument }),
+                }
+            );
+            if (!res.ok) throw new Error(`Update failed: ${res.status}`);
+
+            setSessions((prev) =>
+                prev.map((s) =>
+                    s.id === session.id ? { ...s, document: editedDocument } : s
+                )
+            );
+            setEditingSession(null);
+        } catch (err: any) {
+            setError(err.message);
+        }
+    }
+
+    async function deleteSession(session: Session) {
+        if (
+            !confirm(
+                `Delete session ${session.metadata?.session_id ?? session.id}?`
+            )
+        )
+            return;
+        try {
+            const res = await fetch(
+                `${baseUrl}/sessions/${encodeURIComponent(session.id)}`,
+                {
+                    method: "DELETE",
+                }
+            );
+            if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+            setSessions((prev) => prev.filter((s) => s.id !== session.id));
+        } catch (err: any) {
+            setError(err.message);
+        }
+    }
+
     return (
         <div className="min-h-screen p-6 bg-gray-100 text-black">
             <h1 className="text-4xl font-bold text-center mb-8">
                 Dungeons & Dragons AI Sessions
             </h1>
-            <button
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                onClick={resetDatabase}
-            >
-                Delete All Sessions
-            </button>
 
-            {/* Latest Session */}
-            {latestSession && (
-                <div className="bg-white shadow rounded p-6 mb-8">
-                    <h2 className="text-xl font-semibold mb-2">
-                        Latest Session
-                    </h2>
-                    <pre className="bg-gray-100 p-2 rounded overflow-x-auto text-black">
-                        {JSON.stringify(latestSession, null, 2)}
-                    </pre>
-                </div>
-            )}
-
-            {/* Past Sessions */}
             <div className="bg-white shadow rounded p-6">
                 <h2 className="text-xl font-semibold mb-4">Past Sessions</h2>
                 {fetching ? (
-                    <p className="text-black">Loading sessions…</p>
+                    <p>Loading sessions…</p>
                 ) : sessions.length === 0 ? (
-                    <p className="text-black">No sessions available.</p>
+                    <p>No sessions available.</p>
                 ) : (
                     <ul className="space-y-4">
                         {sessions.map((s) => (
@@ -128,90 +135,76 @@ export default function SessionList() {
                                     <div>
                                         <p>
                                             <strong>Session ID:</strong>{" "}
-                                            {s.metadata?.session_id ?? "N/A"}
+                                            {s.metadata?.session_id ?? s.id}
                                         </p>
                                         <p>
                                             <strong>Campaign:</strong>{" "}
                                             {s.metadata?.campaign_id ?? "N/A"}
                                         </p>
                                     </div>
-                                    <button
-                                        onClick={async () => {
-                                            if (
-                                                !confirm(
-                                                    `Delete session ${s.metadata?.session_id}?`
-                                                )
-                                            )
-                                                return;
-                                            try {
-                                                const res = await fetch(
-                                                    `${baseUrl}/sessions/${encodeURIComponent(
-                                                        s.metadata
-                                                            ?.session_id ?? s.id
-                                                    )}`,
-                                                    { method: "DELETE" }
-                                                );
-                                                if (!res.ok) {
-                                                    const msg =
-                                                        await res.text();
-                                                    throw new Error(
-                                                        `Delete failed: ${res.status} ${msg}`
-                                                    );
-                                                }
-                                                // Refresh sessions after successful delete
-                                                await fetchSessions();
-                                            } catch (err: any) {
-                                                setError(err.message);
-                                            }
-                                        }}
-                                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                                    >
-                                        Delete
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => {
+                                                setEditingSession(s);
+                                                setEditedDocument(s.document);
+                                            }}
+                                            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                                        >
+                                            Edit Document
+                                        </button>
+                                        <button
+                                            onClick={() => deleteSession(s)}
+                                            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <p>
-                                    <strong>Characters:</strong>{" "}
-                                    {s.metadata?.characters?.length
-                                        ? s.metadata.characters
-                                            .map((c) => c.name)
-                                            .join(", ")
-                                        : "None"}
-                                </p>
-                                <p>
-                                    <strong>Locations:</strong>{" "}
-                                    {s.metadata?.locations?.length
-                                        ? s.metadata.locations
-                                            .map(
-                                                (l) =>
-                                                    l.location_name || l.name
-                                            )
-                                            .join(", ")
-                                        : "None"}
-                                </p>
-                                <p>
-                                    <strong>Events:</strong>{" "}
-                                    {s.metadata?.events?.length
-                                        ? s.metadata.events
-                                            .map(
-                                                (e) =>
-                                                    `${e.event} — ${e.event_summary ?? ""
-                                                    }`
-                                            )
-                                            .join("; ")
-                                        : "None"}
-                                </p>
-                                <p className="mt-2">
                                     <strong>Summary:</strong>
                                 </p>
-                                <p className="text-sm text-black">
-                                    {s.document}
-                                </p>
+                                <p className="text-sm">{s.document}</p>
                             </li>
                         ))}
                     </ul>
                 )}
             </div>
+
+            {/* Modal for editing document */}
+            {editingSession && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white rounded shadow-lg p-6 w-full max-w-lg">
+                        <h3 className="text-xl font-semibold mb-4">
+                            Edit Document for Session{" "}
+                            {editingSession.metadata?.session_id ??
+                                editingSession.id}
+                        </h3>
+                        <textarea
+                            className="w-full border p-2 rounded text-black"
+                            rows={8}
+                            value={editedDocument}
+                            onChange={(e) => setEditedDocument(e.target.value)}
+                        />
+                        <div className="flex justify-end gap-2 mt-4">
+                            <button
+                                onClick={() => setEditingSession(null)}
+                                className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => saveDocument(editingSession)}
+                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {error && <p className="text-red-500 mt-4">{error}</p>}
         </div>
     );
 }

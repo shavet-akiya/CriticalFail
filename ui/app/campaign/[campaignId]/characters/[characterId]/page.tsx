@@ -17,7 +17,7 @@ export default function CharacterDetail() {
     const [deleting, setDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch character
+    // Fetch character on load
     useEffect(() => {
         if (!characterId || !campaignId) return;
 
@@ -43,21 +43,19 @@ export default function CharacterDetail() {
                     INT: data.character.INT ?? 0,
                     WIS: data.character.WIS ?? 0,
                     CHA: data.character.CHA ?? 0,
+                    imageURL: data.character.imageURL ?? "",
                 });
             })
-            .catch((e) => {
-                console.error(e);
-                setError(e instanceof Error ? e.message : String(e));
-            });
+            .catch((e) => setError(e instanceof Error ? e.message : String(e)));
     }, [characterId, campaignId]);
 
-    // Handle changes
+    // Generic change handler
     function onChange<K extends keyof Character>(k: K, v: any) {
         if (!form) return;
         setForm((s) => ({ ...s!, [k]: v }));
     }
 
-    // Save updates
+    // Save character updates
     async function save() {
         if (!form) return;
         setSaving(true);
@@ -65,35 +63,16 @@ export default function CharacterDetail() {
 
         try {
             const res = await fetch(
-                `${baseUrl}/characters/${encodeURIComponent(
-                    campaignId
-                )}/${encodeURIComponent(form.characterId)}`,
+                `${baseUrl}/characters/${campaignId}/${form.characterId}`,
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(form),
                 }
             );
-
             if (!res.ok) throw new Error(`Save failed: ${res.status}`);
             const data = await res.json();
-            const c = data.character;
-
-            setForm({
-                characterId: c.character_id,
-                name: c.name,
-                race: c.race,
-                class: c.class,
-                npc: c.npc ?? false,
-                AC: c.AC ?? 0,
-                HP: c.HP ?? 0,
-                STR: c.STR ?? 0,
-                DEX: c.DEX ?? 0,
-                CON: c.CON ?? 0,
-                INT: c.INT ?? 0,
-                WIS: c.WIS ?? 0,
-                CHA: c.CHA ?? 0,
-            });
+            setForm((prev) => ({ ...prev!, ...data.character }));
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {
@@ -111,19 +90,40 @@ export default function CharacterDetail() {
 
         try {
             const res = await fetch(
-                `${baseUrl}/characters/${encodeURIComponent(
-                    campaignId
-                )}/${encodeURIComponent(form.characterId)}`,
-                { method: "DELETE" }
+                `${baseUrl}/characters/${campaignId}/${form.characterId}`,
+                {
+                    method: "DELETE",
+                }
             );
-
             if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
-            // Redirect back to characters list after deletion
             router.push(`/campaign/${campaignId}/characters`);
         } catch (e: unknown) {
             setError(e instanceof Error ? e.message : String(e));
         } finally {
             setDeleting(false);
+        }
+    }
+
+    // Upload image and auto-save
+    async function uploadImage(file: File) {
+        if (!form) return;
+        const formData = new FormData();
+        formData.append("character_image", file);
+
+        try {
+            const res = await fetch(
+                `${baseUrl}/characters/${campaignId}/${form.characterId}/image`,
+                {
+                    method: "POST",
+                    body: formData,
+                }
+            );
+            const data = await res.json();
+            if (data.imageURL) {
+                onChange("imageURL", data.imageURL);
+            }
+        } catch (err) {
+            alert("Image upload failed: " + err);
         }
     }
 
@@ -216,6 +216,36 @@ export default function CharacterDetail() {
                 ))}
             </div>
 
+            {/* Character Image */}
+            <div>
+                <label className="block text-sm font-semibold mb-1">
+                    Character Image
+                </label>
+                <input
+                    type="file"
+                    accept="image/*"
+                    className="file-input w-full mb-3"
+                    onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        uploadImage(file);
+                    }}
+                />
+
+                {/* Preview */}
+                {form.imageURL && (
+                    <img
+                        src={
+                            form.imageURL.startsWith("http")
+                                ? form.imageURL
+                                : `${baseUrl}${form.imageURL}`
+                        }
+                        alt="Character Preview"
+                        className="mb-3 max-h-48 object-contain rounded border border-gray-300"
+                    />
+                )}
+            </div>
+
             <div className="flex gap-4">
                 <button
                     onClick={save}
@@ -224,7 +254,6 @@ export default function CharacterDetail() {
                 >
                     {saving ? "Saving..." : "Save"}
                 </button>
-
                 <button
                     onClick={remove}
                     className="btn btn-error"
