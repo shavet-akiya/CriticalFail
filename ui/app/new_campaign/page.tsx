@@ -107,7 +107,7 @@ export default function NewCampaign() {
                 </h1>
 
                 {/* Name input */}
-                <label className="block text-lg purple-colour font-semibold mb-2">
+                <label className="form-field">
                     Name Your Campaign
                 </label>
                 <input
@@ -120,7 +120,7 @@ export default function NewCampaign() {
                 />
 
                 {/* Description */}
-                <label className="block text-lg purple-colour font-semibold mb-2">
+                <label className="form-field">
                     Campaign Description
                 </label>
                 <textarea
@@ -132,7 +132,7 @@ export default function NewCampaign() {
                 />
 
                 {/* Image Upload */}
-                <label className="block text-lg purple-colour font-semibold mb-2">
+                <label className="form-field">
                     Upload Campaign Image
                 </label>
                 <div className="flex flex-col gap-2">
