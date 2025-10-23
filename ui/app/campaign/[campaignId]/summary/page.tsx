@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import SessionCard from "@/components/SessionCard";
 import Link from "next/link";
@@ -75,6 +75,7 @@ export default function CampaignSummaryPage() {
     const [locations, setLocations] = useState<Location[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const [editing, setEditing] = useState(false);
     const [newName, setNewName] = useState("");
@@ -271,6 +272,7 @@ export default function CampaignSummaryPage() {
                             Upload New Campaign Image
                         </label>
                         <input
+                            ref={fileInputRef}
                             type="file"
                             accept="image/*"
                             className="file-input w-full mb-3"
@@ -289,7 +291,10 @@ export default function CampaignSummaryPage() {
                                 try {
                                     const res = await fetch(
                                         `${baseUrl}/campaign/${campaignId}/image`,
-                                        { method: "POST", body: formData }
+                                        {
+                                            method: "POST",
+                                            body: formData,
+                                        }
                                     );
                                     const data = await res.json();
                                     if (data.campaign_image_url)
@@ -314,6 +319,9 @@ export default function CampaignSummaryPage() {
                                 <button
                                     onClick={async () => {
                                         setNewImageUrl("");
+                                        if (fileInputRef.current)
+                                            fileInputRef.current.value = "";
+
                                         try {
                                             const res = await fetch(
                                                 `${baseUrl}/campaign/${campaignId}/image`,
@@ -366,28 +374,31 @@ export default function CampaignSummaryPage() {
             <div className="flex gap-20 w-full max-w-4xl">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 rounded ${activePage === "sessions"
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-300"
-                        }`}
+                    className={`flex-1 py-2 rounded ${
+                        activePage === "sessions"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-300"
+                    }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 rounded ${activePage === "characters"
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-300"
-                        }`}
+                    className={`flex-1 py-2 rounded ${
+                        activePage === "characters"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-300"
+                    }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 rounded ${activePage === "locations"
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-300"
-                        }`}
+                    className={`flex-1 py-2 rounded ${
+                        activePage === "locations"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-300"
+                    }`}
                 >
                     Locations
                 </button>
@@ -451,8 +462,8 @@ export default function CampaignSummaryPage() {
                                                 c.imageURL?.startsWith("http")
                                                     ? c.imageURL
                                                     : c.imageURL
-                                                        ? `${baseUrl}${c.imageURL}`
-                                                        : "/images/character-placeholder.png"
+                                                    ? `${baseUrl}${c.imageURL}`
+                                                    : "/images/character-placeholder.png"
                                             }
                                             onError={(e) => {
                                                 (
