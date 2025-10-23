@@ -133,7 +133,7 @@ export default function CampaignEventsPage() {
                                 </h2>
                                 <div className="space-y-4">
                                     {sessionEvents.map((ev) => (
-                                        <EventCard key={ev.event_id} event={ev} />
+                                        <EventCard key={ev.event_id} event={ev} showEdit={true} />
                                     ))}
                                 </div>
                             </div>
