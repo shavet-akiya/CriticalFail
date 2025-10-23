@@ -179,10 +179,8 @@ export default function Characters() {
 
     return (
         <div className="pl-16 pr-16 pt-16 text-black">
-            {error && <div className="text-red-500 mb-4">{error}</div>}
-
+            <h1 className="text-3xl font-bold">Characters</h1>
             <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-3xl font-bold">Characters</h1>
                 <div className="flex gap-2 flex-wrap items-center w-full sm:w-auto">
                     <input
                         type="text"
@@ -199,6 +197,14 @@ export default function Characters() {
                     </button>
                 </div>
             </div>
+
+            {/* --- No Characters / Sessions Message --- */}
+            {characters.length === 0 && (
+                <div className="text-gray-500 text-center mt-16">
+                    <p className="mb-2">No characters or sessions available.</p>
+                    <p>Create a character or a session to get started.</p>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16">
                 {filteredCharacters.map((character) => {
