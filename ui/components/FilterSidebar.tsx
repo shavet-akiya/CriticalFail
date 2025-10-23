@@ -42,7 +42,6 @@ export default function FilterSidebar({
     filters,
     setFilters,
 }: FilterSidebarProps) {
-    // ✅ Collect which tags exist in the current events
     const existingTags = useMemo(() => {
         const tagSet = new Set<string>();
         events.forEach((e) => (e.event_tags ?? []).forEach((t) => tagSet.add(t)));
@@ -50,7 +49,7 @@ export default function FilterSidebar({
     }, [events]);
 
     const toggleFilter = (tag: string) => {
-        if (!existingTags.has(tag)) return; // prevent clicking unavailable tags
+        if (!existingTags.has(tag)) return;
         setFilters(
             filters.includes(tag)
                 ? filters.filter((f) => f !== tag)
@@ -59,7 +58,7 @@ export default function FilterSidebar({
     };
 
     return (
-        <div className="bg-white border rounded-xl p-4 shadow-sm text-black w-full sm:w-64 sticky top-4 self-start">
+        <div className="bg-white-colour border rounded-xl p-4 shadow-sm obsidian-colour w-full sm:w-64 self-start">
             <h3 className="text-lg font-semibold mb-3">Filters</h3>
 
             <div className="flex flex-wrap gap-2">
@@ -67,24 +66,27 @@ export default function FilterSidebar({
                     const isAvailable = existingTags.has(tag);
                     const isActive = filters.includes(tag);
 
+                    const formattedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
+
                     return (
                         <button
                             key={tag}
                             onClick={() => toggleFilter(tag)}
                             disabled={!isAvailable}
                             className={`px-3 py-1 rounded-full border text-sm transition 
-                ${isActive
+          ${isActive
                                     ? "bg-blue-500 text-white border-blue-500"
                                     : isAvailable
                                         ? "bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-300"
                                         : "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed opacity-60"
                                 }`}
                         >
-                            {tag}
+                            {formattedTag}
                         </button>
                     );
                 })}
             </div>
+
         </div>
     );
 }
