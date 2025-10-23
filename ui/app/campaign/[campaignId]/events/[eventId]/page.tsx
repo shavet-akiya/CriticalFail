@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
+import BackButton from "@/components/BackButton";
 
 export type Event = {
     event_id: string;
@@ -182,7 +183,16 @@ export default function EventDetail() {
 
     return (
         <div className="max-w-2xl space-y-4 obsidian-colour select-none pb-8 pt-8">
-            <h1 className="text-center text-4xl pb-4 obsidian-colour">{form.event}</h1>
+            <div className="flex items-center justify-between pb-4">
+                <div>
+                    <BackButton />
+                </div>
+                <h1 className="text-4xl obsidian-colour flex-1 text-center">
+                    {form.event}
+                </h1>
+                <div className="w-[80px]" /> {/* spacer roughly matching button width */}
+            </div>
+
 
             <div>
                 <label className="form-field">Event</label>
