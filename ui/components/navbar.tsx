@@ -53,7 +53,7 @@ export default function NavBar({ found = true }: NavBarProps) {
             href: `/campaign/${selectedCampaign?.campaign_id}/locations`,
         },
         {
-            label: "New Session",
+            label: " + New Session",
             href: `/campaign/${selectedCampaign?.campaign_id}/new_session`,
         },
     ];
@@ -104,7 +104,7 @@ export default function NavBar({ found = true }: NavBarProps) {
                             href={item.href}
                             className={`px-2 py-1 rounded ${
                                 pathname === item.href
-                                    ? "bg-[#a80d18] text-white"
+                                    ? "bg-[#a80d18] text-black text-bold"
                                     : "white-colour"
                             }`}
                         >
@@ -123,7 +123,7 @@ export default function NavBar({ found = true }: NavBarProps) {
                                 href={item.href}
                                 className={`px-2 py-1 rounded ${
                                     pathname === item.href
-                                        ? "bg-[#a80d18] text-white"
+                                        ? "bg-[#a80d18] text-black"
                                         : "white-colour"
                                 }`}
                                 onClick={() => setMenuOpen(false)}
