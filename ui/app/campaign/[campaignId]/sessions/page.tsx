@@ -75,7 +75,9 @@ export default function SessionList() {
 
     useEffect(() => {
         fetchSessions();
+        setFetching(true);
     }, [campaignId]);
+
 
     async function saveDocument(session: Session) {
         try {
@@ -89,14 +91,12 @@ export default function SessionList() {
             );
             if (!res.ok) throw new Error(`Update failed: ${res.status}`);
 
-            // Update the session locally
             setSessions((prev) =>
                 prev.map((s) =>
                     s.id === session.id ? { ...s, document: editedDocument } : s
                 )
             );
 
-            // Exit edit mode after saving
             setEditingSessionId(null);
         } catch (err: any) {
             setError(err.message);
@@ -128,91 +128,97 @@ export default function SessionList() {
 
     return (
         <div className="min-h-screen p-6 obsidian-colour">
-            <h1 className="text-4xl text-center mb-4 ">
-                {campaignName} sessions
-            </h1>
-
             <div className="p-6">
                 {fetching ? (
-                    <p>Loading sessions…</p>
+                    <Loading />
                 ) : sessions.length === 0 ? (
-                    <p>No sessions available.</p>
+                    <div>
+                        <h1 className="text-4xl text-center mb-4 ">
+                            {campaignName} sessions
+                        </h1>
+                        <p>No sessions available.</p>
+                    </div>
                 ) : (
-                    <ul className="space-y-4">
-                        {sessions.map((s) => {
-                            const isEditing = editingSessionId === s.id;
-                            return (
-                                <li
-                                    key={s.id}
-                                    className="p-8 bg-gray-50 rounded shadow text-black flex flex-col gap-4"
-                                >
-                                    <div className="flex justify-between items-center ">
-                                        <div>
-                                            <p className="text-xl">
-                                                <strong>Session:</strong>{" "}
-                                                {formatSessionDate(s.metadata?.session_id ?? s.id)}
+                    <>
+                        <h1 className="text-4xl text-center mb-4 ">
+                            {campaignName} sessions
+                        </h1>
+                        <ul className="space-y-4">
+                            {sessions.map((s) => {
+                                const isEditing = editingSessionId === s.id;
+                                return (
+                                    <li
+                                        key={s.id}
+                                        className="p-8 bg-gray-50 rounded shadow obsidian-colour flex flex-col gap-4"
+                                    >
+                                        <div className="flex justify-between items-center ">
+                                            <div>
+                                                <p className="text-xl">
+                                                    <strong>Session:</strong>{" "}
+                                                    {formatSessionDate(s.metadata?.session_id ?? s.id)}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-row justify-between items-center">
+                                            <p className="text-lg font-semibold">Summary Notes</p>
+
+                                        </div>
+
+                                        {isEditing ? (
+                                            <textarea
+                                                className="w-full border p-2 rounded obsidian-colour"
+                                                rows={6}
+                                                value={editedDocument}
+                                                onChange={(e) =>
+                                                    setEditedDocument(e.target.value)
+                                                }
+                                            />
+                                        ) : (
+                                            <p className=" w-full p-2 rounded obsidian-colour text-md whitespace-pre-wrap">
+                                                {s.document}
                                             </p>
-                                        </div>
-                                    </div>
+                                        )}
 
-                                    <div className="flex flex-row justify-between items-center">
-                                        <p className="text-lg font-semibold">Summary Notes</p>
-
-                                    </div>
-
-                                    {isEditing ? (
-                                        <textarea
-                                            className="w-full border p-2 rounded text-black"
-                                            rows={6}
-                                            value={editedDocument}
-                                            onChange={(e) =>
-                                                setEditedDocument(e.target.value)
-                                            }
-                                        />
-                                    ) : (
-                                        <p className="text-md whitespace-pre-wrap">
-                                            {s.document}
-                                        </p>
-                                    )}
-
-                                    {isEditing ? (
-                                        <div className="flex gap-2 justify-end">
-                                            <button
-                                                onClick={() => saveDocument(s)}
-                                                className="btn px-3 py-1 bg-green-600 white-colour text-sm rounded hover:bg-green-700"
-                                            >
-                                                Save
-                                            </button>
-                                            <button
-                                                onClick={() => setEditingSessionId(null)}
-                                                className="btn px-3 py-1 bg-gray-400 white-colour text-sm rounded hover:bg-gray-500"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-row gap-2 justify-end">
-                                            <button
-                                                onClick={() => {
-                                                    setEditingSessionId(s.id);
-                                                    setEditedDocument(s.document);
-                                                }}
-                                                className="btn px-3 py-1 bg-blue-600 white-colour text-sm rounded hover:bg-blue-700"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={() => deleteSession(s)}
-                                                className="btn px-3 py-1 bg-red-600 text-sm rounded white-colour hover:bg-red-700"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
-                                    )}
-                                </li>
-                            );
-                        })}
-                    </ul>
+                                        {isEditing ? (
+                                            <div className="flex gap-2 gap-2 justify-end">
+                                                <button
+                                                    onClick={() => saveDocument(s)}
+                                                    className="btn px-3 py-1 bg-green-600 white-colour text-sm rounded hover:bg-green-700"
+                                                >
+                                                    Save
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditingSessionId(null)}
+                                                    className="btn px-3 py-1 bg-gray-400 white-colour text-sm rounded hover:bg-gray-500"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-row gap-2 justify-end">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingSessionId(s.id);
+                                                        setEditedDocument(s.document);
+                                                    }}
+                                                    className="btn px-3 py-1 bg-blue-600 white-colour text-sm rounded hover:bg-blue-700"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteSession(s)}
+                                                    className="btn px-3 py-1 bg-red-600 text-sm rounded white-colour hover:bg-red-700"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </>
                 )}
             </div>
 
