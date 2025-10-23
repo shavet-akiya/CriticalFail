@@ -150,6 +150,8 @@ export default function EventDetail() {
                     .split(",")
                     .map((t: string) => t.trim()),
             });
+
+            router.push(`/campaign/${campaignId}/events`)
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : String(err));
         } finally {
@@ -229,7 +231,7 @@ export default function EventDetail() {
             </div>
 
             <div>
-                <label className="form-field">Tags</label>
+                <label className="form-field mt-8">Tags</label>
                 <div className="flex flex-wrap gap-2">
                     {TAG_OPTIONS.map((tag) => {
                         const formattedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
@@ -237,7 +239,7 @@ export default function EventDetail() {
                         return (
                             <button
                                 key={tag}
-                                className={`btn btn-sm ${form.event_tags?.includes(tag) ? "btn-info" : "btn-outline"
+                                className={`btn ${form.event_tags?.includes(tag) ? "btn-info" : "btn-outline"
                                     }`}
                                 onClick={() => toggleTag(tag)}
                             >
@@ -270,7 +272,7 @@ export default function EventDetail() {
                 />
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 pb-8">
                 <button
                     className="btn btn-primary"
                     onClick={save}
