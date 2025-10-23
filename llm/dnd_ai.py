@@ -68,7 +68,7 @@ Instructions:
           "participants": ["List of character names involved."],
           "location": "Location where event took place.",
           "timeline_order": 1
-          "event_tags": Choose one or more from the following relevant to the event: "combat", "exploration", "player-to-player interaction", "npc interaction", "resting", "investigation", and "miscellaneous" miscellaneous should only be used if event is not relevant to any other tags.
+          "event_tags": Choose one or more from the following relevant to the event: "combat", "exploration", "player-to-player interaction", "npc interaction", "resting", "investigation", "world expansion", "character expansion", "lore expansion", and "miscellaneous" miscellaneous should only be used if event is not relevant to any other tags.
       }}
   ],
 }}

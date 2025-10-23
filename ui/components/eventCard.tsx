@@ -30,7 +30,7 @@ export default function EventCard({ event, showEdit = false }: EventCardProps) {
     const tags = Array.isArray(event.event_tags) ? event.event_tags : [];
 
     return (
-        <div className="relative w-full max-w-sm">
+        <div className="relative w-full max-w-sm white-colour">
             {/* Edit button */}
             {showEdit && (
                 <Link
@@ -47,7 +47,7 @@ export default function EventCard({ event, showEdit = false }: EventCardProps) {
                 href={`/campaign/${campaignId}/events/${event.event_id}`}
                 className="block"
             >
-                <div className="card bg-base-100 shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer group p-4">
+                <div className="card bg-white-colour shadow-md obsidian-colour rounded-lg cursor-pointer group p-4">
                     <h2 className="text-xl font-bold">
                         {event.timeline_order || "?"}.{" "}
                         {event.event || "Unnamed Event"}

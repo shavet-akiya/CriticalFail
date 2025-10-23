@@ -20,29 +20,6 @@ export type Character = {
   imageURL?: string;
 };
 
-// export type Event = {
-//   eventId: string; //UUID
-//   sessionId: number; // session ID will be linked to Campaign via Session
-//   eventSummary: string;
-//   characterIds: string[];
-//   locationIds: number[];
-//   timelineOrder: number;
-//   eventTags: string[]
-//   // order in session timeline comes from ID or array position
-// };
-
-// export type Event = {
-//     event_id: string;
-//     session_id: string;
-//     campaign_id: string;
-//     timeline_order: number;
-//     event: string;
-//     event_summary: string;
-//     participants: string[]; // optional
-//     location: string;
-//     event_tags: string[];
-//     type: string;
-// };
 export interface CampaignEvents { events: Event[]; }
 
 export type CharacterFilter = "all" | "players" | "npc" ;
