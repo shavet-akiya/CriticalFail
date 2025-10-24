@@ -186,11 +186,9 @@ export default function Characters() {
     return (
         <div className=" max-w-7xl padding-box">
             <div className="heading-banner obsidian-colour px-8 w-full select-none">
-                <h2 className="page-heading pb-4">
-                    Characters
-                </h2>
+                <h1 className="page-heading">Characters</h1>
 
-                <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <div className="mb-4 flex flex-col sm:flex-row gap-4 px-2">
                     <input
                         type="text"
                         placeholder="Search by name..."
@@ -200,10 +198,7 @@ export default function Characters() {
                     />
                     <button
                         onClick={() => setShowModal(true)}
-                        className="bg-[#a80d18] white-colour font-bold text-center
-                                        transition-colors duration-200 hover:bg-[#8c0b14]
-                                        flex items-center justify-center
-                                        w-10 h-10 rounded-full sm:w-40 sm:rounded-md sm:py-2"
+                        className="bg-[#a80d18] white-colour px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
                     >
                         + Add Character
                     </button>

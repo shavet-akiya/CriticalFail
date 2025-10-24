@@ -106,11 +106,11 @@ export default function Locations() {
                             placeholder="Search by name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="border bg-white border-gray-300 px-3 py-2 rounded-lg flex-1 obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                            className="border bg-white border-gray-300 px-3 py-2 rounded-xl flex-1 obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                         />
                         <button
                             onClick={() => setShowModal(true)}
-                            className="bg-purple-colour white-colour px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
+                            className="bg-[#a80d18] white-colour px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
                         >
                             + Add Location
                         </button>

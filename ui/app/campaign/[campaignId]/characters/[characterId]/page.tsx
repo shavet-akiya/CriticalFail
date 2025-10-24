@@ -129,6 +129,8 @@ export default function CharacterProfile() {
             <div className="w-full max-w-6xl mb-4">
                 <BackButton />
             </div>
+
+            {/* Character Card */}
             <div className="max-w-6xl w-full p-8 bg-white-colour rounded-2xl shadow-lg flex flex-col md:flex-row gap-8">
                 {/* Character Image */}
                 <div className="flex-shrink-0 w-48 h-48 rounded-xl overflow-hidden border border-gray-300 relative">
@@ -149,9 +151,7 @@ export default function CharacterProfile() {
                 <div className="flex-1 flex flex-col justify-between">
                     <div>
                         <div className="flex justify-between items-center mb-4">
-                            <h1 className="text-3xl font-bold obsidian-colour">
-                                {form.name}
-                            </h1>
+                            <h1 className="text-3xl font-bold obsidian-colour">{form.name}</h1>
                             <button
                                 className="px-3 py-1 bg-purple-colour rounded white-colour hover:bg-purple-700"
                                 onClick={() => setIsEditing(true)}
@@ -160,8 +160,9 @@ export default function CharacterProfile() {
                             </button>
                         </div>
 
-                        {!isEditing ? (
-                            <div className="space-y-2 text-gray-700">
+                        {/* Static Info */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                            <div>
                                 <p>
                                     <strong>Race:</strong> {form.race}
                                 </p>
@@ -169,281 +170,176 @@ export default function CharacterProfile() {
                                     <strong>Class:</strong> {form.class}
                                 </p>
                                 <p>
-                                    <strong>AC:</strong> {form.AC} |{" "}
-                                    <strong>HP:</strong> {form.HP} |{" "}
-                                    <strong>NPC:</strong>{" "}
-                                    {form.npc ? "Yes" : "No"}
+                                    <strong>AC:</strong> {form.AC} | <strong>HP:</strong> {form.HP} |{" "}
+                                    <strong>NPC:</strong> {form.npc ? "Yes" : "No"}
+                                </p>
+                            </div>
+                            <div>
+                                <p>
+                                    <strong>Stats:</strong>
                                 </p>
                                 <p>
-                                    <strong>Stats:</strong> STR {form.STR}, DEX{" "}
-                                    {form.DEX}, CON {form.CON}, INT {form.INT},
-                                    WIS {form.WIS}, CHA {form.CHA}
+                                    STR {form.STR}, DEX {form.DEX}, CON {form.CON}, INT {form.INT}, WIS {form.WIS}, CHA {form.CHA}
                                 </p>
                             </div>
-                        ) : (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                                <div className="flex flex-col gap-4 p-8 max-w-2xl w-full bg-white rounded-xl shadow-lg border-2 border-purple relative">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsEditing(false)}
-                                        className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold"
-                                    >
-                                        ×
-                                    </button>
-
-                                    <h1 className="text-4xl text-center obsidian-colour font-bold">
-                                        Edit Character
-                                    </h1>
-
-                                    {error && (
-                                        <p className="text-red-500">{error}</p>
-                                    )}
-
-                                    {/* Editable Fields */}
-                                    {/* Editable Fields */}
-                                    <div className="grid grid-cols-1 gap-4 mt-4">
-                                        {/* Name full width */}
-                                        <div>
-                                            <label className="block text-lg purple-colour font-semibold mb-1">
-                                                Name
-                                            </label>
-                                            <input
-                                                className="border p-2 rounded w-full mb-3 obsidian-colour"
-                                                value={form.name}
-                                                placeholder="e.g. Aragon"
-                                                onChange={(e) =>
-                                                    onChange(
-                                                        "name",
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-
-                                        {/* Race and Class side by side */}
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-lg purple-colour font-semibold mb-1">
-                                                    Race
-                                                </label>
-                                                <input
-                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
-                                                    value={form.race || ""}
-                                                    placeholder="e.g. Half-Elf"
-                                                    onChange={(e) =>
-                                                        onChange(
-                                                            "race",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-lg purple-colour font-semibold mb-1">
-                                                    Class
-                                                </label>
-                                                <input
-                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
-                                                    placeholder="e.g. Warlock"
-                                                    value={form.class || ""}
-                                                    onChange={(e) =>
-                                                        onChange(
-                                                            "class",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* AC, HP, NPC as before */}
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className="block text-lg purple-colour font-semibold mb-1">
-                                                    AC
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
-                                                    value={form.AC}
-                                                    onChange={(e) =>
-                                                        onChange(
-                                                            "AC",
-                                                            Number(
-                                                                e.target.value
-                                                            )
-                                                        )
-                                                    }
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-lg purple-colour font-semibold mb-1">
-                                                    HP
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
-                                                    value={form.HP}
-                                                    onChange={(e) =>
-                                                        onChange(
-                                                            "HP",
-                                                            Number(
-                                                                e.target.value
-                                                            )
-                                                        )
-                                                    }
-                                                />
-                                            </div>
-                                            <div className="flex items-center mt-6">
-                                                <label className="flex items-center gap-2 text-lg purple-colour font-semibold">
-                                                    NPC
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={!!form.npc}
-                                                        className="w-6 h-6 purple-colour"
-                                                        onChange={(e) =>
-                                                            onChange(
-                                                                "npc",
-                                                                e.target.checked
-                                                            )
-                                                        }
-                                                    />
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Stats */}
-                                    <div className="grid grid-cols-3 gap-4 mt-4">
-                                        {[
-                                            "STR",
-                                            "DEX",
-                                            "CON",
-                                            "INT",
-                                            "WIS",
-                                            "CHA",
-                                        ].map((stat) => (
-                                            <div key={stat}>
-                                                <label className="block text-lg purple-colour font-semibold mb-1">
-                                                    {stat}
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
-                                                    value={
-                                                        (form as any)[stat] ?? 0
-                                                    }
-                                                    onChange={(e) =>
-                                                        onChange(
-                                                            stat as keyof Character,
-                                                            Number(
-                                                                e.target.value
-                                                            )
-                                                        )
-                                                    }
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {/* Image Upload */}
-                                    <div className="mt-4 flex flex-col items-center gap-2">
-                                        <div
-                                            onClick={() =>
-                                                fileInputRef.current?.click()
-                                            }
-                                            className="w-64 h-64 border-2 border-dashed border-gray-700 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-gray-300 relative"
-                                        >
-                                            {form.imageURL && (
-                                                <img
-                                                    src={
-                                                        form.imageURL.startsWith(
-                                                            "http"
-                                                        )
-                                                            ? form.imageURL
-                                                            : `${baseUrl}${form.imageURL}`
-                                                    }
-                                                    className="w-full h-full object-cover opacity-40"
-                                                />
-                                            )}
-                                            <span
-                                                className="absolute white-colour text-center px-2"
-                                                style={{
-                                                    textShadow: `
-          1px 1px 0 #353434ff,
-          -1px 1px 0 #353434ff,
-          1px -1px 0 #353434ff,
-          -1px -1px 0 #353434ff,
-          0 1px 0 #353434ff,
-          0 -1px 0 #353434ff,
-          1px 0 0 #353434ff,
-          -1px 0 0 #353434ff
-        `,
-                                                }}
-                                            >
-                                                Click to pick an image
-                                            </span>
-                                        </div>
-                                        <input
-                                            ref={fileInputRef}
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                                const file =
-                                                    e.target.files?.[0];
-                                                if (!file) return;
-
-                                                const reader = new FileReader();
-                                                reader.onload = (event) => {
-                                                    if (event.target?.result) {
-                                                        onChange(
-                                                            "imageURL",
-                                                            event.target
-                                                                .result as string
-                                                        );
-                                                    }
-                                                };
-                                                reader.readAsDataURL(file);
-
-                                                uploadImage(file);
-                                            }}
-                                        />
-                                    </div>
-                                    {/* Buttons */}
-                                    <div className="flex justify-between mt-2">
-                                        <button
-                                            onClick={remove}
-                                            disabled={deleting}
-                                            className="px-4 py-2 bg-red-600 rounded white-colour hover:bg-red-700"
-                                        >
-                                            {deleting
-                                                ? "Deleting..."
-                                                : "Delete"}
-                                        </button>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={save}
-                                                disabled={saving}
-                                                className="px-4 py-2 bg-green-600 rounded white-colour hover:bg-green-700"
-                                            >
-                                                {saving ? "Saving..." : "Save"}
-                                            </button>
-                                            <button
-                                                onClick={() =>
-                                                    setIsEditing(false)
-                                                }
-                                                className="px-4 py-2 bg-gray-500 rounded white-colour hover:bg-gray-600"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            {isEditing && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="flex flex-col gap-4 p-8 max-w-4xl w-full bg-white rounded-xl shadow-lg border-2 border-purple relative">
+                        <button
+                            type="button"
+                            onClick={() => setIsEditing(false)}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold"
+                        >
+                            ×
+                        </button>
+
+                        <h1 className="text-4xl text-center obsidian-colour font-bold">
+                            Edit Character
+                        </h1>
+
+                        {error && <p className="text-red-500">{error}</p>}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div className="flex flex-col gap-4">
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full h-64 border-2 border-dashed border-gray-700 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-gray-300 relative"
+                                >
+                                    {form.imageURL && (
+                                        <img
+                                            src={
+                                                form.imageURL.startsWith("http")
+                                                    ? form.imageURL
+                                                    : `${baseUrl}${form.imageURL}`
+                                            }
+                                            className="w-full h-full object-cover opacity-40"
+                                        />
+                                    )}
+                                    <span
+                                        className="absolute white-colour text-center px-2"
+                                        style={{
+                                            textShadow: `
+                                                1px 1px 0 #353434ff,
+                                                -1px 1px 0 #353434ff,
+                                                1px -1px 0 #353434ff,
+                                                -1px -1px 0 #353434ff,
+                                                0 1px 0 #353434ff,
+                                                0 -1px 0 #353434ff,
+                                                1px 0 0 #353434ff,
+                                                -1px 0 0 #353434ff
+                                                `,
+                                        }}
+                                    >
+                                        Click to pick an image
+                                    </span>
+                                </div>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+
+                                        const reader = new FileReader();
+                                        reader.onload = (event) => {
+                                            if (event.target?.result) {
+                                                onChange("imageURL", event.target.result as string);
+                                            }
+                                        };
+                                        reader.readAsDataURL(file);
+
+                                        uploadImage(file);
+                                    }}
+                                />
+
+                                <div className="flex flex-col gap-3">
+                                    {["name", "race", "class"].map((field) => (
+                                        <div key={field}>
+                                            <label className="form-field capitalize">
+                                                {field}
+                                            </label>
+                                            <input
+                                                className="border p-2 rounded w-full obsidian-colour"
+                                                value={(form as any)[field] || ""}
+                                                onChange={(e) => onChange(field as keyof Character, e.target.value)}
+                                                placeholder={`Enter ${field}`}
+                                            />
+                                        </div>
+                                    ))}
+
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={!!form.npc}
+                                            onChange={(e) => onChange("npc", e.target.checked)}
+                                        />
+                                        <label className="form-field">Is NPC?</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                {["AC", "HP"].map((stat) => (
+                                    <div key={stat}>
+                                        <label className="block text-lg purple-colour font-semibold mb-1">{stat}</label>
+                                        <input
+                                            type="number"
+                                            className="border p-2 rounded w-full obsidian-colour"
+                                            value={(form as any)[stat]}
+                                            onChange={(e) => onChange(stat as keyof Character, Number(e.target.value))}
+                                        />
+                                    </div>
+                                ))}
+
+                                {["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((stat) => (
+                                    <div key={stat}>
+                                        <label className="block text-lg purple-colour font-semibold mb-1">{stat}</label>
+                                        <input
+                                            type="number"
+                                            className="border p-2 rounded w-full obsidian-colour"
+                                            value={(form as any)[stat]}
+                                            onChange={(e) => onChange(stat as keyof Character, Number(e.target.value))}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between mt-4">
+                            <button
+                                onClick={remove}
+                                disabled={deleting}
+                                className="px-4 py-2 bg-red-600 rounded white-colour hover:bg-red-700"
+                            >
+                                {deleting ? "Deleting..." : "Delete"}
+                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={save}
+                                    disabled={saving}
+                                    className="save-button save-button:hover"
+                                >
+                                    {saving ? "Saving..." : "Save"}
+                                </button>
+                                <button
+                                    onClick={() => setIsEditing(false)}
+                                    className="cancel-button cancel-button:hover"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
