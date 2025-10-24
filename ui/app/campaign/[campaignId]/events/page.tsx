@@ -29,19 +29,27 @@ export default function CampaignEventsPage() {
                     throw new Error(`Failed to fetch events: ${res.status}`);
                 const data = await res.json();
 
-                const allEvents: Event[] = (data.events || []).map((ev: any) => ({
-                    ...ev,
-                    participants: ev.participants
-                        ? ev.participants.split(",").map((p: string) => p.trim())
-                        : [],
-                    event_tags: ev.event_tags
-                        ? ev.event_tags.split(",").map((t: string) => t.trim())
-                        : [],
-                }));
+                const allEvents: Event[] = (data.events || []).map(
+                    (ev: any) => ({
+                        ...ev,
+                        participants: ev.participants
+                            ? ev.participants
+                                  .split(",")
+                                  .map((p: string) => p.trim())
+                            : [],
+                        event_tags: ev.event_tags
+                            ? ev.event_tags
+                                  .split(",")
+                                  .map((t: string) => t.trim())
+                            : [],
+                    })
+                );
 
                 allEvents.sort((a, b) => {
                     if (a.session_id === b.session_id) {
-                        return (a.timeline_order || 0) - (b.timeline_order || 0);
+                        return (
+                            (a.timeline_order || 0) - (b.timeline_order || 0)
+                        );
                     }
                     return a.session_id.localeCompare(b.session_id);
                 });
@@ -66,7 +74,9 @@ export default function CampaignEventsPage() {
             const title = ev.event?.toLowerCase() || "";
             const summary = ev.event_summary?.toLowerCase() || "";
             const tags = (ev.event_tags || []).map((t) => t.toLowerCase());
-            const participants = (ev.participants || []).map((p) => p.toLowerCase());
+            const participants = (ev.participants || []).map((p) =>
+                p.toLowerCase()
+            );
 
             const matchesSearch =
                 title.includes(keyword) ||
@@ -77,7 +87,9 @@ export default function CampaignEventsPage() {
             const matchesFilters =
                 filters.length === 0 ||
                 filters.every((f) =>
-                    (ev.event_tags || []).map((t) => t.toLowerCase()).includes(f.toLowerCase())
+                    (ev.event_tags || [])
+                        .map((t) => t.toLowerCase())
+                        .includes(f.toLowerCase())
                 );
 
             return matchesSearch && matchesFilters;
@@ -97,8 +109,12 @@ export default function CampaignEventsPage() {
     if (error) return <div className="text-red-500">Error: {error}</div>;
 
     return (
-        <div className="max-w-6xl mx-auto h-full overflow-hidden pt-8 px-4">
-            <h1 className="page-heading">Event History</h1>
+        <div className="pl-16 pr-16 text-black h-screen flex flex-col pb-16">
+            <div className="w-full bg-purple-colour rounded-b-lg shadow-md py-6 px-4 mb-6 text-center sticky top-0 z-20">
+                <h1 className="text-4xl font-bold text-white tracking-wide">
+                    Campaign Event History
+                </h1>
+            </div>
 
             <div className="flex flex-col md:flex-row gap-6">
                 {/* Sidebar */}
@@ -122,27 +138,34 @@ export default function CampaignEventsPage() {
                 {/* Main content */}
                 <div className="md:w-2/3 w-full min-h-screen overflow-y-auto md:p-6 text-black flex flex-col justify-start">
                     {Object.entries(sessionsMap).length === 0 ? (
-                        <div className="mt-0">No events match your search or filters.</div>
+                        <div className="mt-0">
+                            No events match your search or filters.
+                        </div>
                     ) : (
-                        Object.entries(sessionsMap).map(([sessionId, sessionEvents]) => (
-                            <div
-                                key={sessionId}
-                                className="w-full border p-4 rounded shadow-sm bg-white mb-6"
-                            >
-                                <h2 className="text-xl font-bold mb-4">
-                                    Session: {formatSessionDate(sessionId)}
-                                </h2>
-                                <div className="space-y-4 w-full">
-                                    {sessionEvents.map((ev) => (
-                                        <EventCard key={ev.event_id} event={ev} showEdit={true} />
-                                    ))}
+                        Object.entries(sessionsMap).map(
+                            ([sessionId, sessionEvents]) => (
+                                <div
+                                    key={sessionId}
+                                    className="w-full border p-4 rounded shadow-sm bg-white mb-6"
+                                >
+                                    <h2 className="text-xl font-bold mb-4">
+                                        Session: {formatSessionDate(sessionId)}
+                                    </h2>
+                                    <div className="space-y-4 w-full">
+                                        {sessionEvents.map((ev) => (
+                                            <EventCard
+                                                key={ev.event_id}
+                                                event={ev}
+                                                showEdit={true}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))
+                            )
+                        )
                     )}
                 </div>
             </div>
         </div>
-
     );
 }

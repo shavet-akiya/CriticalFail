@@ -165,7 +165,7 @@ export default function SessionList() {
                     <>
                         <div className="flex flex-col items-center mb-8 obsidian-colour">
                             <h1 className="text-4xl text-center mb-4 select-none">
-                                {campaignName} sessions
+                                {campaignName} Session Notes
                             </h1>
                             <h2 className="text-lg italic red-colour select-none">{prompt}</h2>
                         </div>

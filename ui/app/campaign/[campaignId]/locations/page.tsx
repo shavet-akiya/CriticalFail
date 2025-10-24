@@ -24,9 +24,12 @@ export default function Locations() {
 
     const fetchLocations = async (): Promise<Location[]> => {
         if (!selectedCampaign?.campaign_id) return [];
-        const res = await fetch(`${baseUrl}/campaign/locations/${selectedCampaign?.campaign_id}`, {
-            cache: "no-store",
-        });
+        const res = await fetch(
+            `${baseUrl}/campaign/locations/${selectedCampaign?.campaign_id}`,
+            {
+                cache: "no-store",
+            }
+        );
         if (!res.ok) throw new Error(`GET /locations failed: ${res.status}`);
         const data = await res.json();
 
@@ -55,7 +58,6 @@ export default function Locations() {
 
         fetchData();
     }, [selectedCampaign?.campaign_id]);
-
 
     const filteredLocations = locations.filter((loc) =>
         loc.location_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -98,24 +100,22 @@ export default function Locations() {
             <div className="sticky top-0 z-10">
                 <div className="heading-banner">
                     <h1 className="page-heading">Locations</h1>
+                    <div className="mb-4 flex flex-col sm:flex-row gap-4 px-2">
+                        <input
+                            type="text"
+                            placeholder="Search by name..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="border bg-white border-gray-300 px-3 py-2 rounded-lg flex-1 text-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                        />
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="bg-purple-colour text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
+                        >
+                            + Add Location
+                        </button>
+                    </div>
                 </div>
-
-                <div className="mb-4 flex flex-col sm:flex-row gap-4 px-2">
-                    <input
-                        type="text"
-                        placeholder="Search by name..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border bg-white border-gray-300 px-3 py-2 rounded-lg flex-1 text-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
-                    />
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="bg-purple-colour text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
-                    >
-                        + Add Location
-                    </button>
-                </div>
-
             </div>
 
             <div className="flex-1 overflow-auto min-h-0">
@@ -146,7 +146,10 @@ export default function Locations() {
                         <h1 className="text-4xl text-center pb-4 obsidian-colour font-bold">
                             Create New Location
                         </h1>
-                        <form onSubmit={handleCreateLocation} className="space-y-4">
+                        <form
+                            onSubmit={handleCreateLocation}
+                            className="space-y-4"
+                        >
                             <div>
                                 <label className="block text-lg purple-colour font-semibold mb-1">
                                     Location Name
@@ -175,7 +178,8 @@ export default function Locations() {
                                     onChange={(e) =>
                                         setNewLocation({
                                             ...newLocation,
-                                            location_description: e.target.value,
+                                            location_description:
+                                                e.target.value,
                                         })
                                     }
                                     className="w-full border rounded-lg px-3 py-2"
@@ -203,5 +207,4 @@ export default function Locations() {
             )}
         </div>
     );
-
 }

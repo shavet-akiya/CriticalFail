@@ -30,7 +30,7 @@ export default function CampaignCard({
             onClick={() => {
                 router.push(`/campaign/${campaignID}/summary`);
             }}
-            className="cursor-pointer rounded-lg transition bg-white-colour transition-transform transform hover:scale-105 
+            className="cursor-pointer rounded-lg transition bg-white transition-transform transform hover:scale-105 
                hover:shadow-lg"
         >
             <div className="card-body flex flex-col items-center text-center gap-4">

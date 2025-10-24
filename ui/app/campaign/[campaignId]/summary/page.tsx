@@ -228,7 +228,7 @@ export default function CampaignSummaryPage() {
     if (!campaign) return <div className="p-6">Campaign not found.</div>;
 
     return (
-        <div className="flex flex-col items-center bg-white-colour h-full w-full max-w-20xl select-none gap-8 overflow-hidden">
+        <div className="flex flex-col items-center bg-white-colour h-full w-full max-w-20xl select-none gap-5 overflow-hidden">
             <div className="rounded-xl w-full max-w-4xl relative flex flex-col md:flex-row items-center md:items-start p-4 bg-purple-colour gap-6">
                 {/* Campaign Image */}
                 <img
@@ -504,35 +504,38 @@ export default function CampaignSummaryPage() {
             <div className="flex w-full max-w-4xl border-b border-gray-300">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "sessions"
-                        ? "border-b-4 border-red-600 text-red-600"
-                        : "text-gray-600 hover:text-gray-800"
-                        }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
+                        activePage === "sessions"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
+                    }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "characters"
-                        ? "border-b-4 border-red-600 text-red-600"
-                        : "text-gray-600 hover:text-gray-800"
-                        }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
+                        activePage === "characters"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
+                    }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "locations"
-                        ? "border-b-4 border-red-600 text-red-600"
-                        : "text-gray-600 hover:text-gray-800"
-                        }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
+                        activePage === "locations"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
+                    }`}
                 >
                     Locations
                 </button>
             </div>
 
             {/* Carousel Pages */}
-            <div className="p-6 flex flex-col gap-6 w-full max-w-4xl mt-0 h-[60vh] overflow-auto">
+            <div className="p-6 flex flex-col rounded-xl w-full max-w-4xl mt-0 h-[50vh] overflow-auto">
                 {activePage === "sessions" && (
                     <div className="bg-[#e0d6cb] p-6">
                         <h2 className="text-2xl font-bold mb-4 obsidian-colour">
@@ -589,8 +592,8 @@ export default function CampaignSummaryPage() {
                                                 c.imageURL?.startsWith("http")
                                                     ? c.imageURL
                                                     : c.imageURL
-                                                        ? `${baseUrl}${c.imageURL}`
-                                                        : "/images/character-placeholder.png"
+                                                    ? `${baseUrl}${c.imageURL}`
+                                                    : "/images/character-placeholder.png"
                                             }
                                             onError={(e) => {
                                                 (

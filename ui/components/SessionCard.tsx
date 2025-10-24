@@ -63,7 +63,7 @@ export default function SessionCard({
     formatSessionDate,
 }: SessionCardProps) {
     return (
-        <div className="rounded-xl shadow-md hover:shadow-lg transition-all duration-200 bg-white-colour">
+        <div className="p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 bg-white-colour">
             <p className="font-bold mb-2 text-lg obsidian-colour">
                 {formatSessionDate(session.session_id)} Session
             </p>

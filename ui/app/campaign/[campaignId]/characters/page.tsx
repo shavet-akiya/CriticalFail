@@ -184,26 +184,26 @@ export default function Characters() {
                 <h1 className="text-4xl font-bold text-white tracking-wide">
                     Characters
                 </h1>
+                <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex gap-2 flex-wrap items-center w-full sm:w-auto">
+                        <input
+                            type="text"
+                            placeholder="Search by name..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="border border-gray-300 px-3 py-2 rounded-lg w-full sm:w-72 text-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                        />
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="bg-purple-colour text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md"
+                        >
+                            + Add Character
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Search + Add Character Section */}
-            <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex gap-2 flex-wrap items-center w-full sm:w-auto">
-                    <input
-                        type="text"
-                        placeholder="Search by name..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border border-gray-300 px-3 py-2 rounded-lg w-full sm:w-72 text-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
-                    />
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="bg-purple-colour text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md"
-                    >
-                        + Add Character
-                    </button>
-                </div>
-            </div>
 
             {/* --- No Characters / Sessions Message --- */}
             {characters.length === 0 && (

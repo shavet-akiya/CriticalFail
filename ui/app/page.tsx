@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import CampaignCard from "@/components/CampaignCard";
@@ -23,6 +24,7 @@ function App() {
     const [sortOption, setSortOption] = useState<
         "alphabetical" | "sessions" | "recent" | ""
     >("");
+    const router = useRouter();
 
     const { setSelectedCampaign } = useCampaign();
 
@@ -98,14 +100,17 @@ function App() {
                 <h1 className="text-9xl font-bold select-none font-metal-mania red-colour text-center text-shadow-lg z-10">
                     Dungeon Scribe
                 </h1>
-                <div className="bottom-20 text-center flex flex-row gap-8 z-10">
+                <div className="flex gap-15">
                     <a
                         href="#campaign_selection"
-                        className="btn btn-primary scroll-smooth pt-2 pb-2"
+                        className="btn btn-primary w-60 h-20 py-2 text-center"
                     >
                         Select Campaign
                     </a>
-                    <Link href="/new_campaign" className="btn btn-primary">
+                    <Link
+                        href="/new_campaign"
+                        className="btn btn-primary w-60 h-20 py-2 text-center"
+                    >
                         New Campaign
                     </Link>
                 </div>
@@ -122,9 +127,29 @@ function App() {
                     <>
                         {/* Sticky title + search bar */}
                         <div className="w-full max-w-7xl sticky top-0 bg-purple-colour z-20 py-6 px-4 rounded-b-lg shadow-md">
-                            <h2 className="text-4xl font-bold text-white mb-4 text-center">
-                                Campaign Selection
-                            </h2>
+                            {/* Top Bar: Back / Title / New Campaign */}
+                            <div className="flex justify-between items-center mb-6">
+                                {/* Back Button */}
+                                <Link
+                                    href="/"
+                                    className="btn bg-gray-400 hover:bg-gray-500 w-40 py-2 text-center transition-colors duration-200"
+                                >
+                                    ← Back
+                                </Link>
+
+                                {/* Title */}
+                                <h2 className="text-4xl font-bold text-white text-center flex-1">
+                                    Campaign Selection
+                                </h2>
+
+                                {/* New Campaign Button */}
+                                <Link
+                                    href="/new_campaign"
+                                    className="btn bg-[#a80d18] w-40 py-2 text-center"
+                                >
+                                    + New Campaign
+                                </Link>
+                            </div>
 
                             {/* Search + Sort */}
                             {campaigns.length > 0 && (
@@ -159,16 +184,6 @@ function App() {
                                             Most Recently Created
                                         </option>
                                     </select>
-
-                                    {/* New Campaign button */}
-                                    <Link
-                                        href="/new_campaign"
-                                        className="btn btn-primary w-full sm:w-auto 
-               transition-transform transform hover:scale-105 
-               hover:shadow-lg"
-                                    >
-                                        New Campaign
-                                    </Link>
                                 </div>
                             )}
                         </div>
