@@ -267,7 +267,7 @@ export default function CampaignSummaryPage() {
             {/* Edit Modal */}
             {editing && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="flex flex-col gap-2 p-8 max-w-2xl w-full rounded-xl shadow-lg relative border-2 border-purple">
+                    <div className="flex flex-col gap-2 p-8 max-w-2xl w-full bg-white rounded-xl shadow-lg relative border-2 border-purple">
                         {/* X button */}
                         <button
                             type="button"
@@ -504,28 +504,31 @@ export default function CampaignSummaryPage() {
             <div className="flex w-full max-w-6xl border-b border-gray-300">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "sessions"
-                        ? "border-b-4 border-red-600 text-red-600"
-                        : "text-gray-600 hover:text-gray-800"
-                        }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
+                        activePage === "sessions"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
+                    }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "characters"
-                        ? "border-b-4 border-red-600 text-red-600"
-                        : "text-gray-600 hover:text-gray-800"
-                        }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
+                        activePage === "characters"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
+                    }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "locations"
-                        ? "border-b-4 border-red-600 text-red-600"
-                        : "text-gray-600 hover:text-gray-800"
-                        }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
+                        activePage === "locations"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
+                    }`}
                 >
                     Locations
                 </button>
@@ -535,9 +538,7 @@ export default function CampaignSummaryPage() {
             <div className="p-6 flex flex-col rounded-xl w-full max-w-4xl mt-0 h-[50vh] overflow-auto">
                 {activePage === "sessions" && (
                     <div className="bg-[#ded4ca] p-6 rounded-xl">
-                        <h2 className="page-sub-heading">
-                            Latest Session
-                        </h2>
+                        <h2 className="page-sub-heading">Latest Session</h2>
                         {sessions.length > 0 ? (
                             <SessionCard
                                 session={sessions[0]}
@@ -558,9 +559,7 @@ export default function CampaignSummaryPage() {
                 )}
                 {activePage === "characters" && (
                     <div className="bg-[#ded4ca] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-                        <h2 className="page-sub-heading">
-                            Characters
-                        </h2>
+                        <h2 className="page-sub-heading">Characters</h2>
                         {characters.length === 0 ? (
                             <div>
                                 <p className="obsidian-colour">
@@ -589,8 +588,8 @@ export default function CampaignSummaryPage() {
                                                 c.imageURL?.startsWith("http")
                                                     ? c.imageURL
                                                     : c.imageURL
-                                                        ? `${baseUrl}${c.imageURL}`
-                                                        : "/images/character-placeholder.png"
+                                                    ? `${baseUrl}${c.imageURL}`
+                                                    : "/images/character-placeholder.png"
                                             }
                                             onError={(e) => {
                                                 (
@@ -619,9 +618,7 @@ export default function CampaignSummaryPage() {
 
                 {activePage === "locations" && (
                     <div className="bg-[#e0d6cb] p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
-                        <h2 className="page-sub-heading">
-                            Locations
-                        </h2>
+                        <h2 className="page-sub-heading">Locations</h2>
                         {locations.length === 0 ? (
                             <div>
                                 <p className="obsidian-colour">
