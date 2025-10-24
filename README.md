@@ -4,7 +4,7 @@ Version: 1.0 Release
 Developers: Team Critical Fail
 
 Application Overview:
-The Dungeon Scribe is an AI-powered tool designed to enhance the Dungeons & Dragons (D&D) tabletop role-playing experience. It captures real-time audio from game conversations and converts it to text using Whisper. It organises events, characters and their interactions, and locations for multiple D&D campaigns. The application emphasizes data security and ethical AI usage, ensuring user data autonomy and privacy.
+Dungeon Scribe is an AI-powered tool designed to enhance the Dungeons & Dragons (D&D) tabletop role-playing experience. It captures real-time audio from game conversations and converts it to text using Whisper. It organises events, characters and their interactions, and locations for multiple D&D campaigns. The application emphasises data security and ethical AI usage, ensuring user data autonomy and privacy.
 
 Features:
 
@@ -54,7 +54,7 @@ Configuration Notes:
 * Ensure that all local ports are available for hosting the application
 * Local storage ensures that all session data remains on your device
 
-Project Services Overview:
+Overview of required ports:
 
 | Service | Description            | Port  |
 | ------- | ---------------------- | ----- |
