@@ -228,8 +228,8 @@ export default function CampaignSummaryPage() {
     if (!campaign) return <div className="p-6">Campaign not found.</div>;
 
     return (
-        <div className="flex flex-col items-center bg-white-colour h-full w-full max-w-20xl select-none gap-5 overflow-hidden">
-            <div className="rounded-xl w-full max-w-4xl relative flex flex-col md:flex-row items-center md:items-start p-4 bg-purple-colour gap-6">
+        <div className="flex flex-col items-center bg-white-colour h-full w-full max-w-7xl select-none gap-5 overflow-hidden padding-box">
+            <div className="rounded-b-xl lg:rounded-xl w-full max-w-6xl relative flex flex-col md:flex-row items-center md:items-start p-4 bg-purple-colour gap-6">
                 {/* Campaign Image */}
                 <img
                     src={
@@ -289,7 +289,7 @@ export default function CampaignSummaryPage() {
                             type="text"
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
-                            className="border p-2 rounded w-full mb-3 text-black"
+                            className="border p-2 rounded w-full mb-3 obsidian-colour"
                             placeholder="e.g. The Wild Beyond Witchlight"
                         />
                         <label className="block text-lg purple-colour font-semibold mb-1">
@@ -301,7 +301,7 @@ export default function CampaignSummaryPage() {
                         <textarea
                             value={newDescription}
                             onChange={(e) => setNewDescription(e.target.value)}
-                            className="border p-2 rounded w-full h-24 mb-3 text-black"
+                            className="border p-2 rounded w-full h-24 mb-3 obsidian-colour"
                             placeholder="e.g. My first D&D game."
                         />
                         {/* Upload New Campaign Image */}
@@ -501,12 +501,12 @@ export default function CampaignSummaryPage() {
             )}
 
             {/* Carousel Tabs */}
-            <div className="flex w-full max-w-4xl border-b border-gray-300">
+            <div className="flex w-full max-w-6xl border-b border-gray-300">
                 <button
                     onClick={() => setActivePage("sessions")}
                     className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "sessions"
-                            ? "border-b-4 border-red-600 text-red-600"
-                            : "text-gray-600 hover:text-gray-800"
+                        ? "border-b-4 border-red-600 text-red-600"
+                        : "text-gray-600 hover:text-gray-800"
                         }`}
                 >
                     Sessions
@@ -514,8 +514,8 @@ export default function CampaignSummaryPage() {
                 <button
                     onClick={() => setActivePage("characters")}
                     className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "characters"
-                            ? "border-b-4 border-red-600 text-red-600"
-                            : "text-gray-600 hover:text-gray-800"
+                        ? "border-b-4 border-red-600 text-red-600"
+                        : "text-gray-600 hover:text-gray-800"
                         }`}
                 >
                     Characters
@@ -523,8 +523,8 @@ export default function CampaignSummaryPage() {
                 <button
                     onClick={() => setActivePage("locations")}
                     className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "locations"
-                            ? "border-b-4 border-red-600 text-red-600"
-                            : "text-gray-600 hover:text-gray-800"
+                        ? "border-b-4 border-red-600 text-red-600"
+                        : "text-gray-600 hover:text-gray-800"
                         }`}
                 >
                     Locations
@@ -534,8 +534,8 @@ export default function CampaignSummaryPage() {
             {/* Carousel Pages */}
             <div className="p-6 flex flex-col rounded-xl w-full max-w-4xl mt-0 h-[50vh] overflow-auto">
                 {activePage === "sessions" && (
-                    <div className="bg-[#e0d6cb] p-6 rounded-xl">
-                        <h2 className="text-2xl font-bold mb-4 obsidian-colour">
+                    <div className="bg-[#ded4ca] p-6 rounded-xl">
+                        <h2 className="page-sub-heading">
                             Latest Session
                         </h2>
                         {sessions.length > 0 ? (
@@ -557,8 +557,8 @@ export default function CampaignSummaryPage() {
                     </div>
                 )}
                 {activePage === "characters" && (
-                    <div className="bg-white-colour p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-                        <h2 className="text-2xl font-bold mb-4 obsidian-colour">
+                    <div className="bg-[#ded4ca] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                        <h2 className="page-sub-heading">
                             Characters
                         </h2>
                         {characters.length === 0 ? (
@@ -618,8 +618,8 @@ export default function CampaignSummaryPage() {
                 )}
 
                 {activePage === "locations" && (
-                    <div className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-                        <h2 className="text-2xl font-bold mb-4 obsidian-colour">
+                    <div className="bg-[#e0d6cb] p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
+                        <h2 className="page-sub-heading">
                             Locations
                         </h2>
                         {locations.length === 0 ? (

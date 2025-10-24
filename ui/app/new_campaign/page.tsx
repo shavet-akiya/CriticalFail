@@ -95,7 +95,7 @@ export default function NewCampaign() {
                 {/* X button */}
                 <button
                     type="button"
-                    onClick={() => router.push("/")}
+                    onClick={() => router.back()}
                     className="absolute top-4 right-8 text-gray-500 hover:text-gray-800 text-3xl font-bold"
                 >
                     ×
@@ -106,40 +106,40 @@ export default function NewCampaign() {
                 </h1>
 
                 {/* Name input */}
-                <label className="block text-lg purple-colour font-semibold mb-1">
+                <label className="form-field">
                     Name Your Campaign
                 </label>
-                <p className="text-sm text-gray-900 mb-1">
+                <p className="text-sm text-gray-700 mb-1">
                     This will name your campaign.
                 </p>
                 <input
                     type="text"
                     placeholder="e.g. The Wild Beyond Witchlight"
-                    className="border p-2 rounded w-full mb-3 text-black"
+                    className="border p-2 rounded w-full mb-3 obsidian-colour"
                     value={campaignName}
                     onChange={(e) => setCampaignName(e.target.value)}
                     required
                 />
 
                 {/* Description */}
-                <label className="block text-lg purple-colour font-semibold mb-1">
+                <label className="form-field">
                     Campaign Description
                 </label>
-                <p className="text-sm text-gray-900 mb-1">
+                <p className="text-sm text-gray-700 mb-1">
                     Provide a short description of your campaign.
                 </p>
                 <textarea
                     placeholder="e.g. My first D&D game."
-                    className="border p-2 rounded w-full h-24 mb-3 text-black"
+                    className="border p-2 rounded w-full h-24 mb-3 obsidian-colour"
                     value={campaignDescription}
                     onChange={(e) => setCampaignDescription(e.target.value)}
                 />
 
                 {/* Image Upload */}
-                <label className="block text-lg purple-colour font-semibold mb-1">
+                <label className="form-field">
                     Upload Campaign Image
                 </label>
-                <p className="text-sm text-gray-900 mb-1">
+                <p className="text-sm text-gray-700 mb-1">
                     Choose an image that represents your campaign.
                 </p>
                 <div className="flex flex-col gap-2 items-center">
@@ -210,13 +210,13 @@ export default function NewCampaign() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 font-bold cursor-pointer"
+                        className="save-button save-button:hover"
                     >
                         {loading ? "Creating..." : "Create"}
                     </button>
                     <button
                         onClick={() => router.push("/")}
-                        className="px-3 py-1 bg-gray-500 rounded hover:bg-gray-600 font-bold cursor-pointer"
+                        className="cancel-button cancel-button:hover"
                     >
                         Cancel
                     </button>

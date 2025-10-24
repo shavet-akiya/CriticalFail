@@ -34,13 +34,13 @@ export default function CampaignEventsPage() {
                         ...ev,
                         participants: ev.participants
                             ? ev.participants
-                                  .split(",")
-                                  .map((p: string) => p.trim())
+                                .split(",")
+                                .map((p: string) => p.trim())
                             : [],
                         event_tags: ev.event_tags
                             ? ev.event_tags
-                                  .split(",")
-                                  .map((t: string) => t.trim())
+                                .split(",")
+                                .map((t: string) => t.trim())
                             : [],
                     })
                 );
@@ -109,24 +109,25 @@ export default function CampaignEventsPage() {
     if (error) return <div className="text-red-500">Error: {error}</div>;
 
     return (
-        <div className="pl-16 pr-16 text-black h-screen flex flex-col pb-16">
-            <div className="w-full bg-purple-colour rounded-b-lg shadow-md py-6 px-4 mb-6 text-center sticky top-0 z-20">
-                <h1 className="text-4xl font-bold text-white tracking-wide">
-                    Campaign Event History
-                </h1>
+        <div className="max-w-7xl padding-box obsidian-colour h-screen flex flex-col">
+            <div className="rounded-b-xl">
+                <div className="heading-banner select-none">
+                    <h1 className="page-heading">
+                        Campaign Event History
+                    </h1>
+                </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-6">
-                {/* Sidebar */}
-                <div className="md:w-1/3 w-full sticky top-16 self-start">
+            <div className="flex flex-col md:flex-row gap-6 h-[calc(100vh-8rem)]">
+                <div className="md:w-1/3 w-full sticky top-16 self-start flex-shrink-0">
                     <input
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Search events..."
-                        className="border p-2 rounded w-full mb-4 obsidian-colour"
+                        className="border p-2 rounded-xl w-full mb-4 obsidian-colour"
                     />
-                    <div className="border border-obsidian rounded-md shadow-md bg-white-colour p-4 flex flex-col">
+                    <div className="border border-obsidian rounded-xl shadow-md bg-white-colour p-4 flex flex-col">
                         <FilterSidebar
                             events={events}
                             filters={filters}
@@ -135,37 +136,30 @@ export default function CampaignEventsPage() {
                     </div>
                 </div>
 
-                {/* Main content */}
-                <div className="md:w-2/3 w-full min-h-screen overflow-y-auto md:p-6 text-black flex flex-col justify-start">
+                {/* main event content */}
+                <div className="md:w-2/3 w-full overflow-y-auto pr-2">
                     {Object.entries(sessionsMap).length === 0 ? (
-                        <div className="mt-0">
-                            No events match your search or filters.
-                        </div>
+                        <div className="mt-0">No events match your search or filters.</div>
                     ) : (
-                        Object.entries(sessionsMap).map(
-                            ([sessionId, sessionEvents]) => (
-                                <div
-                                    key={sessionId}
-                                    className="w-full border p-4 rounded shadow-sm bg-white mb-6"
-                                >
-                                    <h2 className="text-xl font-bold mb-4">
-                                        Session: {formatSessionDate(sessionId)}
-                                    </h2>
-                                    <div className="space-y-4 w-full">
-                                        {sessionEvents.map((ev) => (
-                                            <EventCard
-                                                key={ev.event_id}
-                                                event={ev}
-                                                showEdit={true}
-                                            />
-                                        ))}
-                                    </div>
+                        Object.entries(sessionsMap).map(([sessionId, sessionEvents]) => (
+                            <div
+                                key={sessionId}
+                                className="w-full border p-6 rounded-xl shadow-sm bg-white mb-6"
+                            >
+                                <h2 className="text-xl font-bold mb-4">
+                                    Session: {formatSessionDate(sessionId)}
+                                </h2>
+                                <div className="space-y-4 w-full">
+                                    {sessionEvents.map((ev) => (
+                                        <EventCard key={ev.event_id} event={ev} showEdit={true} />
+                                    ))}
                                 </div>
-                            )
-                        )
+                            </div>
+                        ))
                     )}
                 </div>
             </div>
+
         </div>
     );
 }

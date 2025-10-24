@@ -71,7 +71,7 @@ export default function EventCard({ event, showEdit = false }: EventCardProps) {
                 {showEdit && (
                     <Link
                         href={`/campaign/${campaignId}/events/${event.event_id}`}
-                        className="btn btn-primary z-10 w-auto ml-auto block"
+                        className="edit-button edit-button:hover z-10 w-auto ml-auto block"
                         onClick={(e) => e.stopPropagation()}
                     >
                         Edit

@@ -147,27 +147,27 @@ export default function SessionList() {
     if (fetching) return <Loading />
 
     return (
-        <div className="min-h-screen p-6 obsidian-colour">
-            <div className="p-6">
+        <div className="max-w-7xl padding-box min-h-screen obsidian-colour">
+            <div>
                 {fetching ? (
                     <Loading />
                 ) : sessions.length === 0 ? (
-                    <div>
-                        <div>
-                            <h1 className="text-4xl text-center mb-4 ">
-                                {campaignName} sessions
+                    <div className="rounded-xl">
+                        <div className="heading-banner select-none">
+                            <h1 className="page-heading">
+                                {campaignName} Session Notes
                             </h1>
-                            <h2>{prompt}</h2>
+                            <h2 className="text-lg italic select-none text-gray-400">{prompt}</h2>
                         </div>
                         <p>No sessions available.</p>
                     </div>
                 ) : (
-                    <>
-                        <div className="flex flex-col items-center mb-8 obsidian-colour">
-                            <h1 className="text-4xl text-center mb-4 select-none">
+                    <div className="rounded-xl">
+                        <div className="heading-banner select-none">
+                            <h1 className="page-heading">
                                 {campaignName} Session Notes
                             </h1>
-                            <h2 className="text-lg italic red-colour select-none">{prompt}</h2>
+                            <h2 className="text-lg italic select-none text-gray-400">{prompt}</h2>
                         </div>
                         <ul className="space-y-4">
                             {sessions.map((s) => {
@@ -175,7 +175,7 @@ export default function SessionList() {
                                 return (
                                     <li
                                         key={s.id}
-                                        className="p-8 bg-gray-50 rounded shadow obsidian-colour flex flex-col gap-4"
+                                        className="p-8 bg-gray-50 rounded-xl shadow-md obsidian-colour flex flex-col gap-4 max-w-7xl"
                                     >
                                         <div className="flex justify-between items-center ">
                                             <div>
@@ -211,8 +211,8 @@ export default function SessionList() {
                                                     onClick={() => setEditingSessionId(null)}
                                                     disabled={savingSessionId === s.id}
                                                     className={`btn px-3 py-1 text-sm rounded ${savingSessionId === s.id
-                                                        ? "bg-gray-300 cursor-not-allowed"
-                                                        : "bg-gray-400 hover:bg-gray-500 white-colour"
+                                                        ? "cancel-button cancel-button:hover"
+                                                        : "cancel-button cancel-button:hover"
                                                         }`}
                                                 >
                                                     Cancel
@@ -221,8 +221,8 @@ export default function SessionList() {
                                                     onClick={() => saveDocument(s)}
                                                     disabled={savingSessionId === s.id}
                                                     className={`btn px-3 py-1 text-sm rounded ${savingSessionId === s.id
-                                                        ? "bg-green-400 cursor-not-allowed obsidian-colour"
-                                                        : "bg-green-600 hover:bg-green-700"
+                                                        ? "save-button save-button:hover"
+                                                        : "save-button save-button:hover"
                                                         }`}
                                                 >
                                                     {savingSessionId === s.id ? "Saving..." : "Save"}
@@ -235,13 +235,13 @@ export default function SessionList() {
                                                         setEditingSessionId(s.id);
                                                         setEditedDocument(s.document);
                                                     }}
-                                                    className="btn px-3 py-1 bg-blue-600 white-colour text-sm rounded hover:bg-blue-700"
+                                                    className="edit-button edit-button:hover"
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
                                                     onClick={() => deleteSession(s)}
-                                                    className="btn px-3 py-1 bg-red-600 text-sm rounded white-colour hover:bg-red-700"
+                                                    className="delete-button delete-button:hover"
                                                 >
                                                     Delete
                                                 </button>
@@ -252,7 +252,7 @@ export default function SessionList() {
                                 );
                             })}
                         </ul>
-                    </>
+                    </div>
                 )}
             </div>
 

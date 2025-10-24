@@ -96,7 +96,7 @@ export default function Locations() {
     return loading ? (
         <Loading />
     ) : (
-        <div className="pl-16 pr-16 text-black h-screen flex flex-col pb-16">
+        <div className="pl-16 pr-16 obsidian-colour h-screen flex flex-col pb-16">
             <div className="sticky top-0 z-10">
                 <div className="heading-banner">
                     <h1 className="page-heading">Locations</h1>
@@ -106,7 +106,7 @@ export default function Locations() {
                             placeholder="Search by name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="border bg-white border-gray-300 px-3 py-2 rounded-lg flex-1 text-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                            className="border bg-white border-gray-300 px-3 py-2 rounded-lg flex-1 obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                         />
                         <button
                             onClick={() => setShowModal(true)}

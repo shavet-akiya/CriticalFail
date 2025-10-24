@@ -26,7 +26,7 @@ export default function CharacterCard({
             <div className="card bg-purple-colour w-full max-w-sm shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer group relative">
                 {/* View button */}
                 <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                    <button className="bg-white-colour text-black font-semibold rounded-lg px-3 py-1 shadow-md hover:shadow-lg hover:bg-gray-100 transition-all flex items-center gap-1">
+                    <button className="bg-white-colour obsidian-colour font-semibold rounded-lg px-3 py-1 shadow-md hover:shadow-lg hover:bg-gray-100 transition-all flex items-center gap-1">
                         View
                     </button>
                 </div>

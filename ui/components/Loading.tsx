@@ -39,13 +39,12 @@ export default function Loading() {
                 />
 
                 {/* Loading Text */}
-                <h1 className="text-black text-2xl mb-2">Loading...</h1>
+                <h1 className="obsidian-colour text-2xl mb-2">Loading...</h1>
 
                 {/* D&D Flavor Text with Fade */}
                 <p
-                    className={`text-gray-700 text-center text-lg italic transition-opacity duration-500 ${
-                        fade ? "opacity-100" : "opacity-0"
-                    }`}
+                    className={`text-gray-700 text-center text-lg italic transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"
+                        }`}
                 >
                     {flavorTexts[currentText]}
                 </p>

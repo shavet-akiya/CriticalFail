@@ -14,7 +14,7 @@ export function LocationCard({ location }: { location: Location }) {
             className="block"
         >
             <div className="bg-white rounded-2xl shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer p-6 flex flex-col justify-between gap-3 border border-gray-100">
-                <h2 className="text-xl font-bold text-black">
+                <h2 className="text-xl font-bold obsidian-colour">
                     {location.location_name}
                 </h2>
                 {location.location_description && (

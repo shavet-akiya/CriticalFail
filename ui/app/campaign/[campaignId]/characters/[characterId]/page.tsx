@@ -212,7 +212,7 @@ export default function CharacterProfile() {
                                                 Name
                                             </label>
                                             <input
-                                                className="border p-2 rounded w-full mb-3 text-black"
+                                                className="border p-2 rounded w-full mb-3 obsidian-colour"
                                                 value={form.name}
                                                 placeholder="e.g. Aragon"
                                                 onChange={(e) =>
@@ -231,7 +231,7 @@ export default function CharacterProfile() {
                                                     Race
                                                 </label>
                                                 <input
-                                                    className="border p-2 rounded w-full mb-3 text-black"
+                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
                                                     value={form.race || ""}
                                                     placeholder="e.g. Half-Elf"
                                                     onChange={(e) =>
@@ -247,7 +247,7 @@ export default function CharacterProfile() {
                                                     Class
                                                 </label>
                                                 <input
-                                                    className="border p-2 rounded w-full mb-3 text-black"
+                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
                                                     placeholder="e.g. Warlock"
                                                     value={form.class || ""}
                                                     onChange={(e) =>
@@ -268,7 +268,7 @@ export default function CharacterProfile() {
                                                 </label>
                                                 <input
                                                     type="number"
-                                                    className="border p-2 rounded w-full mb-3 text-black"
+                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
                                                     value={form.AC}
                                                     onChange={(e) =>
                                                         onChange(
@@ -286,7 +286,7 @@ export default function CharacterProfile() {
                                                 </label>
                                                 <input
                                                     type="number"
-                                                    className="border p-2 rounded w-full mb-3 text-black"
+                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
                                                     value={form.HP}
                                                     onChange={(e) =>
                                                         onChange(
@@ -333,7 +333,7 @@ export default function CharacterProfile() {
                                                 </label>
                                                 <input
                                                     type="number"
-                                                    className="border p-2 rounded w-full mb-3 text-black"
+                                                    className="border p-2 rounded w-full mb-3 obsidian-colour"
                                                     value={
                                                         (form as any)[stat] ?? 0
                                                     }

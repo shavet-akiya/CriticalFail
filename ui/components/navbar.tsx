@@ -107,7 +107,7 @@ export default function NavBar({ found = true }: NavBarProps) {
                             <Link
                                 href={item.href}
                                 className={`px-2 py-1 rounded transition ${isActive
-                                    ? "bg-[#a80d18] text-black font-bold"
+                                    ? "bg-[#a80d18] obsidian-colour font-bold"
                                     : "text-white hover:text-[#a80d18]"
                                     } ${isNewSession ? "outline-2 outline-[#a80d18]" : ""}`}
                             >
@@ -130,7 +130,7 @@ export default function NavBar({ found = true }: NavBarProps) {
                             <li key={item.href}>
                                 <Link
                                     href={item.href}
-                                    className={`px-2 py-1 rounded transition ${isActive ? "bg-[#a80d18] text-black font-bold" : "text-white hover:text-[#a80d18]"
+                                    className={`px-2 py-1 rounded transition ${isActive ? "bg-[#a80d18] obsidian-colour font-bold" : "text-white hover:text-[#a80d18]"
                                         } ${isNewSession ? "outline-2 outline-[#a80d18]" : ""}`}
                                     onClick={() => setMenuOpen(false)}
                                 >

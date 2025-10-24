@@ -178,7 +178,7 @@ export default function Characters() {
     };
 
     return (
-        <div className="pl-16 pr-16 text-black">
+        <div className="pl-16 pr-16 obsidian-colour">
             {/* Header Section */}
             <div className="w-full bg-purple-colour rounded-b-lg shadow-md py-6 px-4 mb-6 text-center">
                 <h1 className="text-4xl font-bold text-white tracking-wide">
@@ -191,7 +191,7 @@ export default function Characters() {
                             placeholder="Search by name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="border border-gray-300 px-3 py-2 rounded-lg w-full sm:w-72 text-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                            className="border border-gray-300 px-3 py-2 rounded-lg w-full sm:w-72 obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                         />
                         <button
                             onClick={() => setShowModal(true)}
@@ -233,7 +233,7 @@ export default function Characters() {
 
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white text-black rounded-2xl shadow-xl p-8 w-full max-w-lg overflow-y-auto max-h-[90vh]">
+                    <div className="bg-white obsidian-colour rounded-2xl shadow-xl p-8 w-full max-w-lg overflow-y-auto max-h-[90vh]">
                         <h2 className="text-2xl font-bold mb-4">
                             Create New Character
                         </h2>

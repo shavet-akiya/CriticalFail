@@ -82,7 +82,7 @@ function App() {
     return (
         <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
             {/* Hero Section */}
-            <section className="min-h-screen flex flex-col items-center justify-center bg-white-colour purple-colour snap-start relative sm:gap-16 lg:gap-32 overflow-hidden">
+            <section className="min-h-screen flex flex-col items-center justify-center bg-white-colour-colour purple-colour snap-start relative sm:gap-16 lg:gap-32 overflow-hidden">
                 <Image
                     src="/images/homepage-dice.png"
                     alt="Dice top left"
@@ -126,63 +126,53 @@ function App() {
                 {!loading && (
                     <>
                         {/* Sticky title + search bar */}
-                        <div className="w-full max-w-7xl sticky top-0 bg-purple-colour z-20 py-6 px-4 rounded-b-lg shadow-md">
-                            {/* Top Bar: Back / Title / New Campaign */}
-                            <div className="flex justify-between items-center mb-6">
-                                {/* Back Button */}
-                                <Link
-                                    href="/"
-                                    className="btn bg-gray-400 hover:bg-gray-500 w-40 py-2 text-center transition-colors duration-200"
-                                >
-                                    ← Back
-                                </Link>
-
-                                {/* Title */}
-                                <h2 className="text-4xl font-bold text-white text-center flex-1">
+                        <div className="w-full max-w-7xl sticky top-2 bg-purple-colour border-purple z-20 py-6 px-4 rounded-xl shadow-md">
+                            <div className="flex items-center justify-center mb-6 relative">
+                                {/* Centered title */}
+                                <h2 className="text-4xl font-bold text-white text-center">
                                     Campaign Selection
                                 </h2>
 
-                                {/* New Campaign Button */}
+                                {/* Right-aligned button (responsive) */}
                                 <Link
                                     href="/new_campaign"
-                                    className="btn bg-[#a80d18] w-40 py-2 text-center"
+                                    className="
+                                        absolute right-0
+                                        bg-[#a80d18] text-white font-bold text-center
+                                        transition-colors duration-200 hover:bg-[#8c0b14]
+                                        flex items-center justify-center
+                                        w-10 h-10 rounded-full sm:w-40 sm:rounded-md sm:py-2
+                                        "
                                 >
-                                    + New Campaign
+                                    <span className="sm:hidden text-2xl leading-none">+</span>
+
+                                    <span className="hidden sm:inline">+ New Campaign</span>
                                 </Link>
                             </div>
 
+
                             {/* Search + Sort */}
                             {campaigns.length > 0 && (
-                                <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-4">
+                                <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
                                     <input
                                         type="text"
                                         placeholder="Search Campaigns..."
                                         value={searchTerm}
-                                        onChange={(e) =>
-                                            setSearchTerm(e.target.value)
-                                        }
-                                        className="w-full sm:w-1/2 bg-white text-black rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full sm:flex-1 bg-white obsidian-colour rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                                     />
 
                                     <select
                                         value={sortOption}
-                                        onChange={(e) =>
-                                            setSortOption(e.target.value as any)
-                                        }
-                                        className="w-full sm:w-1/4 bg-white text-black rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                                        onChange={(e) => setSortOption(e.target.value as any)}
+                                        className="w-full sm:w-48 bg-white obsidian-colour rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                                     >
                                         <option value="" disabled>
                                             Sort By...
                                         </option>
-                                        <option value="alphabetical">
-                                            Alphabetical
-                                        </option>
-                                        <option value="sessions">
-                                            Number of Sessions
-                                        </option>
-                                        <option value="recent">
-                                            Most Recently Created
-                                        </option>
+                                        <option value="alphabetical">Alphabetical</option>
+                                        <option value="sessions">Number of Sessions</option>
+                                        <option value="recent">Most Recently Created</option>
                                     </select>
                                 </div>
                             )}
