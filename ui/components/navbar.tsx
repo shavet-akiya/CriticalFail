@@ -69,7 +69,7 @@ export default function NavBar({ found = true }: NavBarProps) {
 
             {/* Hamburger Button */}
             <button
-                className="lg:hidden text-white focus:outline-none"
+                className="lg:hidden white-colour focus:outline-none"
                 onClick={() => setMenuOpen((prev) => !prev)}
                 aria-label="Toggle navigation menu"
             >
@@ -108,7 +108,7 @@ export default function NavBar({ found = true }: NavBarProps) {
                                 href={item.href}
                                 className={`px-2 py-1 rounded transition ${isActive
                                     ? "bg-[#a80d18] obsidian-colour font-bold"
-                                    : "text-white hover:text-[#a80d18]"
+                                    : "white-colour hover:text-[#a80d18]"
                                     } ${isNewSession ? "outline-2 outline-[#a80d18]" : ""}`}
                             >
                                 {item.label}
@@ -130,7 +130,7 @@ export default function NavBar({ found = true }: NavBarProps) {
                             <li key={item.href}>
                                 <Link
                                     href={item.href}
-                                    className={`px-2 py-1 rounded transition ${isActive ? "bg-[#a80d18] obsidian-colour font-bold" : "text-white hover:text-[#a80d18]"
+                                    className={`px-2 py-1 rounded transition ${isActive ? "bg-[#a80d18] obsidian-colour font-bold" : "white-colour hover:text-[#a80d18]"
                                         } ${isNewSession ? "outline-2 outline-[#a80d18]" : ""}`}
                                     onClick={() => setMenuOpen(false)}
                                 >

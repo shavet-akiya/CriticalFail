@@ -22,7 +22,7 @@ export default function RecordingPopup() {
 
     return (
         <div
-            className={`fixed bottom-6 right-6 ${bgColor} text-white px-4 py-3 rounded-full shadow-lg flex items-center gap-3 z-50`}
+            className={`fixed bottom-6 right-6 ${bgColor} white-colour px-4 py-3 rounded-full shadow-lg flex items-center gap-3 z-50`}
         >
             {isRecording && (
                 <>

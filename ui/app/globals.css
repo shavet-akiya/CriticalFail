@@ -132,6 +132,7 @@
   letter-spacing: 0.05em; 
   font-size: 2.25rem;
   font-weight: 700;
+  select: none;
 }
 
 {/*w-full bg-purple-colour rounded-b-lg shadow-md py-6 px-4 mb-4 text-center*/}
@@ -147,6 +148,7 @@
     padding-right: 1rem;
     margin-bottom: 1rem;
     text-align: center;
+    select: none;
 }
 
 .save-button {

@@ -31,7 +31,7 @@ export default function CampaignCard({
                 router.push(`/campaign/${campaignID}/summary`);
             }}
             className="cursor-pointer rounded-xl transition bg-white-colour transform hover:scale-102 
-               hover:shadow-lg border border-purple-300"
+               hover:shadow-lg border-2 border-purple"
         >
             <div className="card-body flex flex-col items-center text-center gap-4">
                 <div className="card-body">

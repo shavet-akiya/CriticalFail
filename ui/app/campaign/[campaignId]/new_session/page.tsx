@@ -269,16 +269,14 @@ export default function NewSession() {
 
             if (statusData.status === "processing") {
                 setUploadStatus(
-                    `Processing audio... (${Math.floor((attempts * 3) / 60)}m ${
-                        (attempts * 3) % 60
+                    `Processing audio... (${Math.floor((attempts * 3) / 60)}m ${(attempts * 3) % 60
                     }s)`
                 );
             }
 
             if (statusData.status === "completed" && statusData.result) {
                 setUploadStatus(
-                    `✅ Processing complete! ${
-                        statusData.result.speaker_count || 0
+                    `✅ Processing complete! ${statusData.result.speaker_count || 0
                     } speakers identified.`
                 );
                 setCompletedTranscript(statusData.result.transcript || "");
@@ -436,11 +434,10 @@ export default function NewSession() {
                         {/* Status */}
                         <div className="flex items-center justify-center bg-red-50 rounded-lg px-4 py-2 inline-flex">
                             <div
-                                className={`w-3 h-3 rounded-full mr-3 ${
-                                    isPaused
+                                className={`w-3 h-3 rounded-full mr-3 ${isPaused
                                         ? "bg-yellow-500"
                                         : "bg-red-500 animate-pulse"
-                                }`}
+                                    }`}
                             />
                             <span className="text-sm font-medium text-gray-700">
                                 {isPaused
@@ -457,9 +454,8 @@ export default function NewSession() {
                     height="250px"
                     viewBox="0 0 512 512"
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`w-1/2 text-cyan-800 transition-opacity ${
-                        isRecording && !isPaused ? "animate-pulse" : ""
-                    }`}
+                    className={`w-1/2 text-cyan-800 transition-opacity ${isRecording && !isPaused ? "animate-pulse" : ""
+                        }`}
                 >
                     <path
                         fill="#361947ff"
@@ -472,7 +468,7 @@ export default function NewSession() {
             <div className="flex flex-col items-center gap-4">
                 <div className="flex gap-6">
                     <button
-                        className="flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-3 px-8 py-4 bg-indigo-600 white-colour text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={handleUploadClick}
                         disabled={isProcessing}
                     >
@@ -491,7 +487,7 @@ export default function NewSession() {
 
                     {!isRecording ? (
                         <button
-                            className="flex items-center gap-3 px-8 py-4 bg-red-500 text-white text-lg font-semibold rounded-lg hover:bg-red-600 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-3 px-8 py-4 bg-red-500 white-colour text-lg font-semibold rounded-lg hover:bg-red-600 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={startRecording}
                             disabled={isUploading}
                         >
@@ -500,7 +496,7 @@ export default function NewSession() {
                         </button>
                     ) : (
                         <button
-                            className="flex items-center gap-3 px-8 py-4 bg-gray-600 text-white text-lg font-semibold rounded-lg hover:bg-gray-700 transition-colors shadow-lg"
+                            className="flex items-center gap-3 px-8 py-4 bg-gray-600 white-colour text-lg font-semibold rounded-lg hover:bg-gray-700 transition-colors shadow-lg"
                             onClick={stopRecording}
                         >
                             <MicOff size={24} />
@@ -513,7 +509,7 @@ export default function NewSession() {
                 {isRecording && (
                     <button
                         onClick={pauseRecording}
-                        className="flex items-center gap-2 px-6 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors shadow"
+                        className="flex items-center gap-2 px-6 py-2 bg-yellow-500 white-colour font-semibold rounded-lg hover:bg-yellow-600 transition-colors shadow"
                     >
                         {isPaused ? (
                             <>
@@ -545,11 +541,10 @@ export default function NewSession() {
                     <Loading />
                 ) : (
                     <div
-                        className={`flex items-center gap-3 p-4 rounded-lg shadow ${
-                            uploadStatus.includes("✅")
+                        className={`flex items-center gap-3 p-4 rounded-lg shadow ${uploadStatus.includes("✅")
                                 ? "bg-green-50 border-l-4 border-green-500"
                                 : "bg-blue-50 border-l-4 border-blue-500"
-                        }`}
+                            }`}
                     >
                         {uploadStatus.includes("✅") ? (
                             <CheckCircle className="text-green-600" size={20} />
@@ -622,7 +617,7 @@ export default function NewSession() {
                             </button>
                             <button
                                 onClick={handleSaveToDatabase}
-                                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow"
+                                className="flex items-center gap-2 px-6 py-2 bg-green-600 white-colour font-semibold rounded-lg hover:bg-green-700 transition-colors shadow"
                             >
                                 Scribe Your Session
                             </button>

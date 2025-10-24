@@ -129,7 +129,7 @@ function App() {
                         <div className="w-full max-w-7xl sticky top-2 bg-purple-colour border-purple z-20 py-6 px-4 rounded-xl shadow-md">
                             <div className="flex items-center justify-center mb-6 relative">
                                 {/* Centered title */}
-                                <h2 className="text-4xl font-bold text-white text-center">
+                                <h2 className="text-4xl font-bold white-colour text-center">
                                     Campaign Selection
                                 </h2>
 
@@ -138,7 +138,7 @@ function App() {
                                     href="/new_campaign"
                                     className="
                                         absolute right-0
-                                        bg-[#a80d18] text-white font-bold text-center
+                                        bg-[#a80d18] white-colour font-bold text-center
                                         transition-colors duration-200 hover:bg-[#8c0b14]
                                         flex items-center justify-center
                                         w-10 h-10 rounded-full sm:w-40 sm:rounded-md sm:py-2

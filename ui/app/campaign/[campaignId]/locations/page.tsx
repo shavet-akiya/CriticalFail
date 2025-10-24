@@ -110,7 +110,7 @@ export default function Locations() {
                         />
                         <button
                             onClick={() => setShowModal(true)}
-                            className="bg-purple-colour text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
+                            className="bg-purple-colour white-colour px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
                         >
                             + Add Location
                         </button>

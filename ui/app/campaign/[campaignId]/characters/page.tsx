@@ -5,6 +5,7 @@ import { useFilter } from "@/contexts/CharacterFilterContext";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import type { Character } from "@/types/types";
+import Loading from "@/components/Loading";
 
 export default function Characters() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -18,8 +19,8 @@ export default function Characters() {
     const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
-
     const [searchQuery, setSearchQuery] = useState("");
+    const [loading, setLoading] = useState(true); // ✅ new
 
     const [newCharacter, setNewCharacter] = useState({
         name: "",
@@ -36,12 +37,8 @@ export default function Characters() {
         CHA: 10,
     });
 
-    const [newCharacterImage, setNewCharacterImage] = useState<File | null>(
-        null
-    );
-    const [newCharacterImagePreview, setNewCharacterImagePreview] = useState<
-        string | null
-    >(null);
+    const [newCharacterImage, setNewCharacterImage] = useState<File | null>(null);
+    const [newCharacterImagePreview, setNewCharacterImagePreview] = useState<string | null>(null);
 
     // --- Fetch all characters ---
     const fetchCharacters = async (): Promise<Character[]> => {
@@ -70,26 +67,25 @@ export default function Characters() {
         }));
     };
 
-    // --- Fetch sessions for dropdown ---
     const fetchSessions = async () => {
         if (!campaignId) return;
-        try {
-            const res = await fetch(
-                `${baseUrl}/campaign/${campaignId}/sessions`
-            );
-            if (!res.ok) throw new Error(`Failed to fetch sessions`);
-            const data = await res.json();
-            setSessions(data.sessions ?? []);
-        } catch (e) {
-            setError(e instanceof Error ? e.message : String(e));
-        }
+        const res = await fetch(`${baseUrl}/campaign/${campaignId}/sessions`);
+        if (!res.ok) throw new Error(`Failed to fetch sessions`);
+        const data = await res.json();
+        setSessions(data.sessions ?? []);
     };
 
+    // --- On mount / when campaign changes ---
     useEffect(() => {
-        fetchCharacters()
-            .then(setCharacters)
-            .catch((e) => setError(e instanceof Error ? e.message : String(e)));
-        fetchSessions();
+        if (!campaignId) return;
+
+        setLoading(true);
+        setError(null);
+
+        Promise.all([fetchCharacters(), fetchSessions()])
+            .then(([chars]) => setCharacters(chars))
+            .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+            .finally(() => setLoading(false));
     }, [campaignId]);
 
     const filteredCharacters = characters
@@ -103,32 +99,27 @@ export default function Characters() {
             character.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
-    // --- Handle character creation and image upload ---
     const handleCreateCharacter = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!campaignId) return;
 
         try {
-            // Step 1: Create character
-            const createRes = await fetch(
-                `${baseUrl}/characters/${campaignId}`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        ...newCharacter,
-                        campaign_id: campaignId,
-                        session_ids: selectedSessions,
-                    }),
-                }
-            );
+            setLoading(true);
+            const createRes = await fetch(`${baseUrl}/characters/${campaignId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ...newCharacter,
+                    campaign_id: campaignId,
+                    session_ids: selectedSessions,
+                }),
+            });
 
             if (!createRes.ok)
                 throw new Error(`Create character failed: ${createRes.status}`);
             const characterData = await createRes.json();
             const createdCharacter: Character = characterData.character;
 
-            // Step 2: Upload image if exists
             if (newCharacterImage) {
                 const formData = new FormData();
                 formData.append("character_image", newCharacterImage);
@@ -149,10 +140,8 @@ export default function Characters() {
                 }
             }
 
-            // Step 3: Update state immediately
             setCharacters((prev) => [...prev, createdCharacter]);
 
-            // Step 4: Reset modal
             setShowModal(false);
             setNewCharacter({
                 name: "",
@@ -174,38 +163,55 @@ export default function Characters() {
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
+        } finally {
+            setLoading(false); // ✅ end loading even on error
         }
     };
 
+
+    if (loading) {
+        return (
+            <Loading />
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="text-center text-red-600 mt-6">
+                Error: {error}
+            </div>
+        );
+    }
+
     return (
-        <div className="pl-16 pr-16 obsidian-colour">
-            {/* Header Section */}
-            <div className="w-full bg-purple-colour rounded-b-lg shadow-md py-6 px-4 mb-6 text-center">
-                <h1 className="text-4xl font-bold text-white tracking-wide">
+        <div className=" max-w-7xl padding-box">
+            <div className="heading-banner obsidian-colour px-8 w-full select-none">
+                <h2 className="page-heading pb-4">
                     Characters
-                </h1>
-                <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex gap-2 flex-wrap items-center w-full sm:w-auto">
-                        <input
-                            type="text"
-                            placeholder="Search by name..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="border border-gray-300 px-3 py-2 rounded-lg w-full sm:w-72 obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
-                        />
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="bg-purple-colour text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md"
-                        >
-                            + Add Character
-                        </button>
-                    </div>
+                </h2>
+
+                <div className="flex flex-col sm:flex-row gap-4 w-full">
+                    <input
+                        type="text"
+                        placeholder="Search by name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="border bg-white-colour border-gray-300 px-3 py-2 rounded-lg flex-1 obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                    />
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="bg-[#a80d18] white-colour font-bold text-center
+                                        transition-colors duration-200 hover:bg-[#8c0b14]
+                                        flex items-center justify-center
+                                        w-10 h-10 rounded-full sm:w-40 sm:rounded-md sm:py-2"
+                    >
+                        + Add Character
+                    </button>
                 </div>
             </div>
 
-            {/* Search + Add Character Section */}
 
-            {/* --- No Characters / Sessions Message --- */}
+
             {characters.length === 0 && (
                 <div className="text-gray-500 text-center mt-16">
                     <p className="mb-2">No characters or sessions available.</p>
@@ -213,7 +219,7 @@ export default function Characters() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
                 {filteredCharacters.map((character) => {
                     const imageSrc = character.imageURL
                         ? character.imageURL.startsWith("http")
@@ -424,7 +430,7 @@ export default function Characters() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+                                    className="bg-black white-colour px-4 py-2 rounded-lg hover:bg-gray-800 transition"
                                 >
                                     Save
                                 </button>

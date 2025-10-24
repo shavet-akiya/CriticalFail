@@ -156,7 +156,7 @@ export default function NewCampaign() {
                             />
                         ) : (
                             <span
-                                className="absolute text-white text-center px-2"
+                                className="absolute white-colour text-center px-2"
                                 style={{
                                     textShadow: `
           1px 1px 0 #353434ff,
@@ -177,7 +177,7 @@ export default function NewCampaign() {
                         {preview && (
                             <button
                                 type="button"
-                                className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-gray-200 text-white font-bold rounded-full text-sm hover:bg-gray-400 cursor-pointer"
+                                className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-gray-200 white-colour font-bold rounded-full text-sm hover:bg-gray-400 cursor-pointer"
                                 onClick={() => {
                                     setImage(null);
                                     setPreview(null);

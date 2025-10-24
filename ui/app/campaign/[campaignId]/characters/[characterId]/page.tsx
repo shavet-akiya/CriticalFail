@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Character } from "@/types/types";
 import Loading from "@/components/Loading";
+import BackButton from "@/components/BackButton";
 
 export default function CharacterProfile() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -126,12 +127,7 @@ export default function CharacterProfile() {
         <div className="w-screen h-screen flex flex-col items-center justify-start overflow-auto bg-gray-100 p-8">
             {/* Back Button */}
             <div className="w-full max-w-6xl mb-4">
-                <button
-                    onClick={() => router.back()}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                >
-                    ← Back
-                </button>
+                <BackButton />
             </div>
             <div className="max-w-6xl w-full p-8 bg-white-colour rounded-2xl shadow-lg flex flex-col md:flex-row gap-8">
                 {/* Character Image */}
@@ -157,7 +153,7 @@ export default function CharacterProfile() {
                                 {form.name}
                             </h1>
                             <button
-                                className="px-3 py-1 bg-purple-colour rounded text-white hover:bg-purple-700"
+                                className="px-3 py-1 bg-purple-colour rounded white-colour hover:bg-purple-700"
                                 onClick={() => setIsEditing(true)}
                             >
                                 Edit
@@ -370,7 +366,7 @@ export default function CharacterProfile() {
                                                 />
                                             )}
                                             <span
-                                                className="absolute text-white text-center px-2"
+                                                className="absolute white-colour text-center px-2"
                                                 style={{
                                                     textShadow: `
           1px 1px 0 #353434ff,
@@ -418,7 +414,7 @@ export default function CharacterProfile() {
                                         <button
                                             onClick={remove}
                                             disabled={deleting}
-                                            className="px-4 py-2 bg-red-600 rounded text-white hover:bg-red-700"
+                                            className="px-4 py-2 bg-red-600 rounded white-colour hover:bg-red-700"
                                         >
                                             {deleting
                                                 ? "Deleting..."
@@ -428,7 +424,7 @@ export default function CharacterProfile() {
                                             <button
                                                 onClick={save}
                                                 disabled={saving}
-                                                className="px-4 py-2 bg-green-600 rounded text-white hover:bg-green-700"
+                                                className="px-4 py-2 bg-green-600 rounded white-colour hover:bg-green-700"
                                             >
                                                 {saving ? "Saving..." : "Save"}
                                             </button>
@@ -436,7 +432,7 @@ export default function CharacterProfile() {
                                                 onClick={() =>
                                                     setIsEditing(false)
                                                 }
-                                                className="px-4 py-2 bg-gray-500 rounded text-white hover:bg-gray-600"
+                                                className="px-4 py-2 bg-gray-500 rounded white-colour hover:bg-gray-600"
                                             >
                                                 Cancel
                                             </button>

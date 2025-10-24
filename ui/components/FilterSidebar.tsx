@@ -95,7 +95,7 @@ export default function FilterSidebar({
                             disabled={!isAvailable}
                             className={`px-3 py-1 rounded-full border text-sm transition 
                         ${isActive
-                                    ? "bg-blue-500 text-white border-blue-500"
+                                    ? "bg-blue-500 white-colour border-blue-500"
                                     : isAvailable
                                         ? "bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-300"
                                         : "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed opacity-60"

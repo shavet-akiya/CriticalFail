@@ -417,7 +417,7 @@ const RecordingInterface: React.FC = () => {
                             {!isRecording ? (
                                 <button
                                     onClick={startRecording}
-                                    className="flex items-center px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex items-center px-6 py-3 bg-red-500 white-colour rounded-lg hover:bg-red-600 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                                     disabled={isProcessing}
                                 >
                                     <Mic className="mr-2" size={20} />
@@ -427,14 +427,14 @@ const RecordingInterface: React.FC = () => {
                                 <>
                                     <button
                                         onClick={stopRecording}
-                                        className="flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-md"
+                                        className="flex items-center px-6 py-3 bg-gray-600 white-colour rounded-lg hover:bg-gray-700 transition-colors shadow-md"
                                     >
                                         <MicOff className="mr-2" size={20} />
                                         Stop
                                     </button>
                                     <button
                                         onClick={pauseRecording}
-                                        className="flex items-center px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-md"
+                                        className="flex items-center px-6 py-3 bg-blue-500 white-colour rounded-lg hover:bg-blue-600 transition-colors shadow-md"
                                     >
                                         {isPaused ? (
                                             <>
@@ -469,11 +469,10 @@ const RecordingInterface: React.FC = () => {
                                 />
                                 <label
                                     htmlFor="file-upload"
-                                    className={`flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors shadow-md cursor-pointer ${
-                                        isRecording || isProcessing
+                                    className={`flex items-center px-6 py-3 bg-green-500 white-colour rounded-lg hover:bg-green-600 transition-colors shadow-md cursor-pointer ${isRecording || isProcessing
                                             ? "opacity-50 cursor-not-allowed"
                                             : ""
-                                    }`}
+                                        }`}
                                 >
                                     <Upload className="mr-2" size={20} />
                                     Upload Audio
@@ -490,11 +489,10 @@ const RecordingInterface: React.FC = () => {
                     {isRecording && (
                         <div className="flex items-center bg-white/50 rounded-lg px-4 py-2 inline-flex">
                             <div
-                                className={`w-3 h-3 rounded-full mr-3 ${
-                                    isPaused
+                                className={`w-3 h-3 rounded-full mr-3 ${isPaused
                                         ? "bg-yellow-500"
                                         : "bg-red-500 animate-pulse"
-                                }`}
+                                    }`}
                             />
                             <span className="text-sm font-medium text-gray-700">
                                 {isPaused
@@ -572,7 +570,7 @@ const RecordingInterface: React.FC = () => {
                             <button
                                 onClick={uploadAudio}
                                 disabled={isProcessing}
-                                className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center px-4 py-2 bg-indigo-600 white-colour rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isProcessing ? (
                                     <>
@@ -592,7 +590,7 @@ const RecordingInterface: React.FC = () => {
 
                             <button
                                 onClick={downloadAudio}
-                                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                className="flex items-center px-4 py-2 bg-blue-500 white-colour rounded-lg hover:bg-blue-600 transition-colors"
                             >
                                 <Download className="mr-2" size={18} />
                                 Download Audio
@@ -600,7 +598,7 @@ const RecordingInterface: React.FC = () => {
 
                             <button
                                 onClick={clearRecording}
-                                className="flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                                className="flex items-center px-4 py-2 bg-gray-500 white-colour rounded-lg hover:bg-gray-600 transition-colors"
                             >
                                 <Trash2 className="mr-2" size={18} />
                                 Clear
@@ -697,37 +695,37 @@ const RecordingInterface: React.FC = () => {
                                     {/* Speaker Info */}
                                     {jobStatus.result.speaker_count !==
                                         undefined && (
-                                        <div className="bg-white p-4 rounded-lg mb-4">
-                                            <h4 className="font-medium text-gray-700 mb-2">
-                                                Speaker Analysis
-                                            </h4>
-                                            <p className="text-sm">
-                                                <span className="text-gray-600">
-                                                    Speakers Detected:
-                                                </span>
-                                                <span className="ml-2 font-bold text-indigo-600">
-                                                    {
-                                                        jobStatus.result
-                                                            .speaker_count
-                                                    }
-                                                </span>
-                                            </p>
-                                            {jobStatus.result.speakers &&
-                                                jobStatus.result.speakers
-                                                    .length > 0 && (
-                                                    <p className="text-sm mt-1">
-                                                        <span className="text-gray-600">
-                                                            IDs:
-                                                        </span>
-                                                        <span className="ml-2 font-mono text-xs">
-                                                            {jobStatus.result.speakers.join(
-                                                                ", "
-                                                            )}
-                                                        </span>
-                                                    </p>
-                                                )}
-                                        </div>
-                                    )}
+                                            <div className="bg-white p-4 rounded-lg mb-4">
+                                                <h4 className="font-medium text-gray-700 mb-2">
+                                                    Speaker Analysis
+                                                </h4>
+                                                <p className="text-sm">
+                                                    <span className="text-gray-600">
+                                                        Speakers Detected:
+                                                    </span>
+                                                    <span className="ml-2 font-bold text-indigo-600">
+                                                        {
+                                                            jobStatus.result
+                                                                .speaker_count
+                                                        }
+                                                    </span>
+                                                </p>
+                                                {jobStatus.result.speakers &&
+                                                    jobStatus.result.speakers
+                                                        .length > 0 && (
+                                                        <p className="text-sm mt-1">
+                                                            <span className="text-gray-600">
+                                                                IDs:
+                                                            </span>
+                                                            <span className="ml-2 font-mono text-xs">
+                                                                {jobStatus.result.speakers.join(
+                                                                    ", "
+                                                                )}
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                            </div>
+                                        )}
 
                                     {/* Transcript */}
                                     {jobStatus.result.transcript && (
@@ -738,7 +736,7 @@ const RecordingInterface: React.FC = () => {
                                                 </h4>
                                                 <button
                                                     onClick={downloadTranscript}
-                                                    className="flex items-center px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                                                    className="flex items-center px-3 py-1 bg-green-600 white-colour text-sm rounded hover:bg-green-700"
                                                 >
                                                     <Download
                                                         className="mr-1"

@@ -23,10 +23,10 @@ export default function CharacterCard({
             onClick={() => setCurrentCharacter(character)}
             className="block"
         >
-            <div className="card bg-purple-colour w-full max-w-sm shadow-sm hover:bg-gray-700 rounded-lg cursor-pointer group relative">
+            <div className="card p-6 bg-[#f1faee] border-3 border-purple w-full max-w-sm shadow-sm hover:bg-[#d8e2dc] rounded-3xl cursor-pointer group relative">
                 {/* View button */}
-                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                    <button className="bg-white-colour obsidian-colour font-semibold rounded-lg px-3 py-1 shadow-md hover:shadow-lg hover:bg-gray-100 transition-all flex items-center gap-1">
+                <div className=" bg-purple-colour rounded-lg white-colour absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className=" font-semibold  px-3 py-1 shadow-md hover:shadow-lg hover:bg-red-900 hover:rounded-lg transition-all flex items-center gap-1">
                         View
                     </button>
                 </div>
@@ -34,7 +34,7 @@ export default function CharacterCard({
                 {/* Character image */}
                 <figure>
                     <img
-                        className="rounded-lg pt-2 w-full h-48 object-cover"
+                        className="rounded-2xl w-70 h-70 object-cover border-2 border-purple"
                         src={imageSrc}
                         alt={character.name || "Character Image"}
                         onError={(e) => {
@@ -45,8 +45,8 @@ export default function CharacterCard({
                 </figure>
 
                 {/* Character info */}
-                <div className="card-body text-white">
-                    <div className="flex items-center justify-between">
+                <div className="card-body obsidian-colour">
+                    <div className="flex justify-between">
                         <div>
                             <h2 className="text-xl font-bold">
                                 {character.name || "Unnamed"}
