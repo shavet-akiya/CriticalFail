@@ -125,7 +125,6 @@ export default function CharacterProfile() {
 
     return (
         <div className="w-screen h-screen flex flex-col items-center justify-start overflow-auto bg-gray-100 p-8">
-            {/* Back Button */}
             <div className="w-full max-w-6xl mb-4">
                 <BackButton />
             </div>
