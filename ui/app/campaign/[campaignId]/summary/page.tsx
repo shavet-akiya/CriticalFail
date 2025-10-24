@@ -258,7 +258,7 @@ export default function CampaignSummaryPage() {
                 {/* Edit Button */}
                 <button
                     onClick={() => setEditing(true)}
-                    className="absolute top-3 right-3 bg-white obsidian-colour font-bold px-4 py-2 rounded shadow hover:bg-gray-300"
+                    className="absolute top-8 right-8 bg-white obsidian-colour font-bold px-4 py-2 rounded shadow hover:bg-gray-300"
                 >
                     Edit
                 </button>
@@ -267,7 +267,7 @@ export default function CampaignSummaryPage() {
             {/* Edit Modal */}
             {editing && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="flex flex-col gap-2 p-8 max-w-2xl w-full bg-white rounded-xl shadow-lg relative border-2 border-purple">
+                    <div className="flex flex-col gap-2 p-8 max-w-2xl w-full rounded-xl shadow-lg relative border-2 border-purple">
                         {/* X button */}
                         <button
                             type="button"
@@ -351,15 +351,15 @@ export default function CampaignSummaryPage() {
                                         className="absolute text-white text-center px-2"
                                         style={{
                                             textShadow: `
-          1px 1px 0 #353434ff,
-          -1px 1px 0 #353434ff,
-          1px -1px 0 #353434ff,
-          -1px -1px 0 #353434ff,
-          0 1px 0 #353434ff,
-          0 -1px 0 #353434ff,
-          1px 0 0 #353434ff,
-          -1px 0 0 #353434ff
-        `,
+                                                1px 1px 0 #353434ff,
+                                                -1px 1px 0 #353434ff,
+                                                1px -1px 0 #353434ff,
+                                                -1px -1px 0 #353434ff,
+                                                0 1px 0 #353434ff,
+                                                0 -1px 0 #353434ff,
+                                                1px 0 0 #353434ff,
+                                                -1px 0 0 #353434ff
+                                                `,
                                         }}
                                     >
                                         Click to pick an image
@@ -504,31 +504,28 @@ export default function CampaignSummaryPage() {
             <div className="flex w-full max-w-4xl border-b border-gray-300">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
-                        activePage === "sessions"
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "sessions"
                             ? "border-b-4 border-red-600 text-red-600"
                             : "text-gray-600 hover:text-gray-800"
-                    }`}
+                        }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
-                        activePage === "characters"
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "characters"
                             ? "border-b-4 border-red-600 text-red-600"
                             : "text-gray-600 hover:text-gray-800"
-                    }`}
+                        }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
-                        activePage === "locations"
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "locations"
                             ? "border-b-4 border-red-600 text-red-600"
                             : "text-gray-600 hover:text-gray-800"
-                    }`}
+                        }`}
                 >
                     Locations
                 </button>
@@ -537,7 +534,7 @@ export default function CampaignSummaryPage() {
             {/* Carousel Pages */}
             <div className="p-6 flex flex-col rounded-xl w-full max-w-4xl mt-0 h-[50vh] overflow-auto">
                 {activePage === "sessions" && (
-                    <div className="bg-[#e0d6cb] p-6">
+                    <div className="bg-[#e0d6cb] p-6 rounded-xl">
                         <h2 className="text-2xl font-bold mb-4 obsidian-colour">
                             Latest Session
                         </h2>
@@ -560,7 +557,7 @@ export default function CampaignSummaryPage() {
                     </div>
                 )}
                 {activePage === "characters" && (
-                    <div className="bg-[#e0d6cb] p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                    <div className="bg-white-colour p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                         <h2 className="text-2xl font-bold mb-4 obsidian-colour">
                             Characters
                         </h2>
@@ -592,8 +589,8 @@ export default function CampaignSummaryPage() {
                                                 c.imageURL?.startsWith("http")
                                                     ? c.imageURL
                                                     : c.imageURL
-                                                    ? `${baseUrl}${c.imageURL}`
-                                                    : "/images/character-placeholder.png"
+                                                        ? `${baseUrl}${c.imageURL}`
+                                                        : "/images/character-placeholder.png"
                                             }
                                             onError={(e) => {
                                                 (

@@ -30,15 +30,15 @@ export default function CampaignCard({
             onClick={() => {
                 router.push(`/campaign/${campaignID}/summary`);
             }}
-            className="cursor-pointer rounded-lg transition bg-white transition-transform transform hover:scale-105 
-               hover:shadow-lg"
+            className="cursor-pointer rounded-lg transition bg-white-colour transform hover:scale-102 
+               hover:shadow-lg border border-purple-300"
         >
             <div className="card-body flex flex-col items-center text-center gap-4">
                 <div className="card-body">
                     <h2 className="card-title text-2xl purple-colour">
                         {campaignName}
                     </h2>
-                    <p className="purple-colour text-xl">
+                    <p className="purple-colour text-lg text-left pb-4">
                         Total Sessions: {sessionCount}
                     </p>
                     <figure>
@@ -49,7 +49,7 @@ export default function CampaignCard({
                                     : "/images/campaign-placeholder.jpg"
                             }
                             alt="Campaign Image"
-                            className="rounded-lg max-h-64 object-contain border-2 border-purple"
+                            className="rounded-lg max-h-64 object-contain border-2 border-purple mb-4"
                             onError={(e) => {
                                 (e.target as HTMLImageElement).src =
                                     "/images/campaign-placeholder.jpg";
