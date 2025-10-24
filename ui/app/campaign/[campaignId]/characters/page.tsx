@@ -20,7 +20,7 @@ export default function Characters() {
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [loading, setLoading] = useState(true); // ✅ new
+    const [loading, setLoading] = useState(true);
 
     const [newCharacter, setNewCharacter] = useState({
         name: "",
@@ -75,7 +75,6 @@ export default function Characters() {
         setSessions(data.sessions ?? []);
     };
 
-    // --- On mount / when campaign changes ---
     useEffect(() => {
         if (!campaignId) return;
 
@@ -164,7 +163,7 @@ export default function Characters() {
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
         } finally {
-            setLoading(false); // ✅ end loading even on error
+            setLoading(false);
         }
     };
 
@@ -340,7 +339,6 @@ export default function Characters() {
                                 )}
                             </div>
 
-                            {/* --- Session Selector --- */}
                             <div>
                                 <label className="block text-sm font-semibold mb-1">
                                     Assign to Session(s)
@@ -378,7 +376,6 @@ export default function Characters() {
                                 </p>
                             </div>
 
-                            {/* --- Stats Section --- */}
                             <div className="grid grid-cols-3 gap-3">
                                 {[
                                     "AC",

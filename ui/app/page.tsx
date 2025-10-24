@@ -144,9 +144,9 @@ function App() {
                                         w-10 h-10 rounded-full sm:w-40 sm:rounded-md sm:py-2
                                         "
                                 >
-                                    <span className="sm:hidden text-2xl leading-none">+</span>
+                                    <span className="md:hidden text-2xl leading-none -translate-y-0.5">+</span>
 
-                                    <span className="hidden sm:inline">+ New Campaign</span>
+                                    <span className="hidden md:inline">+ New Campaign</span>
                                 </Link>
                             </div>
 
