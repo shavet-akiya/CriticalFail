@@ -470,8 +470,8 @@ const RecordingInterface: React.FC = () => {
                                 <label
                                     htmlFor="file-upload"
                                     className={`flex items-center px-6 py-3 bg-green-500 white-colour rounded-lg hover:bg-green-600 transition-colors shadow-md cursor-pointer ${isRecording || isProcessing
-                                            ? "opacity-50 cursor-not-allowed"
-                                            : ""
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : ""
                                         }`}
                                 >
                                     <Upload className="mr-2" size={20} />
@@ -487,11 +487,11 @@ const RecordingInterface: React.FC = () => {
 
                     {/* Recording Status */}
                     {isRecording && (
-                        <div className="flex items-center bg-white/50 rounded-lg px-4 py-2 inline-flex">
+                        <div className="flex items-center bg-white/50 rounded-lg px-4 py-2">
                             <div
                                 className={`w-3 h-3 rounded-full mr-3 ${isPaused
-                                        ? "bg-yellow-500"
-                                        : "bg-red-500 animate-pulse"
+                                    ? "bg-yellow-500"
+                                    : "bg-red-500 animate-pulse"
                                     }`}
                             />
                             <span className="text-sm font-medium text-gray-700">

@@ -57,7 +57,6 @@ export default function SessionList() {
     const campaignName = selectedCampaign?.campaign_name;
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-    // Picks a random prompt line to display as the instruction
     useEffect(() => {
         const randomIndex = Math.floor(Math.random() * prompts.length);
         setPrompt(prompts[randomIndex]);

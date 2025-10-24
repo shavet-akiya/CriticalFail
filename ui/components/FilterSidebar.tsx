@@ -1,5 +1,7 @@
 "use client";
 
+
+// AI was used here to implement filtering logic and passing back to the parent component
 import { useMemo, useState } from "react";
 
 export type CampaignTags =

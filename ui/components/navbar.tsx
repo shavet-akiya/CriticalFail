@@ -10,6 +10,9 @@ type NavBarProps = {
     found?: boolean;
 };
 
+// AI was used for the navbar to make it responsive for smaller screens as well as refactoring the 
+// linking logic
+
 export default function NavBar({ found = true }: NavBarProps) {
     const { isRecording, isPaused } = useRecording();
     const { selectedCampaign } = useCampaign();
@@ -60,14 +63,12 @@ export default function NavBar({ found = true }: NavBarProps) {
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0B1215] flex items-center justify-between px-4 py-3">
-            {/* Logo */}
             <div className="flex-1 font-metal-mania">
                 <Link href="/" className="btn btn-ghost text-3xl red-colour">
                     ↞ Dungeon Scribe
                 </Link>
             </div>
 
-            {/* Hamburger Button */}
             <button
                 className="lg:hidden white-colour focus:outline-none"
                 onClick={() => setMenuOpen((prev) => !prev)}
@@ -96,7 +97,6 @@ export default function NavBar({ found = true }: NavBarProps) {
                 </svg>
             </button>
 
-            {/* Desktop Menu */}
             <ul className="hidden lg:flex menu menu-horizontal px-1 gap-4">
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href;
@@ -119,8 +119,7 @@ export default function NavBar({ found = true }: NavBarProps) {
             </ul>
 
 
-            {/* Mobile Menu */}
-            {menuOpen && (
+            \            {menuOpen && (
                 <ul className="absolute top-[64px] left-0 right-0 bg-[#0B1215] flex flex-col items-center space-y-4 py-6 border-t border-gray-700 lg:hidden">
                     {menuItems.map((item) => {
                         const isActive = pathname === item.href;

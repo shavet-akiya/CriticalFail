@@ -23,7 +23,7 @@ export function LocationCard({ location }: { location: Location }) {
                     </p>
                 )}
 
-                {/* Session badges */}
+                {/* Session badges - AI was used for mapping between tags and badges*/}
                 {location.session_ids && location.session_ids.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-3">
                         {location.session_ids.map((sessionId, idx) => (

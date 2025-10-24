@@ -71,7 +71,6 @@ export default function SessionCard({
                 Created at: {formatProcessedAt(session.processed_at) || "N/A"}
             </p>
 
-            {/* Characters */}
             <div className="mb-6">
                 <h3 className="font-semibold text-lg obsidian-colour mb-2">
                     Characters
@@ -105,7 +104,6 @@ export default function SessionCard({
                 )}
             </div>
 
-            {/* Locations */}
             <div className="mb-6">
                 <h3 className="font-semibold text-lg obsidian-colour mb-2">
                     Locations
@@ -131,7 +129,6 @@ export default function SessionCard({
                 )}
             </div>
 
-            {/* Events */}
             <div>
                 <h3 className="font-semibold text-lg obsidian-colour mb-2">
                     Events

@@ -1,5 +1,6 @@
 "use client";
 
+// Was not used in the final implementation
 import { useRecording } from "@/contexts/RecordingContext";
 
 export default function RecordingPopup() {

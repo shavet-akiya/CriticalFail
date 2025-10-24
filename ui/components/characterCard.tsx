@@ -23,15 +23,13 @@ export default function CharacterCard({
             onClick={() => setCurrentCharacter(character)}
             className="block"
         >
-            <div className="card p-6 bg-[#f1faee] bg-[#ded4ca] border-3 border-purple w-full max-w-sm shadow-sm hover:bg-[#d8e2dc] rounded-3xl cursor-pointer group relative">
-                {/* View button */}
+            <div className="card p-6 bg-[#f1faee border-3 border-purple w-full max-w-sm shadow-sm hover:bg-[#d8e2dc] rounded-3xl cursor-pointer group relative">
                 <div className=" bg-purple-colour rounded-lg white-colour absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button className=" font-semibold  px-3 py-1 shadow-md hover:shadow-lg hover:bg-red-900 hover:rounded-lg transition-all flex items-center gap-1">
                         View
                     </button>
                 </div>
 
-                {/* Character image */}
                 <figure>
                     <img
                         className="rounded-2xl w-70 h-70 object-cover border-2 border-purple"
@@ -44,7 +42,6 @@ export default function CharacterCard({
                     />
                 </figure>
 
-                {/* Character info */}
                 <div className="card-body obsidian-colour">
                     <div className="flex justify-between">
                         <div>
@@ -62,7 +59,6 @@ export default function CharacterCard({
                         </div>
                     </div>
 
-                    {/* Stats grid */}
                     <div className="grid grid-cols-3 gap-2 mt-4 text-sm">
                         <div>
                             <strong>STR</strong> {character.STR ?? 0}

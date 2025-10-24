@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+// AI was used to generate these texts and incorporate them into the loading component
 const flavorTexts = [
     "Rolling for initiative...",
     "Consulting the ancient tomes...",
@@ -17,11 +18,11 @@ export default function Loading() {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setFade(false); // start fade out
+            setFade(false);
             setTimeout(() => {
                 setCurrentText((prev) => (prev + 1) % flavorTexts.length);
-                setFade(true); // fade in new text
-            }, 500); // match fade duration
+                setFade(true);
+            }, 500);
         }, 5000);
 
         return () => clearInterval(interval);
@@ -29,19 +30,15 @@ export default function Loading() {
 
     return (
         <div className="fixed inset-0 bg-black/50  flex items-center justify-center z-50">
-            {/* --- White Card Container --- */}
             <div className="bg-white-colour rounded-2xl shadow-xl flex flex-col items-center justify-center p-8 w-80 h-96">
-                {/* GIF */}
                 <img
-                    src="/images/200.gif" // replace with your GIF path
+                    src="/images/200.gif"
                     alt="Loading"
                     className="w-64 h-64 mb-3"
                 />
 
-                {/* Loading Text */}
                 <h1 className="obsidian-colour text-2xl mb-2">Loading...</h1>
 
-                {/* D&D Flavor Text with Fade */}
                 <p
                     className={`text-gray-700 text-center text-lg italic transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"
                         }`}

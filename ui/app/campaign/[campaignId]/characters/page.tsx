@@ -242,7 +242,7 @@ export default function Characters() {
                             onSubmit={handleCreateCharacter}
                             className="space-y-4"
                         >
-                            {/* --- Name / Race / Class / NPC --- */}
+                            {/* Name / Race / Class / NPC */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-1">
@@ -310,7 +310,6 @@ export default function Characters() {
                                 </div>
                             </div>
 
-                            {/* --- Image Picker --- */}
                             <div>
                                 <label className="block text-sm font-semibold mb-1">
                                     Character Image

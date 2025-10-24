@@ -57,7 +57,6 @@ export default function EventDetail() {
 
                 const e = data.event;
 
-                // Normalize participants and tags into string arrays
                 const participants: string[] = Array.isArray(e.participants)
                     ? e.participants
                     : typeof e.participants === "string"
@@ -190,7 +189,7 @@ export default function EventDetail() {
                 <h1 className="text-4xl obsidian-colour flex-1 text-center">
                     {form.event}
                 </h1>
-                <div className="w-[80px]" /> {/* spacer roughly matching button width */}
+                <div className="w-[80px]" />
             </div>
 
 

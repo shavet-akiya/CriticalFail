@@ -67,7 +67,6 @@ export default function NewCampaign() {
                 message: `Campaign "${campaignName}" created!`,
             });
 
-            // Reset form
             setCampaignName("");
             setCampaignDescription("");
             setImage(null);
@@ -92,7 +91,6 @@ export default function NewCampaign() {
                 onSubmit={handleSubmit}
                 className="flex flex-col gap-2 p-8 max-w-2xl w-full bg-white rounded-xl shadow-lg relative border-2 border-purple"
             >
-                {/* X button */}
                 <button
                     type="button"
                     onClick={() => router.back()}
@@ -105,7 +103,6 @@ export default function NewCampaign() {
                     Create a Campaign
                 </h1>
 
-                {/* Name input */}
                 <label className="form-field">
                     Name Your Campaign
                 </label>
@@ -121,7 +118,6 @@ export default function NewCampaign() {
                     required
                 />
 
-                {/* Description */}
                 <label className="form-field">
                     Campaign Description
                 </label>
@@ -135,7 +131,6 @@ export default function NewCampaign() {
                     onChange={(e) => setCampaignDescription(e.target.value)}
                 />
 
-                {/* Image Upload */}
                 <label className="form-field">
                     Upload Campaign Image
                 </label>
@@ -143,7 +138,7 @@ export default function NewCampaign() {
                     Choose an image that represents your campaign.
                 </p>
                 <div className="flex flex-col gap-2 items-center">
-                    {/* Clickable area */}
+
                     <div
                         onClick={() => fileInputRef.current?.click()}
                         className="w-64 h-64 border-2 border-dashed border-gray-700 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-gray-300 relative"
@@ -173,7 +168,6 @@ export default function NewCampaign() {
                                 Click to pick an image
                             </span>
                         )}
-                        {/* Remove image button */}
                         {preview && (
                             <button
                                 type="button"
@@ -187,13 +181,13 @@ export default function NewCampaign() {
                             >
                                 <img
                                     src="/svg/x-circle.svg"
-                                    className="w-6 h-6" // adjust size as needed
+                                    className="w-6 h-6"
                                 />
                             </button>
                         )}
                     </div>
 
-                    {/* Hidden file input */}
+                    {/* Hidden file input - AI was used here to incoporate image selection */}
                     <input
                         type="file"
                         accept="image/*"

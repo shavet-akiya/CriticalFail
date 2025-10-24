@@ -7,6 +7,7 @@ import RecordingPopup from "@/components/RecordingPopup";
 import { CampaignProvider, useCampaign } from "@/contexts/CampaignContext";
 import { useEffect, useState } from "react";
 
+// AI was used here to refactor the client layout
 function LayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { selectedCampaign } = useCampaign();

@@ -230,7 +230,6 @@ export default function CampaignSummaryPage() {
     return (
         <div className="flex flex-col items-center bg-white-colour h-full w-full max-w-7xl select-none gap-5 overflow-hidden padding-box">
             <div className="rounded-b-xl lg:rounded-xl w-full max-w-6xl relative flex flex-col md:flex-row items-center md:items-start p-4 bg-purple-colour gap-6">
-                {/* Campaign Image */}
                 <img
                     src={
                         campaign.campaign_image_url?.startsWith("http")
@@ -244,7 +243,6 @@ export default function CampaignSummaryPage() {
                     className="rounded-lg w-48 h-48 object-contain"
                 />
 
-                {/* Name and Description */}
                 <div className="flex-1 flex flex-col justify-center">
                     <h1 className="text-4xl font-bold mb-2 mt-2">
                         {campaign.campaign_name}
@@ -255,7 +253,6 @@ export default function CampaignSummaryPage() {
                         </p>
                     )}
                 </div>
-                {/* Edit Button */}
                 <button
                     onClick={() => setEditing(true)}
                     className="absolute top-8 right-8 bg-white obsidian-colour font-bold px-4 py-2 rounded shadow hover:bg-gray-300"
@@ -264,7 +261,6 @@ export default function CampaignSummaryPage() {
                 </button>
             </div>
 
-            {/* Edit Modal */}
             {editing && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="flex flex-col gap-2 p-8 max-w-2xl w-full bg-white rounded-xl shadow-lg relative border-2 border-purple">
@@ -500,35 +496,33 @@ export default function CampaignSummaryPage() {
                 </div>
             )}
 
-            {/* Carousel Tabs */}
+
+            {/* AI was used for helping generate this carousel*/}
             <div className="flex w-full max-w-6xl border-b border-gray-300">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
-                        activePage === "sessions"
-                            ? "border-b-4 border-red-600 text-red-600"
-                            : "text-gray-600 hover:text-gray-800"
-                    }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "sessions"
+                        ? "border-b-4 border-red-600 text-red-600"
+                        : "text-gray-600 hover:text-gray-800"
+                        }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
-                        activePage === "characters"
-                            ? "border-b-4 border-red-600 text-red-600"
-                            : "text-gray-600 hover:text-gray-800"
-                    }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "characters"
+                        ? "border-b-4 border-red-600 text-red-600"
+                        : "text-gray-600 hover:text-gray-800"
+                        }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
-                        activePage === "locations"
-                            ? "border-b-4 border-red-600 text-red-600"
-                            : "text-gray-600 hover:text-gray-800"
-                    }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "locations"
+                        ? "border-b-4 border-red-600 text-red-600"
+                        : "text-gray-600 hover:text-gray-800"
+                        }`}
                 >
                     Locations
                 </button>
@@ -582,14 +576,14 @@ export default function CampaignSummaryPage() {
                                             )
                                         }
                                     >
-                                        {/* Character Image */}
+
                                         <img
                                             src={
                                                 c.imageURL?.startsWith("http")
                                                     ? c.imageURL
                                                     : c.imageURL
-                                                    ? `${baseUrl}${c.imageURL}`
-                                                    : "/images/character-placeholder.png"
+                                                        ? `${baseUrl}${c.imageURL}`
+                                                        : "/images/character-placeholder.png"
                                             }
                                             onError={(e) => {
                                                 (
@@ -600,7 +594,7 @@ export default function CampaignSummaryPage() {
                                             className="w-12 h-12 object-cover rounded-full border-2 border-white"
                                         />
 
-                                        {/* Character Info */}
+
                                         <div>
                                             <p className="font-semibold">
                                                 {c.name}

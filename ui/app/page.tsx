@@ -116,7 +116,6 @@ function App() {
                 </div>
             </section>
 
-            {/* Campaign Selection Section */}
             <section
                 id="campaign_selection"
                 className="flex flex-col items-center justify-start bg-[#f5f1ec] snap-start min-h-screen select-none"
@@ -125,15 +124,11 @@ function App() {
 
                 {!loading && (
                     <>
-                        {/* Sticky title + search bar */}
                         <div className="w-full max-w-7xl sticky top-2 bg-purple-colour border-purple z-20 py-6 px-4 rounded-xl shadow-md">
                             <div className="flex items-center justify-center mb-6 relative">
-                                {/* Centered title */}
                                 <h2 className="text-4xl font-bold white-colour text-center">
                                     Campaign Selection
                                 </h2>
-
-                                {/* Right-aligned button (responsive) */}
                                 <Link
                                     href="/new_campaign"
                                     className="
@@ -150,8 +145,7 @@ function App() {
                                 </Link>
                             </div>
 
-
-                            {/* Search + Sort */}
+                            {/*AI was used to make this page responsive */}
                             {campaigns.length > 0 && (
                                 <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
                                     <input
@@ -180,7 +174,6 @@ function App() {
 
                         {error && <p className="text-red-500 mt-4">{error}</p>}
 
-                        {/* No campaigns */}
                         {!error && filteredCampaigns.length === 0 && (
                             <div className="flex flex-col items-center justify-center flex-1 text-center mt-10">
                                 <p className="text-lg mb-2 purple-colour">
@@ -199,7 +192,6 @@ function App() {
                             </div>
                         )}
 
-                        {/* Campaigns grid */}
                         {filteredCampaigns.length > 0 && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 pt-8 w-full max-w-7xl">
                                 {filteredCampaigns.map((c) => (

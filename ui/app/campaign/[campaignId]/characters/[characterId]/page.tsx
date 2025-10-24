@@ -1,5 +1,7 @@
 "use client";
 
+
+// AI was used on this page to refactor the layout of the edit modal to better suit laptop screens
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { Character } from "@/types/types";
@@ -131,7 +133,7 @@ export default function CharacterProfile() {
 
             {/* Character Card */}
             <div className="max-w-6xl w-full p-8 bg-white-colour rounded-2xl shadow-lg flex flex-col md:flex-row gap-8">
-                {/* Character Image */}
+
                 <div className="flex-shrink-0 w-48 h-48 rounded-xl overflow-hidden border border-gray-300 relative">
                     <img
                         src={
@@ -146,7 +148,6 @@ export default function CharacterProfile() {
                     />
                 </div>
 
-                {/* Character Info */}
                 <div className="flex-1 flex flex-col justify-between">
                     <div>
                         <div className="flex justify-between items-center mb-4">
@@ -159,7 +160,6 @@ export default function CharacterProfile() {
                             </button>
                         </div>
 
-                        {/* Static Info */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
                             <div>
                                 <p>
@@ -186,7 +186,7 @@ export default function CharacterProfile() {
                 </div>
             </div>
 
-            {/* Edit Modal */}
+            {/* Edit Modal - Where AI was used for restructuring*/}
             {isEditing && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="flex flex-col gap-4 p-8 max-w-4xl w-full bg-white rounded-xl shadow-lg border-2 border-purple relative">
