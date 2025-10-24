@@ -174,17 +174,17 @@ export default function Characters() {
         );
     }
 
-    if (error) {
+    if (!sessions) {
         return (
-            <div className="text-center text-red-600 mt-6">
+            <div className="text-center text-3xl text-red-600 mt-6">
                 Error: {error}
             </div>
         );
     }
 
     return (
-        <div className=" max-w-7xl padding-box">
-            <div className="heading-banner obsidian-colour px-8 w-full select-none">
+        <div className=" max-w-7xl w-full">
+            <div className="heading-banner obsidian-colour px-8 select-none">
                 <h1 className="page-heading">Characters</h1>
 
                 <div className="mb-4 flex flex-col sm:flex-row gap-4 px-2">
@@ -208,7 +208,7 @@ export default function Characters() {
 
             {characters.length === 0 && (
                 <div className="text-gray-500 text-center mt-16">
-                    <p className="mb-2">No characters or sessions available.</p>
+                    <p className="mb-2">What an empty tavern we have here...</p>
                     <p>Create a character or a session to get started.</p>
                 </div>
             )}
