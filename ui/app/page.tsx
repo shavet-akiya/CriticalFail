@@ -7,6 +7,7 @@ import Image from "next/image";
 import CampaignCard from "@/components/CampaignCard";
 import Loading from "@/components/Loading";
 import { useCampaign } from "@/contexts/CampaignContext";
+import { Search } from "lucide-react";
 
 interface Campaign {
     campaign_id: string;
@@ -139,34 +140,51 @@ function App() {
                                         w-10 h-10 rounded-full sm:w-40 sm:rounded-md sm:py-2
                                         "
                                 >
-                                    <span className="md:hidden text-2xl leading-none -translate-y-0.5">+</span>
+                                    <span className="md:hidden text-2xl leading-none -translate-y-0.5">
+                                        +
+                                    </span>
 
-                                    <span className="hidden md:inline">+ New Campaign</span>
+                                    <span className="hidden md:inline">
+                                        + New Campaign
+                                    </span>
                                 </Link>
                             </div>
 
                             {/*AI was used to make this page responsive */}
                             {campaigns.length > 0 && (
                                 <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
-                                    <input
-                                        type="text"
-                                        placeholder="Search Campaigns..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full sm:flex-1 bg-white obsidian-colour rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
-                                    />
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search Campaigns..."
+                                            value={searchTerm}
+                                            onChange={(e) =>
+                                                setSearchTerm(e.target.value)
+                                            }
+                                            className="border w-[60vw] bg-white border-gray-300 pl-10 pr-3 py-2 rounded-xl w-full obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm w-[60vw]"
+                                        />
+                                    </div>
 
                                     <select
                                         value={sortOption}
-                                        onChange={(e) => setSortOption(e.target.value as any)}
-                                        className="w-full sm:w-48 bg-white obsidian-colour rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                                        onChange={(e) =>
+                                            setSortOption(e.target.value as any)
+                                        }
+                                        className="w-[30vw] sm:w-48 bg-white obsidian-colour rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                                     >
                                         <option value="" disabled>
                                             Sort By...
                                         </option>
-                                        <option value="alphabetical">Alphabetical</option>
-                                        <option value="sessions">Number of Sessions</option>
-                                        <option value="recent">Most Recently Created</option>
+                                        <option value="alphabetical">
+                                            Alphabetical
+                                        </option>
+                                        <option value="sessions">
+                                            Number of Sessions
+                                        </option>
+                                        <option value="recent">
+                                            Most Recently Created
+                                        </option>
                                     </select>
                                 </div>
                             )}

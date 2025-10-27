@@ -10,7 +10,7 @@ type NavBarProps = {
     found?: boolean;
 };
 
-// AI was used for the navbar to make it responsive for smaller screens as well as refactoring the 
+// AI was used for the navbar to make it responsive for smaller screens as well as refactoring the
 // linking logic
 
 export default function NavBar({ found = true }: NavBarProps) {
@@ -106,10 +106,15 @@ export default function NavBar({ found = true }: NavBarProps) {
                         <li key={item.href}>
                             <Link
                                 href={item.href}
-                                className={`px-2 py-1 rounded transition ${isActive
-                                    ? "bg-[#a80d18] obsidian-colour font-bold"
-                                    : "white-colour hover:text-[#a80d18]"
-                                    } ${isNewSession ? "outline-2 outline-[#a80d18]" : ""}`}
+                                className={`px-2 py-1 rounded transition ${
+                                    isActive
+                                        ? "bg-[#a80d18] obsidian-colour font-bold"
+                                        : "white-colour hover:text-[#a80d18]"
+                                } ${
+                                    isNewSession
+                                        ? "outline-2 outline-[#a80d18]"
+                                        : ""
+                                }`}
                             >
                                 {item.label}
                             </Link>
@@ -118,8 +123,7 @@ export default function NavBar({ found = true }: NavBarProps) {
                 })}
             </ul>
 
-
-            \            {menuOpen && (
+            {menuOpen && (
                 <ul className="absolute top-[64px] left-0 right-0 bg-[#0B1215] flex flex-col items-center space-y-4 py-6 border-t border-gray-700 lg:hidden">
                     {menuItems.map((item) => {
                         const isActive = pathname === item.href;
@@ -129,8 +133,15 @@ export default function NavBar({ found = true }: NavBarProps) {
                             <li key={item.href}>
                                 <Link
                                     href={item.href}
-                                    className={`px-2 py-1 rounded transition ${isActive ? "bg-[#a80d18] obsidian-colour font-bold" : "white-colour hover:text-[#a80d18]"
-                                        } ${isNewSession ? "outline-2 outline-[#a80d18]" : ""}`}
+                                    className={`px-2 py-1 rounded transition ${
+                                        isActive
+                                            ? "bg-[#a80d18] obsidian-colour font-bold"
+                                            : "white-colour hover:text-[#a80d18]"
+                                    } ${
+                                        isNewSession
+                                            ? "outline-2 outline-[#a80d18]"
+                                            : ""
+                                    }`}
                                     onClick={() => setMenuOpen(false)}
                                 >
                                     {item.label}
@@ -138,7 +149,6 @@ export default function NavBar({ found = true }: NavBarProps) {
                             </li>
                         );
                     })}
-
                 </ul>
             )}
         </nav>

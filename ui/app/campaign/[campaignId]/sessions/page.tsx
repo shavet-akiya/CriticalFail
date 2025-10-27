@@ -47,7 +47,9 @@ export default function SessionList() {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [fetching, setFetching] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+    const [editingSessionId, setEditingSessionId] = useState<string | null>(
+        null
+    );
     const [editedDocument, setEditedDocument] = useState<string>("");
     const [prompt, setPrompt] = useState("");
     const [savingSessionId, setSavingSessionId] = useState<string | null>(null);
@@ -93,7 +95,6 @@ export default function SessionList() {
         setFetching(true);
     }, [campaignId]);
 
-
     async function saveDocument(session: Session) {
         setSavingSessionId(session.id);
         try {
@@ -121,7 +122,6 @@ export default function SessionList() {
         }
     }
 
-
     async function deleteSession(session: Session) {
         if (
             !confirm(
@@ -143,7 +143,7 @@ export default function SessionList() {
         }
     }
 
-    if (fetching) return <Loading />
+    if (fetching) return <Loading />;
 
     return (
         <div className="max-w-7xl padding-box min-h-screen obsidian-colour">
@@ -151,22 +151,26 @@ export default function SessionList() {
                 {fetching ? (
                     <Loading />
                 ) : sessions.length === 0 ? (
-                    <div className="rounded-xl">
-                        <div className="heading-banner select-none">
-                            <h1 className="page-heading">
-                                {campaignName} Session Notes
+                    <div className="h-full w-[80vw] select-none gap-5 overflow-hidden padding-box text-center">
+                        <div className="heading-banner obsidian-colour select-none">
+                            <h1 className="page-heading pb-4">
+                                {campaignName} - Session Notes
                             </h1>
-                            <h2 className="text-lg italic select-none text-gray-400">{prompt}</h2>
+                            <h2 className="text-lg italic select-none text-gray-400">
+                                {prompt}
+                            </h2>
                         </div>
                         <p>No sessions available.</p>
                     </div>
                 ) : (
-                    <div className="rounded-xl">
-                        <div className="heading-banner select-none">
-                            <h1 className="page-heading">
-                                {campaignName} Session Notes
+                    <div className="h-full w-[80vw] select-none gap-5 overflow-hidden padding-box text-center">
+                        <div className="heading-banner obsidian-colour px-8 select-none">
+                            <h1 className="page-heading pb-4">
+                                {campaignName} - Session Notes
                             </h1>
-                            <h2 className="text-lg italic select-none text-gray-400">{prompt}</h2>
+                            <h2 className="text-lg italic select-none text-gray-400">
+                                {prompt}
+                            </h2>
                         </div>
                         <ul className="space-y-4">
                             {sessions.map((s) => {
@@ -179,14 +183,22 @@ export default function SessionList() {
                                         <div className="flex justify-between items-center ">
                                             <div>
                                                 <p className="text-xl font-semibold select-none">
-                                                    <p>Session from {formatSessionDate(s.metadata?.session_id ?? s.id)}</p>{" "}
+                                                    <p>
+                                                        Session from{" "}
+                                                        {formatSessionDate(
+                                                            s.metadata
+                                                                ?.session_id ??
+                                                                s.id
+                                                        )}
+                                                    </p>{" "}
                                                 </p>
                                             </div>
                                         </div>
 
                                         <div className="flex flex-row justify-between items-center">
-                                            <p className="text-lg font-semibold select-none">Session Notes</p>
-
+                                            <p className="text-lg font-semibold select-none">
+                                                Session Notes
+                                            </p>
                                         </div>
 
                                         {isEditing ? (
@@ -194,8 +206,14 @@ export default function SessionList() {
                                                 className="max-w-6xl border border-red-600 p-4 rounded obsidian-colour resize-none"
                                                 minRows={2}
                                                 value={editedDocument}
-                                                disabled={savingSessionId === s.id}
-                                                onChange={(e) => setEditedDocument(e.target.value)}
+                                                disabled={
+                                                    savingSessionId === s.id
+                                                }
+                                                onChange={(e) =>
+                                                    setEditedDocument(
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         ) : (
                                             <p className="max-w-6xl w-full p-4 border border-gray-300 rounded obsidian-colour text-md whitespace-pre-wrap">
@@ -203,50 +221,68 @@ export default function SessionList() {
                                             </p>
                                         )}
 
-
                                         {isEditing ? (
                                             <div className="flex gap-2 justify-end">
                                                 <button
-                                                    onClick={() => setEditingSessionId(null)}
-                                                    disabled={savingSessionId === s.id}
-                                                    className={`btn px-3 py-1 text-sm rounded ${savingSessionId === s.id
-                                                        ? "cancel-button cancel-button:hover"
-                                                        : "cancel-button cancel-button:hover"
-                                                        }`}
+                                                    onClick={() =>
+                                                        setEditingSessionId(
+                                                            null
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        savingSessionId === s.id
+                                                    }
+                                                    className={`btn px-3 py-1 text-sm rounded ${
+                                                        savingSessionId === s.id
+                                                            ? "cancel-button cancel-button:hover"
+                                                            : "cancel-button cancel-button:hover"
+                                                    }`}
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
-                                                    onClick={() => saveDocument(s)}
-                                                    disabled={savingSessionId === s.id}
-                                                    className={`btn px-3 py-1 text-sm rounded ${savingSessionId === s.id
-                                                        ? "save-button save-button:hover"
-                                                        : "save-button save-button:hover"
-                                                        }`}
+                                                    onClick={() =>
+                                                        saveDocument(s)
+                                                    }
+                                                    disabled={
+                                                        savingSessionId === s.id
+                                                    }
+                                                    className={`btn px-3 py-1 text-sm rounded ${
+                                                        savingSessionId === s.id
+                                                            ? "save-button save-button:hover"
+                                                            : "save-button save-button:hover"
+                                                    }`}
                                                 >
-                                                    {savingSessionId === s.id ? "Saving..." : "Save"}
+                                                    {savingSessionId === s.id
+                                                        ? "Saving..."
+                                                        : "Save"}
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="flex flex-row gap-2 justify-end">
                                                 <button
                                                     onClick={() => {
-                                                        setEditingSessionId(s.id);
-                                                        setEditedDocument(s.document);
+                                                        setEditingSessionId(
+                                                            s.id
+                                                        );
+                                                        setEditedDocument(
+                                                            s.document
+                                                        );
                                                     }}
                                                     className="edit-button edit-button:hover"
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
-                                                    onClick={() => deleteSession(s)}
+                                                    onClick={() =>
+                                                        deleteSession(s)
+                                                    }
                                                     className="delete-button delete-button:hover"
                                                 >
                                                     Delete
                                                 </button>
                                             </div>
                                         )}
-
                                     </li>
                                 );
                             })}

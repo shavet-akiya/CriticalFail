@@ -120,26 +120,34 @@ export default function LocationProfile() {
                 </div>
 
                 {/* Main content - AI was used here for styling and structuring */}
-                <div className="space-y-4 text-gray-700 w-full flex flex-col gap-4">
+                <div className="space-y-4 text-gray-700 w-full flex flex-col gap-4 obsidian-colour">
                     {isEditing ? (
                         <>
                             <div className="w-full">
                                 <label className="form-field">Name</label>
                                 <input
-                                    className="input input-field w-full"
+                                    className="input input-field w-full obsidian-colour"
                                     value={form.location_name}
                                     onChange={(e) =>
-                                        onChange("location_name", e.target.value)
+                                        onChange(
+                                            "location_name",
+                                            e.target.value
+                                        )
                                     }
                                 />
                             </div>
                             <div className="w-full">
-                                <label className="form-field">Description</label>
+                                <label className="form-field">
+                                    Description
+                                </label>
                                 <textarea
-                                    className="input input-field w-full"
+                                    className="input input-field w-full obsidian-colour"
                                     value={form.location_description}
                                     onChange={(e) =>
-                                        onChange("location_description", e.target.value)
+                                        onChange(
+                                            "location_description",
+                                            e.target.value
+                                        )
                                     }
                                 />
                             </div>
@@ -163,18 +171,21 @@ export default function LocationProfile() {
                     ) : (
                         <>
                             <p>
-                                <strong>Description:</strong> {form.location_description}
+                                <strong>Description:</strong>{" "}
+                                {form.location_description}
                             </p>
                             <p className="flex flex-wrap gap-2">
                                 <strong>Visited on:</strong>{" "}
-                                {(form.session_ids || []).map((sessionId, idx) => (
-                                    <span
-                                        key={idx}
-                                        className="bg-purple-200 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full"
-                                    >
-                                        {formatSessionDate(sessionId)}
-                                    </span>
-                                ))}
+                                {(form.session_ids || []).map(
+                                    (sessionId, idx) => (
+                                        <span
+                                            key={idx}
+                                            className="bg-purple-200 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full"
+                                        >
+                                            {formatSessionDate(sessionId)}
+                                        </span>
+                                    )
+                                )}
                             </p>
                         </>
                     )}
@@ -182,5 +193,4 @@ export default function LocationProfile() {
             </div>
         </div>
     );
-
 }

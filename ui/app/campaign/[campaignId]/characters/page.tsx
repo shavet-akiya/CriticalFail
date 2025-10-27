@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import type { Character } from "@/types/types";
 import Loading from "@/components/Loading";
+import { Search } from "lucide-react";
 
 export default function Characters() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -13,10 +14,6 @@ export default function Characters() {
     const { filter } = useFilter();
 
     const [characters, setCharacters] = useState<Character[]>([]);
-    const [sessions, setSessions] = useState<
-        { session_id: string; name: string }[]
-    >([]);
-    const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -24,23 +21,27 @@ export default function Characters() {
 
     const [newCharacter, setNewCharacter] = useState({
         name: "",
-        race: "Human",
-        class: "Fighter",
+        race: "",
+        class: "",
         npc: false,
-        AC: 10,
-        HP: 10,
-        STR: 10,
-        DEX: 10,
-        CON: 10,
-        INT: 10,
-        WIS: 10,
-        CHA: 10,
+        AC: 0,
+        HP: 0,
+        STR: 0,
+        DEX: 0,
+        CON: 0,
+        INT: 0,
+        WIS: 0,
+        CHA: 0,
     });
 
-    const [newCharacterImage, setNewCharacterImage] = useState<File | null>(null);
-    const [newCharacterImagePreview, setNewCharacterImagePreview] = useState<string | null>(null);
+    const [newCharacterImage, setNewCharacterImage] = useState<File | null>(
+        null
+    );
+    const [newCharacterImagePreview, setNewCharacterImagePreview] = useState<
+        string | null
+    >(null);
 
-    // --- Fetch all characters ---
+    // ---- Fetch Characters Only ----
     const fetchCharacters = async (): Promise<Character[]> => {
         if (!campaignId) return [];
         const res = await fetch(`${baseUrl}/characters/${campaignId}`, {
@@ -67,22 +68,14 @@ export default function Characters() {
         }));
     };
 
-    const fetchSessions = async () => {
-        if (!campaignId) return;
-        const res = await fetch(`${baseUrl}/campaign/${campaignId}/sessions`);
-        if (!res.ok) throw new Error(`Failed to fetch sessions`);
-        const data = await res.json();
-        setSessions(data.sessions ?? []);
-    };
-
     useEffect(() => {
         if (!campaignId) return;
 
         setLoading(true);
         setError(null);
 
-        Promise.all([fetchCharacters(), fetchSessions()])
-            .then(([chars]) => setCharacters(chars))
+        fetchCharacters()
+            .then((chars) => setCharacters(chars))
             .catch((e) => setError(e instanceof Error ? e.message : String(e)))
             .finally(() => setLoading(false));
     }, [campaignId]);
@@ -104,15 +97,17 @@ export default function Characters() {
 
         try {
             setLoading(true);
-            const createRes = await fetch(`${baseUrl}/characters/${campaignId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...newCharacter,
-                    campaign_id: campaignId,
-                    session_ids: selectedSessions,
-                }),
-            });
+            const createRes = await fetch(
+                `${baseUrl}/characters/${campaignId}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        ...newCharacter,
+                        campaign_id: campaignId,
+                    }),
+                }
+            );
 
             if (!createRes.ok)
                 throw new Error(`Create character failed: ${createRes.status}`);
@@ -125,38 +120,32 @@ export default function Characters() {
 
                 const imageRes = await fetch(
                     `${baseUrl}/characters/${campaignId}/${createdCharacter.characterId}/image`,
-                    {
-                        method: "POST",
-                        body: formData,
-                    }
+                    { method: "POST", body: formData }
                 );
 
                 if (!imageRes.ok)
                     throw new Error(`Image upload failed: ${imageRes.status}`);
                 const imageData = await imageRes.json();
-                if (imageData.imageURL) {
+                if (imageData.imageURL)
                     createdCharacter.imageURL = imageData.imageURL;
-                }
             }
 
             setCharacters((prev) => [...prev, createdCharacter]);
-
             setShowModal(false);
             setNewCharacter({
                 name: "",
-                race: "Human",
-                class: "Fighter",
+                race: "",
+                class: "",
                 npc: false,
-                AC: 10,
-                HP: 10,
-                STR: 10,
-                DEX: 10,
-                CON: 10,
-                INT: 10,
-                WIS: 10,
-                CHA: 10,
+                AC: 0,
+                HP: 0,
+                STR: 0,
+                DEX: 0,
+                CON: 0,
+                INT: 0,
+                WIS: 0,
+                CHA: 0,
             });
-            setSelectedSessions([]);
             setNewCharacterImage(null);
             setNewCharacterImagePreview(null);
             setError(null);
@@ -167,34 +156,24 @@ export default function Characters() {
         }
     };
 
-
-    if (loading) {
-        return (
-            <Loading />
-        );
-    }
-
-    if (!sessions) {
-        return (
-            <div className="text-center text-3xl text-red-600 mt-6">
-                Error: {error}
-            </div>
-        );
-    }
+    if (loading) return <Loading />;
 
     return (
-        <div className=" max-w-7xl w-full">
+        <div className="h-full w-[80vw] select-none gap-5 overflow-hidden padding-box">
             <div className="heading-banner obsidian-colour px-8 select-none">
-                <h1 className="page-heading">Characters</h1>
+                <h1 className="page-heading pb-4">Characters</h1>
 
                 <div className="mb-4 flex flex-col sm:flex-row gap-4 px-2">
-                    <input
-                        type="text"
-                        placeholder="Search by name..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border bg-white-colour border-gray-300 px-3 py-2 rounded-lg flex-1 obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
-                    />
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="Search by name..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="border bg-white border-gray-300 pl-10 pr-3 py-2 rounded-xl w-full obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                        />
+                    </div>
                     <button
                         onClick={() => setShowModal(true)}
                         className="bg-[#a80d18] white-colour px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
@@ -204,33 +183,33 @@ export default function Characters() {
                 </div>
             </div>
 
-
-
-            {characters.length === 0 && (
-                <div className="text-gray-500 text-center mt-16">
-                    <p className="mb-2">What an empty tavern we have here...</p>
-                    <p>Create a character or a session to get started.</p>
-                </div>
-            )}
-
+            {/* --- Character Grid --- */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
-                {filteredCharacters.map((character) => {
-                    const imageSrc = character.imageURL
-                        ? character.imageURL.startsWith("http")
-                            ? character.imageURL
-                            : `${baseUrl}${character.imageURL}`
-                        : "/images/character-placeholder.png";
+                {filteredCharacters.length === 0 ? (
+                    <div className="text-gray-500 text-center col-span-full mt-16">
+                        <p className="mb-2">No characters yet.</p>
+                        <p>Create a character to get started!</p>
+                    </div>
+                ) : (
+                    filteredCharacters.map((character) => {
+                        const imageSrc = character.imageURL
+                            ? character.imageURL.startsWith("http")
+                                ? character.imageURL
+                                : `${baseUrl}${character.imageURL}`
+                            : "/images/character-placeholder.png";
 
-                    return (
-                        <CharacterCard
-                            key={character.characterId}
-                            character={character}
-                            imageSrc={imageSrc}
-                        />
-                    );
-                })}
+                        return (
+                            <CharacterCard
+                                key={character.characterId}
+                                character={character}
+                                imageSrc={imageSrc}
+                            />
+                        );
+                    })
+                )}
             </div>
 
+            {/* --- Modal --- */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white obsidian-colour rounded-2xl shadow-xl p-8 w-full max-w-lg overflow-y-auto max-h-[90vh]">
@@ -267,6 +246,7 @@ export default function Characters() {
                                     </label>
                                     <input
                                         type="text"
+                                        placeholder="e.g. Tiefling"
                                         value={newCharacter.race}
                                         onChange={(e) =>
                                             setNewCharacter({
@@ -284,6 +264,7 @@ export default function Characters() {
                                     <input
                                         type="text"
                                         value={newCharacter.class}
+                                        placeholder="e.g. Rogue"
                                         onChange={(e) =>
                                             setNewCharacter({
                                                 ...newCharacter,
@@ -338,43 +319,7 @@ export default function Characters() {
                                 )}
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold mb-1">
-                                    Assign to Session(s)
-                                </label>
-                                <select
-                                    multiple
-                                    value={selectedSessions}
-                                    onChange={(e) =>
-                                        setSelectedSessions(
-                                            Array.from(
-                                                e.target.selectedOptions,
-                                                (opt) => opt.value
-                                            )
-                                        )
-                                    }
-                                    className="w-full border rounded-lg px-3 py-2"
-                                >
-                                    {sessions.length > 0 ? (
-                                        sessions.map((s) => (
-                                            <option
-                                                key={s.session_id}
-                                                value={s.session_id}
-                                            >
-                                                {s.name}
-                                            </option>
-                                        ))
-                                    ) : (
-                                        <option disabled>
-                                            No sessions available
-                                        </option>
-                                    )}
-                                </select>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Hold Ctrl/Cmd to select multiple sessions.
-                                </p>
-                            </div>
-
+                            {/* Character Stats */}
                             <div className="grid grid-cols-3 gap-3">
                                 {[
                                     "AC",

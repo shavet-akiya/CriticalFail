@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import type { Location } from "@/types/types";
 import { useCampaign } from "@/contexts/CampaignContext";
 import Loading from "@/components/Loading";
+import { Search } from "lucide-react";
 
 export default function Locations() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -96,25 +97,27 @@ export default function Locations() {
     return loading ? (
         <Loading />
     ) : (
-        <div className="pl-16 pr-16 obsidian-colour h-screen flex flex-col pb-16">
-            <div className="sticky top-0 z-10">
-                <div className="heading-banner">
-                    <h1 className="page-heading">Locations</h1>
-                    <div className="mb-4 flex flex-col sm:flex-row gap-4 px-2">
+        <div className="h-screen w-[80vw] select-none gap-5 overflow-hidden padding-box">
+            <div className="sticky top-0 z-30 heading-banner obsidian-colour px-8 select-none shadow-md">
+                <h1 className="page-heading pb-4">Locations</h1>
+                <div className="mb-4 flex flex-col sm:flex-row gap-4 px-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                         <input
                             type="text"
                             placeholder="Search by name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="border bg-white border-gray-300 px-3 py-2 rounded-xl flex-1 obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                            className="border bg-white border-gray-300 pl-10 pr-3 py-2 rounded-xl w-full obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                         />
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="bg-[#a80d18] white-colour px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
-                        >
-                            + Add Location
-                        </button>
                     </div>
+
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="bg-[#a80d18] white-colour px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition shadow-md w-full sm:w-auto"
+                    >
+                        + Add Location
+                    </button>
                 </div>
             </div>
 

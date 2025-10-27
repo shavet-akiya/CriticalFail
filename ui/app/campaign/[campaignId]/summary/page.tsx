@@ -228,7 +228,7 @@ export default function CampaignSummaryPage() {
     if (!campaign) return <div className="p-6">Campaign not found.</div>;
 
     return (
-        <div className="flex flex-col items-center bg-white-colour h-full w-full max-w-7xl select-none gap-5 overflow-hidden padding-box">
+        <div className="flex flex-col items-center bg-white-colour h-full w-[80vw] max-w-7xl select-none gap-5 overflow-hidden padding-box">
             <div className="rounded-b-xl lg:rounded-xl w-full max-w-6xl relative flex flex-col md:flex-row items-center md:items-start p-4 bg-purple-colour gap-6">
                 <img
                     src={
@@ -496,33 +496,35 @@ export default function CampaignSummaryPage() {
                 </div>
             )}
 
-
             {/* AI was used for helping generate this carousel*/}
             <div className="flex w-full max-w-6xl border-b border-gray-300">
                 <button
                     onClick={() => setActivePage("sessions")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "sessions"
-                        ? "border-b-4 border-red-600 text-red-600"
-                        : "text-gray-600 hover:text-gray-800"
-                        }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
+                        activePage === "sessions"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
+                    }`}
                 >
                     Sessions
                 </button>
                 <button
                     onClick={() => setActivePage("characters")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "characters"
-                        ? "border-b-4 border-red-600 text-red-600"
-                        : "text-gray-600 hover:text-gray-800"
-                        }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
+                        activePage === "characters"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
+                    }`}
                 >
                     Characters
                 </button>
                 <button
                     onClick={() => setActivePage("locations")}
-                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${activePage === "locations"
-                        ? "border-b-4 border-red-600 text-red-600"
-                        : "text-gray-600 hover:text-gray-800"
-                        }`}
+                    className={`flex-1 py-2 text-center font-semibold transition-colors text-lg ${
+                        activePage === "locations"
+                            ? "border-b-4 border-red-600 text-red-600"
+                            : "text-gray-600 hover:text-gray-800"
+                    }`}
                 >
                     Locations
                 </button>
@@ -576,14 +578,13 @@ export default function CampaignSummaryPage() {
                                             )
                                         }
                                     >
-
                                         <img
                                             src={
                                                 c.imageURL?.startsWith("http")
                                                     ? c.imageURL
                                                     : c.imageURL
-                                                        ? `${baseUrl}${c.imageURL}`
-                                                        : "/images/character-placeholder.png"
+                                                    ? `${baseUrl}${c.imageURL}`
+                                                    : "/images/character-placeholder.png"
                                             }
                                             onError={(e) => {
                                                 (
@@ -593,7 +594,6 @@ export default function CampaignSummaryPage() {
                                             }}
                                             className="w-12 h-12 object-cover rounded-full border-2 border-white"
                                         />
-
 
                                         <div>
                                             <p className="font-semibold">

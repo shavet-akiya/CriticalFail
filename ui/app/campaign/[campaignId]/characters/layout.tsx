@@ -4,8 +4,6 @@ import { useState } from "react";
 import { FilterProvider, useFilter } from "@/contexts/CharacterFilterContext";
 import { CharacterProvider } from "@/contexts/CharacterContext";
 
-
-
 export default function CharactersLayout({
     children,
 }: {
@@ -25,24 +23,40 @@ export default function CharactersLayout({
     );
 }
 
-function FAB({ open, setOpen }: { open: boolean; setOpen: (o: boolean) => void }) {
+function FAB({
+    open,
+    setOpen,
+}: {
+    open: boolean;
+    setOpen: (o: boolean) => void;
+}) {
     const { setFilter } = useFilter();
 
     return (
-        <div className="fixed bottom-8 right-8 flex flex-col items-end space-y-2">
+        <div className="fixed bottom-8 right-8 flex flex-col items-end space-y-2 black">
             <div
-                className={`flex flex-col items-end space-y-2 transition-all duration-300 ${open
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4 pointer-events-none"
-                    }`}
+                className={`flex flex-col items-end space-y-2 transition-all duration-300 ${
+                    open
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4 pointer-events-none"
+                }`}
             >
-                <button className="btn btn-lg shadow" onClick={() => setFilter("all")}>
+                <button
+                    className="btn btn-lg white-colour bg-purple-colour"
+                    onClick={() => setFilter("all")}
+                >
                     All characters
                 </button>
-                <button className="btn btn-lg shadow" onClick={() => setFilter("players")}>
+                <button
+                    className="btn btn-lg white-colour bg-purple-colour"
+                    onClick={() => setFilter("players")}
+                >
                     Players
                 </button>
-                <button className="btn btn-lg shadow" onClick={() => setFilter("npc")}>
+                <button
+                    className="btn btn-lg white-colour bg-purple-colour"
+                    onClick={() => setFilter("npc")}
+                >
                     NPC
                 </button>
             </div>
@@ -50,7 +64,7 @@ function FAB({ open, setOpen }: { open: boolean; setOpen: (o: boolean) => void }
             <button
                 tabIndex={0}
                 role="button"
-                className="btn btn-lg rounded-md btn-success shadow-lg bg-white border border-gray-300"
+                className="btn btn-lg rounded-md btn-success shadow-lg bg-white border border-purple"
                 onClick={() => setOpen(!open)}
             >
                 Filter

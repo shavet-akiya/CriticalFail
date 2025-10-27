@@ -13,7 +13,7 @@ export function LocationCard({ location }: { location: Location }) {
             href={`/campaign/${campaignId}/locations/${location.location_id}`}
             className="block"
         >
-            <div className="bg-white rounded-2xl shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300 cursor-pointer p-6 flex flex-col justify-between gap-3 border border-gray-100">
+            <div className="border border-purple bg-white rounded-2xl m-5 shadow-md hover:shadow-lg duration-300 cursor-pointer p-6 flex flex-col justify-between gap-3 hover:bg-gray-300 ">
                 <h2 className="text-xl font-bold obsidian-colour">
                     {location.location_name}
                 </h2>
