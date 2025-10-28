@@ -132,9 +132,9 @@ export default function CharacterProfile() {
             </div>
 
             {/* Character Card */}
-            <div className="max-w-6xl w-full p-8 bg-white-colour rounded-2xl shadow-lg flex flex-col md:flex-row gap-8">
+            <div className="max-w-6xl w-full p-8 bg-white-colour rounded-3xl border-3 border-purple shadow-lg flex flex-col md:flex-row gap-8">
 
-                <div className="flex-shrink-0 w-48 h-48 rounded-xl overflow-hidden border border-gray-300 relative">
+                <div className="flex-shrink-0 w-48 h-48 rounded-xl overflow-hidden relative">
                     <img
                         src={
                             form.imageURL
@@ -144,7 +144,7 @@ export default function CharacterProfile() {
                                 : "/images/character-placeholder.png"
                         }
                         alt={form.name}
-                        className="w-full h-full object-cover"
+                        className="w-full rounded-2xl h-full object-cover border-2 border-purple"
                     />
                 </div>
 
@@ -153,35 +153,70 @@ export default function CharacterProfile() {
                         <div className="flex justify-between items-center mb-4">
                             <h1 className="text-3xl font-bold obsidian-colour">{form.name}</h1>
                             <button
-                                className="px-3 py-1 bg-purple-colour rounded white-colour hover:bg-purple-700"
+                                className="px-3 py-1 bg-purple-colour rounded white-colour hover:bg-purple-700 hover:cursor-pointer"
                                 onClick={() => setIsEditing(true)}
                             >
                                 Edit
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-                            <div>
-                                <p>
-                                    <strong>Race:</strong> {form.race}
-                                </p>
-                                <p>
-                                    <strong>Class:</strong> {form.class}
-                                </p>
-                                <p>
-                                    <strong>AC:</strong> {form.AC} | <strong>HP:</strong> {form.HP} |{" "}
-                                    <strong>NPC:</strong> {form.npc ? "Yes" : "No"}
-                                </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
+                            {/* General Info */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {/* Race */}
+                                <div className="flex flex-col space-y-1">
+                                    <span className="font-bold text-purple-colour">Race</span>
+                                    <span className="text-lg font-semibold obsidian-colour">{form.race}</span>
+                                </div>
+
+                                {/* Class */}
+                                <div className="flex flex-col space-y-1">
+                                    <span className="font-bold text-purple-colour">Class</span>
+                                    <span className="text-lg font-semibold obsidian-colour">{form.class ?? "N/A"}</span>
+                                </div>
+
+                                {/* AC */}
+                                <div className="flex flex-col space-y-1">
+                                    <span className="font-bold text-purple-colour">AC</span>
+                                    <span className="text-lg font-semibold obsidian-colour">{form.AC}</span>
+                                </div>
+
+                                {/* HP */}
+                                <div className="flex flex-col space-y-1">
+                                    <span className="font-bold text-purple-colour">HP</span>
+                                    <span className="text-lg font-semibold obsidian-colour">{form.HP}</span>
+                                </div>
+
+                                {/* NPC */}
+                                <div className="flex flex-col space-y-1">
+                                    <span className="font-bold text-purple-colour">NPC</span>
+                                    <span className="text-lg font-semibold obsidian-colour">{form.npc ? "Yes" : "No"}</span>
+                                </div>
                             </div>
-                            <div>
-                                <p>
-                                    <strong>Stats:</strong>
-                                </p>
-                                <p>
-                                    STR {form.STR}, DEX {form.DEX}, CON {form.CON}, INT {form.INT}, WIS {form.WIS}, CHA {form.CHA}
-                                </p>
+
+
+
+                            {/* Stats */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                {[
+                                    { label: "STR", value: form.STR },
+                                    { label: "DEX", value: form.DEX },
+                                    { label: "CON", value: form.CON },
+                                    { label: "INT", value: form.INT },
+                                    { label: "WIS", value: form.WIS },
+                                    { label: "CHA", value: form.CHA },
+                                ].map((stat) => (
+                                    <div
+                                        key={stat.label}
+                                        className="flex flex-col items-center justify-center bg-purple/5 border-2 border-purple rounded-xl py-2"
+                                    >
+                                        <span className="font-bold text-purple-colour">{stat.label}</span>
+                                        <span className="text-lg font-semibold obsidian-colour">{stat.value}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
