@@ -102,8 +102,11 @@ export default function LocationProfile() {
 
     return (
         <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-gray-100 p-4">
-            <div className="max-w-4xl mx-auto p-6 bg-white-colour rounded-xl shadow-md flex flex-col gap-6 w-full border-3 border-purple -mt-20">
-                {isEditing && <BackButton />}
+            <div className="absolute top-8 left-8 mt-16">
+                <BackButton />
+            </div>
+
+            <div className="max-w-4xl mx-auto p-6 bg-white-colour rounded-xl shadow-md flex flex-col gap-6 w-full border-3 border-purple -mt-20 relative">
 
                 <div className="flex justify-between items-center w-full">
                     <h1 className="text-3xl font-bold obsidian-colour">
@@ -118,6 +121,7 @@ export default function LocationProfile() {
                         </button>
                     )}
                 </div>
+
 
                 {/* Main content - AI was used here for styling and structuring */}
                 <div className="space-y-4 text-gray-700 w-full flex flex-col gap-4 obsidian-colour">
