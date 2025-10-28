@@ -162,7 +162,7 @@ function App() {
                                             onChange={(e) =>
                                                 setSearchTerm(e.target.value)
                                             }
-                                            className="border w-[60vw] bg-white border-gray-300 pl-10 pr-3 py-2 rounded-xl w-full obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm w-[60vw]"
+                                            className="border w-[60vw] bg-white border-gray-300 pl-10 pr-3 py-2 rounded-lg w-full obsidian-colour focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm w-[60vw]"
                                         />
                                     </div>
 
@@ -171,7 +171,7 @@ function App() {
                                         onChange={(e) =>
                                             setSortOption(e.target.value as any)
                                         }
-                                        className="w-[30vw] sm:w-48 bg-white obsidian-colour rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
+                                        className="w-[30vw] sm:w-48 bg-white obsidian-colour rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition shadow-sm"
                                     >
                                         <option value="" disabled>
                                             Sort By...
