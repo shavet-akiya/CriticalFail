@@ -102,7 +102,7 @@ export default function LocationProfile() {
 
     return (
         <div className="w-screen h-screen flex items-center justify-center overflow-hidden bg-gray-100 p-4">
-            <div className="max-w-4xl mx-auto p-6 bg-white-colour rounded-xl shadow-md flex flex-col gap-6 w-full">
+            <div className="max-w-4xl mx-auto p-6 bg-white-colour rounded-xl shadow-md flex flex-col gap-6 w-full border-3 border-purple -mt-20">
                 {isEditing && <BackButton />}
 
                 <div className="flex justify-between items-center w-full">
