@@ -152,7 +152,7 @@ export default function CharacterProfile() {
                         <div className="flex justify-between items-center mb-4">
                             <h1 className="text-3xl font-bold obsidian-colour">{form.name}</h1>
                             <button
-                                className="px-3 py-1 bg-purple-colour rounded white-colour hover:bg-purple-700 hover:cursor-pointer"
+                                className="btn btn-primary"
                                 onClick={() => setIsEditing(true)}
                             >
                                 Edit
