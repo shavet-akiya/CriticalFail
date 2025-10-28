@@ -184,7 +184,7 @@ export default function Characters() {
             </div>
 
             {/* --- Character Grid --- */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
                 {filteredCharacters.length === 0 ? (
                     <div className="text-gray-500 text-center col-span-full mt-16">
                         <p className="mb-2">No characters yet.</p>
