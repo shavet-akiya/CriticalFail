@@ -126,14 +126,13 @@ export default function CharacterProfile() {
     if (!form) return <Loading />;
 
     return (
-        <div className="w-screen h-screen flex flex-col items-center justify-start overflow-auto bg-gray-100 p-8">
-            <div className="w-full max-w-6xl mb-4">
+        <div className="w-screen h-screen flex flex-col items-center justify-center overflow-hidden bg-gray-100">
+            <div className="absolute top-8 left-8">
                 <BackButton />
             </div>
 
             {/* Character Card */}
             <div className="max-w-6xl w-full p-8 bg-white-colour rounded-3xl border-3 border-purple shadow-lg flex flex-col md:flex-row gap-8">
-
                 <div className="flex-shrink-0 w-48 h-48 rounded-xl overflow-hidden relative">
                     <img
                         src={
